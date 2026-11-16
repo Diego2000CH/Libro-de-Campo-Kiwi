@@ -1,0 +1,6 @@
+{
+  "name": "Fundo La Cabaña - Cuaderno de Campo Kiwis",
+  "description": "Sistema integral de gestión agronómica, cuaderno de campo SAG, monitoreo de cosecha, riego, pozo profundo, bodega y horas frío para Kiwi Hayward con sincronización en la nube.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

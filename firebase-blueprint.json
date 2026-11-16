@@ -1,0 +1,100 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated orchard user profile identified by Firebase Auth UID.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Authentication UID matching the document ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Verified email address of the signed-in user.",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name shown in the orchard interface.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "role": {
+          "type": "string",
+          "description": "Access role assigned to the user profile.",
+          "enum": ["administrador", "usuario"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the user profile was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the last profile update."
+        }
+      },
+      "required": ["uid", "email", "role", "createdAt", "updatedAt"]
+    },
+    "OrchardWorkspace": {
+      "title": "OrchardWorkspace",
+      "description": "Complete orchard field-notebook workspace owned by an authenticated user.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the orchard owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "nombreFundo": {
+          "type": "string",
+          "description": "Name of the kiwi orchard.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "latitud": {
+          "type": "number",
+          "description": "Orchard latitude coordinate (-90 to 90)."
+        },
+        "longitud": {
+          "type": "number",
+          "description": "Orchard longitude coordinate (-180 to 180)."
+        },
+        "stateData": {
+          "type": "object",
+          "description": "Native Firestore Map containing orchard blocks, labors, inventory, irrigation, well logs, and agronomy records."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the orchard workspace was initialized."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the latest orchard synchronization."
+        }
+      },
+      "required": ["ownerId", "nombreFundo", "stateData", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private user profile metadata strictly isolated per authenticated owner."
+    },
+    "/orchards/{userId}": {
+      "schema": { "$ref": "#/entities/OrchardWorkspace" },
+      "description": "Orchard workspace document strictly isolated per authenticated owner."
+    }
+  }
+}
