@@ -279,55 +279,95 @@ export default function App() {
     return () => window.removeEventListener('gmp-quota-exceeded', handleQuota);
   }, []);
 
-  const fetchMapsClientConfig = async (retries = 3) => {
-    const envKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
-    if (envKey) {
-      setMapsApiKey(envKey);
-      setMapsKeyLoading(false);
+  const mapsFetchInFlightRef = useRef<Promise<void> | null>(null);
+
+  const fetchMapsClientConfig = async (retries = 5) => {
+    if (mapsFetchInFlightRef.current) {
+      return mapsFetchInFlightRef.current;
+    }
+
+    const run = async () => {
+      const envKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '').trim();
+      if (envKey) {
+        setMapsApiKey(envKey);
+        setMapsKeyLoading(false);
+        setMapsKeyError(null);
+        return;
+      }
+
+      setMapsKeyLoading(true);
       setMapsKeyError(null);
-      return;
-    }
 
-    setMapsKeyLoading(true);
-    setMapsKeyError(null);
+      const delays = [0, 800, 1800, 3500, 5000];
+      let serverRespondedWithoutKey = false;
 
-    const delays = [0, 600, 1500];
-    for (let attempt = 0; attempt < retries; attempt++) {
-      if (delays[attempt] > 0) {
-        await new Promise((r) => setTimeout(r, delays[attempt]));
-      }
-      try {
-        const res = await fetch('/api/maps-client-config');
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data?.apiKey && typeof data.apiKey === 'string' && data.apiKey.trim()) {
-          setMapsApiKey(data.apiKey.trim());
-          setMapsKeyLoading(false);
-          setMapsKeyError(null);
-          return;
+      for (let attempt = 0; attempt < retries; attempt++) {
+        const waitMs = delays[Math.min(attempt, delays.length - 1)];
+        if (waitMs > 0) {
+          await new Promise((r) => setTimeout(r, waitMs));
         }
-      } catch (err) {
-        console.warn(`Intento ${attempt + 1} al obtener clave Google Maps falló:`, err);
+        try {
+          const res = await fetch(`/api/maps-client-config?_t=${Date.now()}`, {
+            cache: 'no-store',
+            headers: { Accept: 'application/json' },
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const contentType = res.headers.get('content-type') || '';
+          if (!contentType.includes('application/json')) {
+            throw new Error('Respuesta no JSON desde /api/maps-client-config');
+          }
+          const data = await res.json();
+          if (data?.apiKey && typeof data.apiKey === 'string' && data.apiKey.trim()) {
+            setMapsApiKey(data.apiKey.trim());
+            setMapsKeyLoading(false);
+            setMapsKeyError(null);
+            return;
+          }
+          serverRespondedWithoutKey = true;
+          break;
+        } catch (err) {
+          console.warn(`Intento ${attempt + 1} al obtener clave Google Maps falló:`, err);
+        }
       }
-    }
 
-    setMapsKeyLoading(false);
-    setMapsKeyError('No se pudo obtener la clave de Google Maps desde el servidor.');
+      setMapsKeyLoading(false);
+      setMapsKeyError(
+        serverRespondedWithoutKey
+          ? 'El servidor aún no tiene configurada GOOGLE_MAPS_API_KEY o VITE_GOOGLE_MAPS_API_KEY.'
+          : 'No se pudo obtener la clave de Google Maps desde el servidor.'
+      );
+    };
+
+    const promise = run().finally(() => {
+      mapsFetchInFlightRef.current = null;
+    });
+    mapsFetchInFlightRef.current = promise;
+    return promise;
   };
 
   useEffect(() => {
     if (!mapsApiKey) {
-      void fetchMapsClientConfig(3);
+      void fetchMapsClientConfig(5);
     } else {
       setMapsKeyLoading(false);
     }
   }, []);
+
+  // Reintento automático al abrir Cuarteles & Mapa si la clave aún no se cargó
+  useEffect(() => {
+    if (activeTab === 'parcelas' && !mapsApiKey && !mapsKeyLoading) {
+      void fetchMapsClientConfig(4);
+    }
+  }, [activeTab, mapsApiKey]);
 
   // Monitoreo de red del navegador (Offline / Online)
   useEffect(() => {
     const onOffline = () => setSyncState('offline');
     const onOnline = () => {
       setSyncState((prev) => (prev === 'offline' ? 'idle' : prev));
+      if (!mapsApiKey) {
+        void fetchMapsClientConfig(4);
+      }
     };
     window.addEventListener('offline', onOffline);
     window.addEventListener('online', onOnline);
@@ -335,7 +375,7 @@ export default function App() {
       window.removeEventListener('offline', onOffline);
       window.removeEventListener('online', onOnline);
     };
-  }, []);
+  }, [mapsApiKey]);
 
   const parseTimestampMs = (iso?: string): number => {
     if (!iso) return 0;

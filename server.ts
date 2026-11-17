@@ -3,7 +3,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
-import { AuthRequest, requireAuth } from './src/middleware/auth.ts';
+import { type AuthRequest, requireAuth } from './src/middleware/auth.ts';
 import {
   getOrchardSnapshotByUid,
   getSqlSummaryByUid,
@@ -24,11 +24,15 @@ async function startServer() {
   });
 
   app.get('/api/maps-client-config', (_req, res) => {
-    const apiKey =
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    const apiKey = (
       process.env.VITE_GOOGLE_MAPS_API_KEY ||
       process.env.GOOGLE_MAPS_API_KEY ||
-      '';
-    res.json({ apiKey });
+      process.env.GOOGLE_MAPS_KEY ||
+      process.env.MAPS_API_KEY ||
+      ''
+    ).trim();
+    res.json({ apiKey, configured: Boolean(apiKey) });
   });
 
   // Cloud SQL: Cargar estado del huerto autenticado con Firebase Auth
