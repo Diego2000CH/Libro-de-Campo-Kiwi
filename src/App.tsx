@@ -15,7 +15,6 @@ import { MaquinariasView } from './components/MaquinariasView';
 import { ClimaView } from './components/ClimaView';
 import { MonitoreoView } from './components/MonitoreoView';
 import { CalculadoraView } from './components/CalculadoraView';
-import { AsistenteIaView } from './components/AsistenteIaView';
 import { InformeOficialView } from './components/InformeOficialView';
 import { UsuariosView } from './components/UsuariosView';
 import { LoginView } from './components/LoginView';
@@ -1257,22 +1256,6 @@ export default function App() {
 
         {activeTab === 'calculadora' && (
           <CalculadoraView etoClimaActual={clima?.evapotranspiracionEtoMmDia} />
-        )}
-
-        {activeTab === 'asistente_ia' && (
-          <AsistenteIaView
-            parcelas={parcelas}
-            inventario={inventario}
-            clima={clima}
-            fundoNombre={explotacion.nombreFundo}
-            explotacionLatLng={{
-              latitude: explotacion.latitud ?? -39.628593,
-              longitude: explotacion.longitud ?? -72.461085,
-            }}
-            getAuthToken={() =>
-              auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null)
-            }
-          />
         )}
 
         {activeTab === 'informe' && (

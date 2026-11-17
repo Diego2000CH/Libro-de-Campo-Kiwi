@@ -81,7 +81,7 @@ export function getNivelAccesoMeta(nivel: NivelAcceso): {
       return {
         label: 'Solo Lectura (Consulta)',
         shortLabel: 'Solo Lectura',
-        description: 'Puede entrar, navegar mapas, usar calculadoras, filtros, Asesor IA y ver reportes, sin editar ni eliminar datos.',
+        description: 'Puede entrar, navegar mapas, usar calculadoras, filtros y ver reportes, sin editar ni eliminar datos.',
         badgeClass: 'bg-amber-100 text-amber-900 border-amber-200',
       };
   }

@@ -12,7 +12,6 @@ import {
   CloudSun, 
   Bug, 
   Calculator, 
-  Sparkles, 
   FileText, 
   Users, 
   Plus, 
@@ -57,7 +56,6 @@ export type ActiveTab =
   | 'clima' 
   | 'monitoreo' 
   | 'calculadora' 
-  | 'asistente_ia' 
   | 'informe'
   | 'usuarios';
 
@@ -126,7 +124,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'clima', label: 'Clima', icon: CloudSun },
     { id: 'monitoreo', label: 'Plagas & Psa', icon: Bug },
     { id: 'calculadora', label: 'Calculadora', icon: Calculator },
-    { id: 'asistente_ia', label: 'Asesor IA', icon: Sparkles, highlight: true },
     { id: 'informe', label: 'Informe SAG', icon: FileText },
     { id: 'usuarios', label: isAdmin ? 'Equipo & Claves' : 'Mi Cuenta', icon: Users }
   ];

@@ -116,12 +116,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 Ficha del Fundo
               </button>
             )}
-            <button
-              onClick={() => onNavigateTab('asistente_ia')}
-              className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-            >
-              ✨ Consultar Asesor IA
-            </button>
           </div>
         </div>
 
