@@ -2,6 +2,7 @@ import { User } from 'firebase/auth';
 import {
   doc,
   getDoc,
+  getDocFromServer,
   onSnapshot,
   serverTimestamp,
   setDoc,
@@ -36,12 +37,12 @@ export interface FirestoreErrorInfo {
   };
 }
 
-export function handleFirestoreError(
+export function buildFirestoreErrorInfo(
   error: unknown,
   operationType: OperationType,
   path: string | null
-): never {
-  const errInfo: FirestoreErrorInfo = {
+): FirestoreErrorInfo {
+  return {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
       userId: auth.currentUser?.uid,
@@ -58,8 +59,29 @@ export function handleFirestoreError(
     operationType,
     path,
   };
+}
+
+export function handleFirestoreError(
+  error: unknown,
+  operationType: OperationType,
+  path: string | null
+): never {
+  const errInfo = buildFirestoreErrorInfo(error, operationType, path);
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
+}
+
+export async function validateFirestoreConnection(): Promise<boolean> {
+  try {
+    await getDocFromServer(doc(db, 'test', 'connection'));
+    return true;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.warn('Firestore offline: operando con caché local hasta recuperar conexión.');
+      return false;
+    }
+    return true;
+  }
 }
 
 // Firestore does not allow undefined property values in native Maps
@@ -186,7 +208,8 @@ export async function saveOrchardToFirestore(
 
 export function subscribeToOrchard(
   uid: string,
-  onState: (state: AppStateData) => void
+  onState: (state: AppStateData) => void,
+  onError?: (err: Error) => void
 ): () => void {
   const safeUid = sanitizeUid(uid);
   const path = `orchards/${safeUid}`;
@@ -203,7 +226,13 @@ export function subscribeToOrchard(
       }
     },
     (error) => {
-      handleFirestoreError(error, OperationType.GET, path);
+      try {
+        handleFirestoreError(error, OperationType.GET, path);
+      } catch (structuredErr) {
+        if (onError) {
+          onError(structuredErr instanceof Error ? structuredErr : new Error(String(structuredErr)));
+        }
+      }
     }
   );
 }

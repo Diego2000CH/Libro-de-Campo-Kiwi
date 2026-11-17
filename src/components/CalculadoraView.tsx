@@ -17,15 +17,28 @@ import {
   AlertTriangle,
   Info,
   Calendar,
-  Flower2
+  Flower2,
+  Flame
 } from 'lucide-react';
+import { CondicionHorasFrio } from '../types/campo';
+import {
+  calcularGradosDiaPeriodo,
+  estimarEtapaKiwiPorFrioYGradosDia,
+  normalizarCondicionHorasFrio,
+} from '../utils/agroClimaCalculos';
 
 interface CalculadoraViewProps {
   etoClimaActual?: number;
+  horasFrio?: CondicionHorasFrio;
+  tempMinActual?: number;
+  tempMaxActual?: number;
 }
 
 export const CalculadoraView: React.FC<CalculadoraViewProps> = ({
-  etoClimaActual = 4.5
+  etoClimaActual = 4.5,
+  horasFrio,
+  tempMinActual = 7.8,
+  tempMaxActual = 26.2,
 }) => {
   const [activeTab, setActiveTab] = useState<
     'pulverizacion' | 'riego' | 'fertirriego' | 'cosecha_raleo' | 'horas_frio' | 'polinizacion'
@@ -124,16 +137,35 @@ export const CalculadoraView: React.FC<CalculadoraViewProps> = ({
   const totalBinesCuartel = Math.round((toneladasPorHa * superficieCuartelHa * 1000) / 400);
 
   // ==========================================
-  // PESTAÑA 5: HORAS FRÍO & ROMPEDOR DE DORMANCIA
+  // PESTAÑA 5: HORAS FRÍO, GRADOS DÍA & ROMPEDOR DE DORMANCIA
   // ==========================================
-  const [horasFrioAcumuladas, setHorasFrioAcumuladas] = useState(720);
-  const [metaHorasFrio, setMetaHorasFrio] = useState(850);
+  const hfNormCalc = normalizarCondicionHorasFrio(horasFrio);
+  const [horasFrioAcumuladas, setHorasFrioAcumuladas] = useState(hfNormCalc.totalAcumuladoHF);
+  const [metaHorasFrio, setMetaHorasFrio] = useState(hfNormCalc.metaVariedadHF);
   const [porcentajeDormex, setPorcentajeDormex] = useState(3.0); // 3% Cianamida Hidrogenada
   const [mojamientoDormexLHa, setMojamientoDormexLHa] = useState(1000);
 
+  const [gddTmin, setGddTmin] = useState(tempMinActual);
+  const [gddTmax, setGddTmax] = useState(tempMaxActual);
+  const [gddTbase, setGddTbase] = useState(hfNormCalc.tempBaseGddC ?? 10);
+  const [gddTtecho, setGddTtecho] = useState(hfNormCalc.tempTechoGddC ?? 30);
+  const [gddDias, setGddDias] = useState(7);
+  const [gddPrevios, setGddPrevios] = useState(hfNormCalc.totalAcumuladoGD ?? 0);
+  const [gddMetaVariedad, setGddMetaVariedad] = useState(hfNormCalc.metaVariedadGD ?? 1850);
+
   const deficitHF = Math.max(0, metaHorasFrio - horasFrioAcumuladas);
-  const cumplimientoHF = Math.min(100, Math.round((horasFrioAcumuladas / metaHorasFrio) * 100));
+  const cumplimientoHF = Math.min(100, Math.round((horasFrioAcumuladas / Math.max(1, metaHorasFrio)) * 100));
   const litrosDormexHa = Number(((mojamientoDormexLHa * porcentajeDormex) / 100).toFixed(1));
+
+  const gddPeriodo = calcularGradosDiaPeriodo(gddTmin, gddTmax, gddTbase, gddTtecho, gddDias);
+  const gddProyectado = Number(((gddPrevios ?? 0) + gddPeriodo).toFixed(1));
+  const gddCumplimiento = Math.min(100, Math.round((gddProyectado / Math.max(1, gddMetaVariedad ?? 1850)) * 100));
+  const etapaEstimadaCalc = estimarEtapaKiwiPorFrioYGradosDia(
+    horasFrioAcumuladas,
+    metaHorasFrio,
+    gddProyectado,
+    gddMetaVariedad ?? 1850
+  );
 
   // ==========================================
   // PESTAÑA 6: POLINIZACIÓN & COLMENAS / POLEN
@@ -220,7 +252,7 @@ export const CalculadoraView: React.FC<CalculadoraViewProps> = ({
             }`}
           >
             <Snowflake className="w-3.5 h-3.5" />
-            <span>Horas Frío & Rompedor</span>
+            <span>Horas Frío &amp; Grados Día</span>
           </button>
 
           <button
@@ -860,99 +892,222 @@ export const CalculadoraView: React.FC<CalculadoraViewProps> = ({
         </div>
       )}
 
-      {/* 5. HORAS FRÍO & ROMPEDOR */}
+      {/* 5. HORAS FRÍO, GRADOS DÍA & ROMPEDOR */}
       {activeTab === 'horas_frio' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-              <div>
-                <h2 className="font-extrabold text-sm text-stone-900 flex items-center gap-2">
-                  <Snowflake className="w-4 h-4 text-blue-700" />
-                  Calculadora de Horas Frío & Dosis de Cianamida Hidrogenada
-                </h2>
-                <p className="text-[11px] text-stone-400">
-                  Evaluación de receso invernal y dosificación de rompedores de dormancia
-                </p>
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+                <div>
+                  <h2 className="font-extrabold text-sm text-stone-900 flex items-center gap-2">
+                    <Snowflake className="w-4 h-4 text-blue-700" />
+                    Calculadora de Horas Frío (22 May–31 Ago) &amp; Dosis Cianamida
+                  </h2>
+                  <p className="text-[11px] text-stone-400">
+                    Evaluación de receso invernal y dosificación de rompedores de dormancia
+                  </p>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-extrabold text-[10px]">
+                  Weinberger (&lt; 7.2°C)
+                </span>
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-extrabold text-[10px]">
-                Weinberger (&lt; 7.2°C)
-              </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Horas Frío Acumuladas:</label>
+                  <input
+                    type="number"
+                    value={horasFrioAcumuladas}
+                    onChange={(e) => setHorasFrioAcumuladas(parseInt(e.target.value) || 0)}
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Requerimiento Varietal (HF):</label>
+                  <input
+                    type="number"
+                    value={metaHorasFrio}
+                    onChange={(e) => setMetaHorasFrio(parseInt(e.target.value) || 0)}
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono"
+                  />
+                  <span className="text-[10px] text-stone-400">Kiwi Hayward: 800 a 950 HF</span>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Concentración Rompedor (%):</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={porcentajeDormex}
+                    onChange={(e) => setPorcentajeDormex(parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono font-bold"
+                  />
+                  <span className="text-[10px] text-stone-400">Cianamida Hidrogenada: 2.5% a 4.0%</span>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Mojamiento Requerido (L/ha):</label>
+                  <input
+                    type="number"
+                    step="100"
+                    value={mojamientoDormexLHa}
+                    onChange={(e) => setMojamientoDormexLHa(parseInt(e.target.value) || 0)}
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label className="block font-bold text-stone-700 mb-1">Horas Frío Acumuladas:</label>
-                <input
-                  type="number"
-                  value={horasFrioAcumuladas}
-                  onChange={(e) => setHorasFrioAcumuladas(parseInt(e.target.value) || 0)}
-                  className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono font-bold"
-                />
+            <div className="bg-blue-950 text-white rounded-2xl p-5 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-blue-800 pb-2">
+                <span className="text-[10px] uppercase font-bold text-blue-300 tracking-wider">
+                  Diagnóstico de Salida de Receso
+                </span>
+                <Snowflake className="w-4 h-4 text-blue-300" />
               </div>
 
-              <div>
-                <label className="block font-bold text-stone-700 mb-1">Requerimiento Varietal (HF):</label>
-                <input
-                  type="number"
-                  value={metaHorasFrio}
-                  onChange={(e) => setMetaHorasFrio(parseInt(e.target.value) || 0)}
-                  className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono"
-                />
-                <span className="text-[10px] text-stone-400">Kiwi Hayward: 800 a 950 HF</span>
-              </div>
+              <div className="space-y-3">
+                <div className="p-3 bg-blue-900/60 rounded-xl border border-blue-800">
+                  <div className="text-[10px] text-blue-300 uppercase font-bold">Cumplimiento de Frío</div>
+                  <div className="text-3xl font-black text-white">
+                    {cumplimientoHF}%
+                  </div>
+                  <div className="text-[11px] text-blue-200 mt-1">
+                    Déficit: <strong>{deficitHF} Horas Frío</strong>
+                  </div>
+                </div>
 
-              <div>
-                <label className="block font-bold text-stone-700 mb-1">Concentración Rompedor (%):</label>
-                <input
-                  type="number"
-                  step="0.5"
-                  value={porcentajeDormex}
-                  onChange={(e) => setPorcentajeDormex(parseFloat(e.target.value) || 0)}
-                  className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono font-bold"
-                />
-                <span className="text-[10px] text-stone-400">Cianamida Hidrogenada: 2.5% a 4.0%</span>
-              </div>
-
-              <div>
-                <label className="block font-bold text-stone-700 mb-1">Mojamiento Requerido (L/ha):</label>
-                <input
-                  type="number"
-                  step="100"
-                  value={mojamientoDormexLHa}
-                  onChange={(e) => setMojamientoDormexLHa(parseInt(e.target.value) || 0)}
-                  className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono"
-                />
+                <div className="p-3 bg-blue-900/60 rounded-xl border border-blue-800 space-y-1 text-xs">
+                  <div className="flex justify-between text-blue-200">
+                    <span>Dosis producto comercial:</span>
+                    <strong className="text-white">{litrosDormexHa} L/ha</strong>
+                  </div>
+                  <div className="flex justify-between text-blue-200">
+                    <span>Ventana óptima aplicación:</span>
+                    <strong className="text-amber-300">30 a 40 días pre-brotación</strong>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-blue-950 text-white rounded-2xl p-5 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-blue-800 pb-2">
-              <span className="text-[10px] uppercase font-bold text-blue-300 tracking-wider">
-                Diagnóstico de Salida de Receso
-              </span>
-              <Snowflake className="w-4 h-4 text-blue-300" />
-            </div>
-
-            <div className="space-y-3">
-              <div className="p-3 bg-blue-900/60 rounded-xl border border-blue-800">
-                <div className="text-[10px] text-blue-300 uppercase font-bold">Cumplimiento de Frío</div>
-                <div className="text-3xl font-black text-white">
-                  {cumplimientoHF}%
+          {/* Calculadora de Grados Día (GDD) y Etapa Fenológica */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+                <div>
+                  <h2 className="font-extrabold text-sm text-stone-900 flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-amber-600" />
+                    Calculadora de Grados Día (°D · Ventana 1 Jul–30 Abr)
+                  </h2>
+                  <p className="text-[11px] text-stone-400">
+                    Fórmula Tpromedio acotada entre Tbase ({gddTbase}°C) y Ttecho ({gddTtecho}°C) para estimar el avance fenológico de Kiwi Hayward
+                  </p>
                 </div>
-                <div className="text-[11px] text-blue-200 mt-1">
-                  Déficit: <strong>{deficitHF} Horas Frío</strong>
-                </div>
+                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold text-[10px]">
+                  Base 10°C · Techo 30°C
+                </span>
               </div>
 
-              <div className="p-3 bg-blue-900/60 rounded-xl border border-blue-800 space-y-1 text-xs">
-                <div className="flex justify-between text-blue-200">
-                  <span>Dosis producto comercial:</span>
-                  <strong className="text-white">{litrosDormexHa} L/ha</strong>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Temp. Mínima (°C):</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={gddTmin}
+                    onChange={(e) => setGddTmin(parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono font-bold"
+                  />
                 </div>
-                <div className="flex justify-between text-blue-200">
-                  <span>Ventana óptima aplicación:</span>
-                  <strong className="text-amber-300">30 a 40 días pre-brotación</strong>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Temp. Máxima (°C):</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={gddTmax}
+                    onChange={(e) => setGddTmax(parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Días del período:</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={gddDias}
+                    onChange={(e) => setGddDias(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Temp. Base (°C):</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={gddTbase}
+                    onChange={(e) => setGddTbase(parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Temp. Techo (°C):</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={gddTtecho}
+                    onChange={(e) => setGddTtecho(parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">°D previos + Meta (°D):</label>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="number"
+                      value={gddPrevios}
+                      onChange={(e) => setGddPrevios(parseFloat(e.target.value) || 0)}
+                      className="w-1/2 p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono font-bold"
+                      title="GDD acumulados previos"
+                    />
+                    <input
+                      type="number"
+                      value={gddMetaVariedad}
+                      onChange={(e) => setGddMetaVariedad(parseFloat(e.target.value) || 1850)}
+                      className="w-1/2 p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono"
+                      title="Meta madurez Hayward (°D)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-amber-950 text-white rounded-2xl p-5 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-amber-800 pb-2">
+                <span className="text-[10px] uppercase font-bold text-amber-300 tracking-wider">
+                  Proyección Térmica &amp; Estado Planta
+                </span>
+                <Flame className="w-4 h-4 text-amber-300" />
+              </div>
+
+              <div className="space-y-3">
+                <div className="p-3 bg-amber-900/60 rounded-xl border border-amber-800">
+                  <div className="text-[10px] text-amber-300 uppercase font-bold">GDD Generados en Período</div>
+                  <div className="text-3xl font-black text-white">
+                    +{gddPeriodo} <span className="text-xs font-normal text-amber-200">°D</span>
+                  </div>
+                  <div className="text-[11px] text-amber-200 mt-1">
+                    Acumulado proyectado: <strong>{gddProyectado} °D</strong> ({gddCumplimiento}% meta {gddMetaVariedad} °D)
+                  </div>
+                </div>
+
+                <div className="p-3 bg-amber-900/60 rounded-xl border border-amber-800 space-y-1 text-xs">
+                  <div className="text-[10px] uppercase font-bold text-amber-300">
+                    Etapa Fenológica Estimada ({etapaEstimadaCalc.etapaActual.bbch})
+                  </div>
+                  <div className="font-bold text-white">{etapaEstimadaCalc.etapaActual.nombre}</div>
+                  <p className="text-[11px] text-amber-100/90 leading-snug">{etapaEstimadaCalc.diagnosticoIntegrado}</p>
                 </div>
               </div>
             </div>

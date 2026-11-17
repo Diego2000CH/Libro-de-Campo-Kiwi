@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExplotacionAgricola, Parcela, RegistroLabor } from '../types/campo';
+import { CondicionHorasFrio, ExplotacionAgricola, Parcela, RegistroLabor } from '../types/campo';
 import { 
   FileText, 
   Printer, 
@@ -10,11 +10,13 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { exportDataAsJSON, getStoredData } from '../utils/storage';
+import { estimarEtapaKiwiPorFrioYGradosDia, normalizarCondicionHorasFrio } from '../utils/agroClimaCalculos';
 
 interface InformeOficialViewProps {
   explotacion: ExplotacionAgricola;
   parcelas: Parcela[];
   labores: RegistroLabor[];
+  horasFrio?: CondicionHorasFrio;
   onImportJSON: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isAdmin?: boolean;
 }
@@ -23,9 +25,17 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
   explotacion,
   parcelas,
   labores,
+  horasFrio,
   onImportJSON,
   isAdmin = true
 }) => {
+  const hfNorm = normalizarCondicionHorasFrio(horasFrio);
+  const etapaActual = estimarEtapaKiwiPorFrioYGradosDia(
+    hfNorm.totalAcumuladoHF ?? 0,
+    hfNorm.metaVariedadHF ?? 850,
+    hfNorm.totalAcumuladoGD ?? 0,
+    hfNorm.metaVariedadGD ?? 1850
+  );
   const handlePrint = () => {
     window.print();
   };
@@ -193,6 +203,32 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
           <div>
             <span className="text-[10px] text-stone-400 uppercase font-bold block">Certificaciones Vigentes:</span>
             <span className="text-emerald-800 font-semibold">{(explotacion?.certificaciones || ['GlobalGAP IFA v6', 'Buenas Prácticas Agrícolas SAG']).join(', ')}</span>
+          </div>
+        </div>
+
+        {/* Resumen Agroclimático Oficial (Horas Frío & Grados Día) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs p-3.5 bg-emerald-50/50 rounded-xl border border-emerald-200">
+          <div>
+            <span className="text-[10px] text-stone-500 uppercase font-bold block">
+              Horas Frío (&lt;7.2°C · {hfNorm.fechaInicioHF} a {hfNorm.fechaFinHF}):
+            </span>
+            <strong className="text-blue-900 font-mono">
+              {hfNorm.totalAcumuladoHF} / {hfNorm.metaVariedadHF} HF
+            </strong>
+          </div>
+          <div>
+            <span className="text-[10px] text-stone-500 uppercase font-bold block">
+              Grados Día (Base {hfNorm.tempBaseGddC}°C · {hfNorm.fechaInicioGD} a {hfNorm.fechaFinGD}):
+            </span>
+            <strong className="text-amber-900 font-mono">
+              {hfNorm.totalAcumuladoGD} / {hfNorm.metaVariedadGD} °D
+            </strong>
+          </div>
+          <div>
+            <span className="text-[10px] text-stone-500 uppercase font-bold block">
+              Estado Fenológico Estimado ({etapaActual.etapaActual.bbch}):
+            </span>
+            <strong className="text-emerald-900">{etapaActual.etapaActual.nombre}</strong>
           </div>
         </div>
 

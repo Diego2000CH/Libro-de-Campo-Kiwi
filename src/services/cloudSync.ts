@@ -57,10 +57,15 @@ export function saveCloudConfig(config: Partial<CloudConfig>): CloudConfig {
 /**
  * Carga los datos desde la Nube (JSONBin.io)
  */
-export async function loadDataFromCloud(): Promise<{ data: AppStateData | null; source: 'cloud' | 'local'; error?: string }> {
+export async function loadDataFromCloud(): Promise<{ data: AppStateData | null; source: 'cloud' | 'local'; offline?: boolean; error?: string }> {
   const config = getCloudConfig();
   const binId = config.binId.trim();
   const masterKey = config.masterKey.trim();
+
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    const local = loadDataFromLocalStorage();
+    return { data: local, source: 'local', offline: true, error: 'Sin conexión a internet (usando respaldo local)' };
+  }
 
   if (!binId) {
     const local = loadDataFromLocalStorage();
@@ -68,9 +73,9 @@ export async function loadDataFromCloud(): Promise<{ data: AppStateData | null; 
   }
 
   try {
-    // Timeout de 7 segundos para que la app no quede congelada si la conexión en terreno es lenta
+    // Timeout de 9 segundos para terrenos con conectividad móvil lenta
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
+    const timeoutId = setTimeout(() => controller.abort(), 9000);
 
     const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
       method: 'GET',
@@ -104,23 +109,28 @@ export async function loadDataFromCloud(): Promise<{ data: AppStateData | null; 
       const local = loadDataFromLocalStorage();
       return { data: local, source: 'local', error: 'El bin en la nube no contiene datos estructurados del fundo' };
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Error de conexión';
     console.warn('Fallo al obtener datos de la nube, usando respaldo local:', err);
     saveCloudConfig({
       lastSyncStatus: 'error',
-      lastErrorMsg: err.message || 'Error de conexión'
+      lastErrorMsg: message
     });
     const local = loadDataFromLocalStorage();
-    return { data: local, source: 'local', error: err.message };
+    return { data: local, source: 'local', error: message };
   }
 }
 
 /**
  * Guarda los datos en la Nube (JSONBin.io) y en LocalStorage
  */
-export async function saveDataToCloud(data: AppStateData): Promise<{ success: boolean; error?: string }> {
+export async function saveDataToCloud(data: AppStateData): Promise<{ success: boolean; offline?: boolean; error?: string }> {
   // Primero guardamos siempre en localStorage de forma instantánea
   saveDataToLocalStorage(data);
+
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return { success: false, offline: true, error: 'Sin conexión a internet (guardado localmente)' };
+  }
 
   const config = getCloudConfig();
   const binId = config.binId.trim();
@@ -132,7 +142,7 @@ export async function saveDataToCloud(data: AppStateData): Promise<{ success: bo
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     const payload = {
       ...data,
@@ -161,13 +171,14 @@ export async function saveDataToCloud(data: AppStateData): Promise<{ success: bo
     });
 
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Error al sincronizar con la nube';
     console.error('Error guardando en JSONBin:', err);
     saveCloudConfig({
       lastSyncStatus: 'error',
-      lastErrorMsg: err.message || 'Error al sincronizar con la nube'
+      lastErrorMsg: message
     });
-    return { success: false, error: err.message };
+    return { success: false, error: message };
   }
 }
 

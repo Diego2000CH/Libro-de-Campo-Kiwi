@@ -380,6 +380,24 @@ export interface OrdenTrabajoFitosanitaria {
   observacionesTecnicas?: string;
 }
 
+export type PeriodicidadRegistroTermico = 'diario' | 'semanal' | 'mensual';
+
+export interface RegistroTermicoHuerto {
+  id: string;
+  periodicidad: PeriodicidadRegistroTermico;
+  fechaInicio: string; // YYYY-MM-DD
+  fechaFin: string; // YYYY-MM-DD (igual a fechaInicio si es diario)
+  etiquetaPeriodo?: string;
+  tempMinC?: number;
+  tempMaxC?: number;
+  tempBaseGddC?: number;
+  diasPeriodo?: number;
+  horasFrioPeriodo: number; // Horas Frío (< 7.2°C) en el período
+  gradosDiaPeriodo: number; // Grados Día (°D) acumulados en el período
+  fuenteDato?: 'Estación Predial' | 'Open-Meteo' | 'Manual';
+  observaciones?: string;
+}
+
 export interface CondicionHorasFrio {
   fechaCorte: string;
   totalAcumuladoHF: number;
@@ -388,6 +406,16 @@ export interface CondicionHorasFrio {
   porcentajeCumplimiento: number;
   estadoDormancia: 'Dormancia profunda' | 'Transición' | 'Salida de receso' | 'Yema hinchada';
   recomendacionRompedor: string;
+  // Ventanas estacionales y Grados Día (GDD)
+  fechaInicioHF?: string; // Ej. 22 de Mayo (YYYY-05-22)
+  fechaFinHF?: string; // Ej. 31 de Agosto (YYYY-08-31)
+  fechaInicioGD?: string; // Ej. 1 de Julio (YYYY-07-01)
+  fechaFinGD?: string; // Ej. 30 de Abril (YYYY-04-30)
+  tempBaseGddC?: number; // Default 10°C para Kiwi Hayward
+  tempTechoGddC?: number; // Default 30°C umbral superior
+  totalAcumuladoGD?: number;
+  metaVariedadGD?: number; // Default 1850 °D para madurez Hayward (>= 6.2° Brix)
+  sincronizarDesdeRegistros?: boolean; // Recalcular totales sumando los registros dentro de cada ventana
 }
 
 export interface SeguimientoFenologico {
@@ -626,6 +654,7 @@ export interface AppStateData {
   cosechasLote: RegistroCosechaLote[];
   ordenesTrabajo: OrdenTrabajoFitosanitaria[];
   horasFrio: CondicionHorasFrio;
+  registrosTermicos?: RegistroTermicoHuerto[];
   fenologia: SeguimientoFenologico[];
   polinizacion: RegistroPolinizacion[];
   muestreosBrotacion?: MuestreoBrotacion[];

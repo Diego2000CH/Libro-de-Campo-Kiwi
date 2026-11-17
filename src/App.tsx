@@ -39,6 +39,7 @@ import {
   getStoredCosechasLote, 
   getStoredOrdenesTrabajo, 
   getStoredCondicionHorasFrio, 
+  getStoredRegistrosTermicos,
   getStoredFenologia, 
   getStoredPolinizacion, 
   getStoredTurnosRiego,
@@ -54,8 +55,10 @@ import {
 } from './utils/storage';
 import { 
   loadDataFromCloud, 
-  saveDataToCloud 
+  saveDataToCloud,
+  saveDataToLocalStorage
 } from './services/cloudSync';
+import { normalizarCondicionHorasFrio } from './utils/agroClimaCalculos';
 import { 
   ExplotacionAgricola, 
   Parcela, 
@@ -72,6 +75,7 @@ import {
   RegistroCosechaLote,
   OrdenTrabajoFitosanitaria,
   CondicionHorasFrio,
+  RegistroTermicoHuerto,
   SeguimientoFenologico,
   RegistroPolinizacion,
   MuestreoBrotacion,
@@ -121,6 +125,7 @@ export default function App() {
   const [cosechasLote, setCosechasLote] = useState<RegistroCosechaLote[]>(getStoredCosechasLote);
   const [ordenesTrabajo, setOrdenesTrabajo] = useState<OrdenTrabajoFitosanitaria[]>(getStoredOrdenesTrabajo);
   const [horasFrio, setHorasFrio] = useState<CondicionHorasFrio>(getStoredCondicionHorasFrio);
+  const [registrosTermicos, setRegistrosTermicos] = useState<RegistroTermicoHuerto[]>(getStoredRegistrosTermicos);
   const [fenologia, setFenologia] = useState<SeguimientoFenologico[]>(getStoredFenologia);
   const [polinizacion, setPolinizacion] = useState<RegistroPolinizacion[]>(getStoredPolinizacion);
   const [turnosRiego, setTurnosRiego] = useState<TurnoRiego[]>(getStoredTurnosRiego);
@@ -151,13 +156,21 @@ export default function App() {
   const [mapsApiKey, setMapsApiKey] = useState<string>(
     () => import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
   );
+  const [mapsKeyLoading, setMapsKeyLoading] = useState<boolean>(
+    () => !import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+  );
+  const [mapsKeyError, setMapsKeyError] = useState<string | null>(null);
 
   // Estado de Sincronización en la Nube
-  const [syncState, setSyncState] = useState<'idle' | 'loading' | 'saving' | 'synced' | 'error' | 'offline'>('loading');
+  const [syncState, setSyncState] = useState<'idle' | 'loading' | 'saving' | 'synced' | 'error' | 'offline'>(() =>
+    typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'loading'
+  );
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [isLoadedInitially, setIsLoadedInitially] = useState(false);
   const lastSyncedPayloadRef = useRef<string>('');
   const skipNextRemoteSaveRef = useRef<boolean>(false);
+  const firebaseSessionActiveRef = useRef<boolean>(false);
+  const remoteHydratedRef = useRef<boolean>(false);
 
   // Estados de Modales
   const [isLaborModalOpen, setIsLaborModalOpen] = useState(false);
@@ -190,7 +203,8 @@ export default function App() {
     muestreosMadurez,
     cosechasLote,
     ordenesTrabajo,
-    horasFrio,
+    horasFrio: normalizarCondicionHorasFrio(horasFrio, registrosTermicos),
+    registrosTermicos,
     fenologia,
     polinizacion,
     muestreosBrotacion,
@@ -201,6 +215,7 @@ export default function App() {
     evaluacionesCuajaSemillas,
     turnosRiego,
     clima,
+    ultimaActualizacion: new Date().toISOString(),
   });
 
   const applyHydratedState = (d: Partial<AppStateData>) => {
@@ -217,7 +232,9 @@ export default function App() {
     if (Array.isArray(d.muestreosMadurez)) setMuestreosMadurez(d.muestreosMadurez);
     if (Array.isArray(d.cosechasLote)) setCosechasLote(d.cosechasLote);
     if (Array.isArray(d.ordenesTrabajo)) setOrdenesTrabajo(d.ordenesTrabajo);
-    if (d.horasFrio) setHorasFrio(d.horasFrio);
+    const hydratedRegs = Array.isArray(d.registrosTermicos) ? d.registrosTermicos : registrosTermicos;
+    if (Array.isArray(d.registrosTermicos)) setRegistrosTermicos(d.registrosTermicos);
+    if (d.horasFrio) setHorasFrio(normalizarCondicionHorasFrio(d.horasFrio, hydratedRegs));
     if (Array.isArray(d.fenologia)) setFenologia(d.fenologia);
     if (Array.isArray(d.polinizacion)) setPolinizacion(d.polinizacion);
     if (Array.isArray(d.muestreosBrotacion)) setMuestreosBrotacion(d.muestreosBrotacion);
@@ -255,25 +272,88 @@ export default function App() {
     };
   };
 
-  // Defensa de Cuota Google Maps + Resolución de API Key del cliente
+  // Defensa de Cuota Google Maps + Resolución resiliente de API Key del cliente
   useEffect(() => {
     const handleQuota = () => setMapsQuotaExceeded(true);
     window.addEventListener('gmp-quota-exceeded', handleQuota);
     return () => window.removeEventListener('gmp-quota-exceeded', handleQuota);
   }, []);
 
+  const fetchMapsClientConfig = async (retries = 3) => {
+    const envKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+    if (envKey) {
+      setMapsApiKey(envKey);
+      setMapsKeyLoading(false);
+      setMapsKeyError(null);
+      return;
+    }
+
+    setMapsKeyLoading(true);
+    setMapsKeyError(null);
+
+    const delays = [0, 600, 1500];
+    for (let attempt = 0; attempt < retries; attempt++) {
+      if (delays[attempt] > 0) {
+        await new Promise((r) => setTimeout(r, delays[attempt]));
+      }
+      try {
+        const res = await fetch('/api/maps-client-config');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data?.apiKey && typeof data.apiKey === 'string' && data.apiKey.trim()) {
+          setMapsApiKey(data.apiKey.trim());
+          setMapsKeyLoading(false);
+          setMapsKeyError(null);
+          return;
+        }
+      } catch (err) {
+        console.warn(`Intento ${attempt + 1} al obtener clave Google Maps falló:`, err);
+      }
+    }
+
+    setMapsKeyLoading(false);
+    setMapsKeyError('No se pudo obtener la clave de Google Maps desde el servidor.');
+  };
+
   useEffect(() => {
     if (!mapsApiKey) {
-      fetch('/api/maps-client-config')
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data?.apiKey && typeof data.apiKey === 'string') {
-            setMapsApiKey(data.apiKey);
-          }
-        })
-        .catch(() => {});
+      void fetchMapsClientConfig(3);
+    } else {
+      setMapsKeyLoading(false);
     }
-  }, [mapsApiKey]);
+  }, []);
+
+  // Monitoreo de red del navegador (Offline / Online)
+  useEffect(() => {
+    const onOffline = () => setSyncState('offline');
+    const onOnline = () => {
+      setSyncState((prev) => (prev === 'offline' ? 'idle' : prev));
+    };
+    window.addEventListener('offline', onOffline);
+    window.addEventListener('online', onOnline);
+    return () => {
+      window.removeEventListener('offline', onOffline);
+      window.removeEventListener('online', onOnline);
+    };
+  }, []);
+
+  const parseTimestampMs = (iso?: string): number => {
+    if (!iso) return 0;
+    const ms = Date.parse(iso);
+    return Number.isFinite(ms) ? ms : 0;
+  };
+
+  const pickNewestState = (
+    a: AppStateData | null,
+    b: AppStateData | null
+  ): AppStateData | null => {
+    if (a && !b) return a;
+    if (b && !a) return b;
+    if (!a && !b) return null;
+    const tsA = parseTimestampMs(a?.ultimaActualizacion);
+    const tsB = parseTimestampMs(b?.ultimaActualizacion);
+    return tsB > tsA ? b : a;
+  };
 
   // Autenticación Firebase + Sincronización con Firestore y Cloud SQL
   useEffect(() => {
@@ -287,6 +367,7 @@ export default function App() {
         unsubscribeFirestore = null;
       }
 
+      firebaseSessionActiveRef.current = Boolean(user);
       setFirebaseUser(user);
 
       if (!user) {
@@ -304,9 +385,17 @@ export default function App() {
         sessionStorage.setItem('fundo_session_user', JSON.stringify(mappedUser));
       } catch (e) {}
 
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        setSyncState('offline');
+        setIsLoadedInitially(true);
+        return;
+      }
+
       setSyncState('loading');
       try {
-        await syncUserProfileToFirestore(user);
+        await syncUserProfileToFirestore(user).catch((err) => {
+          console.warn('Perfil de usuario Firestore diferido:', err);
+        });
         const token = await user.getIdToken();
 
         const [firestoreState, sqlRes] = await Promise.all([
@@ -326,17 +415,19 @@ export default function App() {
 
         if (!isMounted) return;
 
-        const remoteState: AppStateData | null =
-          firestoreState ||
-          (sqlRes?.snapshot && typeof sqlRes.snapshot === 'object'
+        const sqlState =
+          sqlRes?.snapshot && typeof sqlRes.snapshot === 'object'
             ? (sqlRes.snapshot as AppStateData)
-            : null);
+            : null;
+        const remoteState = pickNewestState(firestoreState, sqlState);
 
         if (remoteState && remoteState.explotacion) {
+          remoteHydratedRef.current = true;
           const serialized = JSON.stringify(remoteState);
           lastSyncedPayloadRef.current = serialized;
           skipNextRemoteSaveRef.current = true;
           applyHydratedState(remoteState);
+          saveDataToLocalStorage(remoteState);
           setSyncState('synced');
           setLastSyncTime(
             new Date().toLocaleTimeString('es-CL', {
@@ -348,6 +439,7 @@ export default function App() {
         } else {
           // Sembrar Firestore y Cloud SQL con el estado actual del huerto si es el primer acceso
           const seedState = buildFullStateData();
+          remoteHydratedRef.current = true;
           lastSyncedPayloadRef.current = JSON.stringify(seedState);
           await Promise.allSettled([
             saveOrchardToFirestore(user.uid, seedState),
@@ -363,27 +455,42 @@ export default function App() {
           setSyncState('synced');
         }
 
-        unsubscribeFirestore = subscribeToOrchard(user.uid, (incomingState) => {
-          if (!isMounted) return;
-          const incomingSerialized = JSON.stringify(incomingState);
-          if (incomingSerialized === lastSyncedPayloadRef.current) {
-            return;
+        unsubscribeFirestore = subscribeToOrchard(
+          user.uid,
+          (incomingState) => {
+            if (!isMounted) return;
+            const incomingSerialized = JSON.stringify(incomingState);
+            if (incomingSerialized === lastSyncedPayloadRef.current) {
+              return;
+            }
+            remoteHydratedRef.current = true;
+            lastSyncedPayloadRef.current = incomingSerialized;
+            skipNextRemoteSaveRef.current = true;
+            applyHydratedState(incomingState);
+            saveDataToLocalStorage(incomingState);
+            setSyncState('synced');
+            setLastSyncTime(
+              new Date().toLocaleTimeString('es-CL', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+              })
+            );
+          },
+          (err) => {
+            console.warn('Error en suscripción en vivo Firestore:', err.message);
+            if (isMounted) {
+              setSyncState(typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'error');
+            }
           }
-          lastSyncedPayloadRef.current = incomingSerialized;
-          skipNextRemoteSaveRef.current = true;
-          applyHydratedState(incomingState);
-          setSyncState('synced');
-          setLastSyncTime(
-            new Date().toLocaleTimeString('es-CL', {
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-            })
-          );
-        });
+        );
       } catch (err) {
         console.warn('Error sincronizando usuario Firebase:', err);
-        if (isMounted) setSyncState('error');
+        if (isMounted) {
+          setSyncState(typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'error');
+        }
+      } finally {
+        if (isMounted) setIsLoadedInitially(true);
       }
     });
 
@@ -394,14 +501,33 @@ export default function App() {
     };
   }, []);
 
-  // 1. CARGA INICIAL DESDE LA NUBE (JSONBin.io)
+  // 1. CARGA INICIAL DESDE LA NUBE (JSONBin.io cuando no hay sesión Firebase hidratada)
   useEffect(() => {
     let isMounted = true;
     async function inicializarNube() {
-      setSyncState('loading');
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        setSyncState('offline');
+        if (isMounted) setIsLoadedInitially(true);
+        return;
+      }
+
+      if (!firebaseSessionActiveRef.current) {
+        setSyncState('loading');
+      }
+
       try {
         const result = await loadDataFromCloud();
         if (!isMounted) return;
+
+        // No sobrescribir si Firebase/Cloud SQL ya hidrató el huerto del usuario
+        if (firebaseSessionActiveRef.current || remoteHydratedRef.current || auth.currentUser) {
+          return;
+        }
+
+        if (result.offline) {
+          setSyncState('offline');
+          return;
+        }
 
         if (result.data && result.data.explotacion) {
           let cloudCleanNeeded = false;
@@ -410,40 +536,18 @@ export default function App() {
           } catch (e) {}
 
           const d = cloudCleanNeeded ? stripDemoRecords(result.data) : result.data;
-
-          if (d.explotacion) setExplotacion(d.explotacion);
-          if (Array.isArray(d.parcelas)) setParcelas(d.parcelas);
-          if (Array.isArray(d.labores)) setLabores(d.labores);
-          if (Array.isArray(d.inventario)) setInventario(d.inventario);
-          if (Array.isArray(d.registrosPozo)) setRegistrosPozo(d.registrosPozo);
-          if (Array.isArray(d.maquinarias)) setMaquinarias(d.maquinarias);
-          if (Array.isArray(d.registrosMantencion)) setRegistrosMantencion(d.registrosMantencion);
-          if (Array.isArray(d.lugares)) setLugares(d.lugares);
-          if (d.usuarios?.length) setUsuarios(d.usuarios);
-          if (d.activeUserId) setActiveUserId(d.activeUserId);
-          if (Array.isArray(d.muestreosMadurez)) setMuestreosMadurez(d.muestreosMadurez);
-          if (Array.isArray(d.cosechasLote)) setCosechasLote(d.cosechasLote);
-          if (Array.isArray(d.ordenesTrabajo)) setOrdenesTrabajo(d.ordenesTrabajo);
-          if (d.horasFrio) setHorasFrio(d.horasFrio);
-          if (Array.isArray(d.fenologia)) setFenologia(d.fenologia);
-          if (Array.isArray(d.polinizacion)) setPolinizacion(d.polinizacion);
-          if (Array.isArray(d.muestreosBrotacion)) setMuestreosBrotacion(d.muestreosBrotacion);
-          if (Array.isArray(d.conteosBotones)) setConteosBotones(d.conteosBotones);
-          if (Array.isArray(d.sincroniasFlorales)) setSincroniasFlorales(d.sincroniasFlorales);
-          if (Array.isArray(d.aplicacionesPolen)) setAplicacionesPolen(d.aplicacionesPolen);
-          if (Array.isArray(d.planesCargaRaleo)) setPlanesCargaRaleo(d.planesCargaRaleo);
-          if (Array.isArray(d.evaluacionesCuajaSemillas)) setEvaluacionesCuajaSemillas(d.evaluacionesCuajaSemillas);
-          if (Array.isArray(d.turnosRiego)) setTurnosRiego(d.turnosRiego);
-          if (d.clima) setClima(d.clima);
+          lastSyncedPayloadRef.current = JSON.stringify(d);
+          skipNextRemoteSaveRef.current = true;
+          applyHydratedState(d);
 
           if (cloudCleanNeeded) {
             try {
               localStorage.setItem('huerto_real_cloud_cleaned_v1', 'true');
             } catch (e) {}
-            saveDataToCloud(d);
+            void saveDataToCloud(d);
           }
 
-          setSyncState('synced');
+          setSyncState(result.source === 'cloud' ? 'synced' : result.error ? 'error' : 'synced');
           const time = new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           setLastSyncTime(time);
         } else {
@@ -451,7 +555,9 @@ export default function App() {
         }
       } catch (err) {
         console.warn('Error inicializando nube:', err);
-        setSyncState('error');
+        if (!firebaseSessionActiveRef.current) {
+          setSyncState(typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'error');
+        }
       } finally {
         if (isMounted) setIsLoadedInitially(true);
       }
@@ -461,9 +567,14 @@ export default function App() {
     return () => { isMounted = false; };
   }, []);
 
-  const persistAllTargets = async (fullData: AppStateData): Promise<boolean> => {
+  const persistAllTargets = async (fullData: AppStateData): Promise<'synced' | 'offline' | 'error'> => {
     const serialized = JSON.stringify(fullData);
     lastSyncedPayloadRef.current = serialized;
+    saveDataToLocalStorage(fullData);
+
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return 'offline';
+    }
 
     const tasks: Promise<boolean>[] = [
       saveDataToCloud(fullData)
@@ -504,7 +615,7 @@ export default function App() {
     }
 
     const results = await Promise.all(tasks);
-    return results.some(Boolean);
+    return results.some(Boolean) ? 'synced' : 'error';
   };
 
   // 2. GUARDADO AUTOMÁTICO EN LA NUBE (Debounce de 800ms)
@@ -520,15 +631,13 @@ export default function App() {
       return;
     }
 
-    setSyncState('saving');
+    setSyncState(typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'saving');
     const timer = setTimeout(async () => {
       const fullData = buildFullStateData();
-      const ok = await persistAllTargets(fullData);
-      if (ok) {
-        setSyncState('synced');
+      const status = await persistAllTargets(fullData);
+      setSyncState(status);
+      if (status === 'synced') {
         setLastSyncTime(new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-      } else {
-        setSyncState('error');
       }
     }, 800);
 
@@ -549,6 +658,7 @@ export default function App() {
     cosechasLote,
     ordenesTrabajo,
     horasFrio,
+    registrosTermicos,
     fenologia,
     polinizacion,
     muestreosBrotacion,
@@ -563,14 +673,12 @@ export default function App() {
 
   // Forzar sincronización manual
   const handleForceSync = async () => {
-    setSyncState('saving');
+    setSyncState(typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'saving');
     const fullData = buildFullStateData();
-    const ok = await persistAllTargets(fullData);
-    if (ok) {
-      setSyncState('synced');
+    const status = await persistAllTargets(fullData);
+    setSyncState(status);
+    if (status === 'synced') {
       setLastSyncTime(new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-    } else {
-      setSyncState('error');
     }
   };
 
@@ -863,6 +971,7 @@ export default function App() {
     setCosechasLote(defaults.cosechasLote);
     setOrdenesTrabajo(defaults.ordenesTrabajo);
     setHorasFrio(defaults.horasFrio);
+    setRegistrosTermicos(defaults.registrosTermicos || []);
     setFenologia(defaults.fenologia);
     setPolinizacion(defaults.polinizacion);
     setMuestreosBrotacion(defaults.muestreosBrotacion || []);
@@ -893,6 +1002,7 @@ export default function App() {
     setRegistrosPozo([]);
     setTurnosRiego([]);
     setHorasFrio(blank.horasFrio);
+    setRegistrosTermicos([]);
     setFenologia([]);
     setPolinizacion([]);
     setMuestreosBrotacion([]);
@@ -1036,7 +1146,7 @@ export default function App() {
             inventario={inventario}
             registrosPozo={registrosPozo}
             clima={clima}
-            horasFrio={horasFrio}
+            horasFrio={normalizarCondicionHorasFrio(horasFrio, registrosTermicos)}
             usuarios={usuarios}
             activeUserId={activeUser?.id || activeUserId}
             canEdit={canEdit}
@@ -1055,6 +1165,9 @@ export default function App() {
             parcelas={parcelas}
             lugares={lugares}
             mapsApiKey={mapsApiKey}
+            mapsKeyLoading={mapsKeyLoading}
+            mapsKeyError={mapsKeyError}
+            onRetryMapsKey={() => void fetchMapsClientConfig(3)}
             defaultCenter={{
               lat: explotacion.latitud ?? -39.628593,
               lng: explotacion.longitud ?? -72.461085,
@@ -1169,6 +1282,15 @@ export default function App() {
             parcelas={parcelas}
             horasFrio={horasFrio}
             onUpdateHorasFrio={guardEdit(setHorasFrio)}
+            registrosTermicos={registrosTermicos}
+            onAddRegistroTermico={guardEdit((r) => setRegistrosTermicos((prev) => [r, ...prev]))}
+            onUpdateRegistroTermico={guardEdit((r) =>
+              setRegistrosTermicos((prev) => prev.map((item) => (item.id === r.id ? r : item)))
+            )}
+            onDeleteRegistroTermico={guardEdit((id) =>
+              setRegistrosTermicos((prev) => prev.filter((item) => item.id !== id))
+            )}
+            clima={clima}
             fenologia={fenologia}
             onAddFenologia={guardEdit((f) => setFenologia((prev) => [f, ...prev]))}
             onUpdateFenologia={guardEdit((f) => setFenologia((prev) => prev.map((item) => item.id === f.id ? f : item)))}
@@ -1255,7 +1377,12 @@ export default function App() {
         )}
 
         {activeTab === 'calculadora' && (
-          <CalculadoraView etoClimaActual={clima?.evapotranspiracionEtoMmDia} />
+          <CalculadoraView
+            etoClimaActual={clima?.evapotranspiracionEtoMmDia}
+            horasFrio={normalizarCondicionHorasFrio(horasFrio, registrosTermicos)}
+            tempMinActual={clima?.tempMinima}
+            tempMaxActual={clima?.tempMaxima}
+          />
         )}
 
         {activeTab === 'informe' && (
@@ -1263,6 +1390,7 @@ export default function App() {
             explotacion={explotacion}
             parcelas={parcelas}
             labores={labores}
+            horasFrio={normalizarCondicionHorasFrio(horasFrio, registrosTermicos)}
             isAdmin={isAdmin}
             onImportJSON={guardAdmin((e) => {
               const file = e.target.files?.[0];
@@ -1283,7 +1411,9 @@ export default function App() {
                     if (parsed.muestreosMadurez) setMuestreosMadurez(parsed.muestreosMadurez);
                     if (parsed.cosechasLote) setCosechasLote(parsed.cosechasLote);
                     if (parsed.ordenesTrabajo) setOrdenesTrabajo(parsed.ordenesTrabajo);
-                    if (parsed.horasFrio) setHorasFrio(parsed.horasFrio);
+                    const importedRegs = Array.isArray(parsed.registrosTermicos) ? parsed.registrosTermicos : registrosTermicos;
+                    if (Array.isArray(parsed.registrosTermicos)) setRegistrosTermicos(parsed.registrosTermicos);
+                    if (parsed.horasFrio) setHorasFrio(normalizarCondicionHorasFrio(parsed.horasFrio, importedRegs));
                     if (parsed.fenologia) setFenologia(parsed.fenologia);
                     if (parsed.polinizacion) setPolinizacion(parsed.polinizacion);
                   } catch (err) {

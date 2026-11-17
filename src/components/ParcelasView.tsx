@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   APIProvider,
   Map as GoogleMap,
@@ -6,6 +6,8 @@ import {
   InfoWindow,
   useMap,
   useAdvancedMarkerRef,
+  useApiLoadingStatus,
+  APILoadingStatus,
   MapMouseEvent,
 } from '@vis.gl/react-google-maps';
 import { Parcela, LugarPredio, TipoLugarPredio, SectorRiego } from '../types/campo';
@@ -25,13 +27,17 @@ import {
   Undo2,
   Check,
   X,
-  RotateCcw
+  RotateCcw,
+  RefreshCw
 } from 'lucide-react';
 
 interface ParcelasViewProps {
   parcelas: Parcela[];
   lugares: LugarPredio[];
   mapsApiKey?: string;
+  mapsKeyLoading?: boolean;
+  mapsKeyError?: string | null;
+  onRetryMapsKey?: () => void;
   defaultCenter?: { lat: number; lng: number };
   onAddParcela: (parcela: Parcela) => void;
   onUpdateParcela: (parcela: Parcela) => void;
@@ -42,6 +48,16 @@ interface ParcelasViewProps {
   onRegisterLaborForParcela: (parcelaId: string) => void;
   canEdit?: boolean;
 }
+
+const isValidLatLng = (lat?: unknown, lng?: unknown): boolean =>
+  typeof lat === 'number' &&
+  typeof lng === 'number' &&
+  Number.isFinite(lat) &&
+  Number.isFinite(lng) &&
+  lat >= -90 &&
+  lat <= 90 &&
+  lng >= -180 &&
+  lng <= 180;
 
 const SISTEMAS_CONDUCCION = [
   'Parrón Español',
@@ -111,14 +127,16 @@ export const calcularAreaPoligonoM2 = (points: { lat: number; lng: number }[]): 
 export const calcularCentroidePoligono = (
   points: { lat: number; lng: number }[]
 ): { lat: number; lng: number } | null => {
-  if (!points || points.length === 0) return null;
-  if (points.length < 3) {
-    const sum = points.reduce((a, p) => ({ lat: a.lat + p.lat, lng: a.lng + p.lng }), { lat: 0, lng: 0 });
+  const validPoints = (points || []).filter((p) => isValidLatLng(p?.lat, p?.lng));
+  if (validPoints.length === 0) return null;
+  if (validPoints.length < 3) {
+    const sum = validPoints.reduce((a, p) => ({ lat: a.lat + p.lat, lng: a.lng + p.lng }), { lat: 0, lng: 0 });
     return {
-      lat: Number((sum.lat / points.length).toFixed(6)),
-      lng: Number((sum.lng / points.length).toFixed(6)),
+      lat: Number((sum.lat / validPoints.length).toFixed(6)),
+      lng: Number((sum.lng / validPoints.length).toFixed(6)),
     };
   }
+  points = validPoints;
   let areaSum = 0;
   let cx = 0;
   let cy = 0;
@@ -195,17 +213,77 @@ const CATEGORIAS_LUGARES: { tipo: TipoLugarPredio; label: string; emoji: string;
   { tipo: 'otro', label: 'Punto Personalizado', emoji: '📍', color: '#dc2626' }
 ];
 
-const MapCameraController: React.FC<{ focusTarget: { lat: number; lng: number; ts: number } | null }> = ({
-  focusTarget,
-}) => {
+const MapCameraController: React.FC<{
+  focusTarget: { lat: number; lng: number; ts: number } | null;
+  initialCenter: { lat: number; lng: number };
+  hasOrchardData: boolean;
+}> = ({ focusTarget, initialCenter, hasOrchardData }) => {
   const map = useMap();
+  const hasAutoCenteredDataRef = useRef(false);
+
   useEffect(() => {
-    if (map && focusTarget) {
+    if (map && focusTarget && isValidLatLng(focusTarget.lat, focusTarget.lng)) {
+      hasAutoCenteredDataRef.current = true;
       map.panTo({ lat: focusTarget.lat, lng: focusTarget.lng });
       map.setZoom(16);
     }
   }, [map, focusTarget]);
+
+  useEffect(() => {
+    if (map && hasOrchardData && !hasAutoCenteredDataRef.current && isValidLatLng(initialCenter.lat, initialCenter.lng)) {
+      hasAutoCenteredDataRef.current = true;
+      map.setCenter(initialCenter);
+    }
+  }, [map, hasOrchardData, initialCenter.lat, initialCenter.lng]);
+
   return null;
+};
+
+const MapsApiStatusMonitor: React.FC<{
+  onRetryLoad: () => void;
+}> = ({ onRetryLoad }) => {
+  const status = useApiLoadingStatus();
+
+  if (status === APILoadingStatus.LOADED || status === APILoadingStatus.NOT_LOADED) {
+    return null;
+  }
+
+  if (status === APILoadingStatus.LOADING) {
+    return (
+      <div className="absolute inset-0 z-20 bg-stone-900/75 backdrop-blur-xs flex flex-col items-center justify-center text-white p-6 text-center gap-2 pointer-events-none">
+        <Compass className="w-8 h-8 text-emerald-400 animate-spin" />
+        <p className="text-sm font-bold">Cargando mapa satelital del huerto...</p>
+        <p className="text-[11px] text-stone-300">Conectando con Google Maps Platform</p>
+      </div>
+    );
+  }
+
+  const isAuthErr = status === APILoadingStatus.AUTH_FAILURE;
+  return (
+    <div className="absolute inset-0 z-30 bg-stone-950/90 backdrop-blur-xs flex flex-col items-center justify-center text-white p-6 text-center gap-3">
+      <AlertTriangle className="w-9 h-9 text-amber-400" />
+      <div className="space-y-1 max-w-md">
+        <p className="text-sm font-black">
+          {isAuthErr
+            ? 'Error de autenticación con Google Maps Platform'
+            : 'No se pudo cargar Google Maps en este momento'}
+        </p>
+        <p className="text-xs text-stone-300 leading-relaxed">
+          {isAuthErr
+            ? 'La clave de API de Google Maps fue rechazada o restringida para este dominio. Verifica la configuración de la clave o reintenta la conexión.'
+            : 'Puede deberse a conexión inestable en terreno o bloqueo temporal de red. Intenta recargar el mapa sin perder tus datos.'}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onRetryLoad}
+        className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-md"
+      >
+        <RefreshCw className="w-3.5 h-3.5" />
+        <span>Reintentar Carga del Mapa</span>
+      </button>
+    </div>
+  );
 };
 
 const OrchardRadiusCircle: React.FC<{
@@ -503,11 +581,20 @@ const CuartelAdvancedMarker: React.FC<{
   canEdit?: boolean;
 }> = ({ parcela, isSelected, onSelect, onCloseInfo, onStartEditPolygon, showInfo, canEdit = true }) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
-  const hasPolygon = Array.isArray(parcela.coordenadasPoligono) && parcela.coordenadasPoligono.length >= 3;
-  const polygonCenter = hasPolygon ? calcularCentroidePoligono(parcela.coordenadasPoligono) : null;
-  const markerPos = polygonCenter || { lat: parcela.lat!, lng: parcela.lng! };
+  const validPolyPoints = Array.isArray(parcela.coordenadasPoligono)
+    ? parcela.coordenadasPoligono.filter((pt) => isValidLatLng(pt?.lat, pt?.lng))
+    : [];
+  const hasPolygon = validPolyPoints.length >= 3;
+  const polygonCenter = hasPolygon ? calcularCentroidePoligono(validPolyPoints) : null;
+  const fallbackPos = isValidLatLng(parcela.lat, parcela.lng)
+    ? { lat: Number(parcela.lat), lng: Number(parcela.lng) }
+    : null;
+  const markerPos = polygonCenter || fallbackPos;
+  if (!markerPos || !isValidLatLng(markerPos.lat, markerPos.lng)) {
+    return null;
+  }
   const areaPoligonoHa = hasPolygon
-    ? calcularAreaPoligonoM2(parcela.coordenadasPoligono) / 10000
+    ? calcularAreaPoligonoM2(validPolyPoints) / 10000
     : 0;
   const radioM = calcularRadioMetros(parcela.superficieHa || 1);
   const sectoresText =
@@ -519,7 +606,7 @@ const CuartelAdvancedMarker: React.FC<{
     <>
       {hasPolygon ? (
         <OrchardPolygonOverlay
-          paths={parcela.coordenadasPoligono}
+          paths={validPolyPoints}
           color={parcela.colorHex || '#059669'}
           fillOpacity={isSelected ? 0.42 : 0.26}
           strokeWeight={isSelected ? 3 : 2}
@@ -609,6 +696,7 @@ const LugarAdvancedMarker: React.FC<{
   onCloseInfo: () => void;
 }> = ({ lugar, catInfo, showInfo, onSelect, onCloseInfo }) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
+  if (!isValidLatLng(lugar.lat, lugar.lng)) return null;
   const color = lugar.colorHex || catInfo.color;
 
   return (
@@ -666,6 +754,9 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   parcelas,
   lugares,
   mapsApiKey,
+  mapsKeyLoading = false,
+  mapsKeyError = null,
+  onRetryMapsKey,
   defaultCenter,
   onAddParcela,
   onUpdateParcela,
@@ -676,7 +767,11 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   onRegisterLaborForParcela,
   canEdit = true
 }) => {
-  const orchardOrigin = defaultCenter || { lat: -39.628593, lng: -72.461085 };
+  const orchardOrigin =
+    defaultCenter && isValidLatLng(defaultCenter.lat, defaultCenter.lng)
+      ? defaultCenter
+      : { lat: -39.628593, lng: -72.461085 };
+  const [mapProviderKey, setMapProviderKey] = useState(0);
   const [selectedParcelaId, setSelectedParcelaId] = useState<string>(parcelas[0]?.id || '');
   const [activeInfoId, setActiveInfoId] = useState<string | null>(null);
   const [mapLayer, setMapLayer] = useState<MapLayerType>('google_hibrido');
@@ -795,14 +890,27 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
   const conCoords = parcelas.filter(
     (p) =>
-      (typeof p.lat === 'number' && typeof p.lng === 'number') ||
-      (Array.isArray(p.coordenadasPoligono) && p.coordenadasPoligono.length >= 3)
+      isValidLatLng(p.lat, p.lng) ||
+      (Array.isArray(p.coordenadasPoligono) &&
+        p.coordenadasPoligono.filter((pt) => isValidLatLng(pt?.lat, pt?.lng)).length >= 3)
   );
-  const lugCoords = lugares.filter((l) => typeof l.lat === 'number' && typeof l.lng === 'number');
-  const initialMapCenter = {
-    lat: selectedParcela?.lat || conCoords[0]?.lat || lugCoords[0]?.lat || orchardOrigin.lat,
-    lng: selectedParcela?.lng || conCoords[0]?.lng || lugCoords[0]?.lng || orchardOrigin.lng,
-  };
+  const lugCoords = lugares.filter((l) => isValidLatLng(l.lat, l.lng));
+  const selectedCenter =
+    selectedParcela && isValidLatLng(selectedParcela.lat, selectedParcela.lng)
+      ? { lat: Number(selectedParcela.lat), lng: Number(selectedParcela.lng) }
+      : selectedParcela && Array.isArray(selectedParcela.coordenadasPoligono)
+      ? calcularCentroidePoligono(selectedParcela.coordenadasPoligono)
+      : null;
+  const firstParcelaCenter = conCoords[0]
+    ? isValidLatLng(conCoords[0].lat, conCoords[0].lng)
+      ? { lat: Number(conCoords[0].lat), lng: Number(conCoords[0].lng) }
+      : calcularCentroidePoligono(conCoords[0].coordenadasPoligono)
+    : null;
+  const firstLugarCenter = lugCoords[0]
+    ? { lat: Number(lugCoords[0].lat), lng: Number(lugCoords[0].lng) }
+    : null;
+  const initialMapCenter = selectedCenter || firstParcelaCenter || firstLugarCenter || orchardOrigin;
+  const hasOrchardData = conCoords.length > 0 || lugCoords.length > 0;
 
   const draftAreaM2 = calcularAreaPoligonoM2(draftPolygonPoints);
   const draftAreaHa = Number((draftAreaM2 / 10000).toFixed(2));
@@ -1302,7 +1410,19 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
         {/* Visualizador del Mapa Oficial Google Maps Platform */}
         <div className="relative w-full h-[520px] bg-stone-900">
           {mapsApiKey ? (
-            <APIProvider apiKey={mapsApiKey} libraries={['marker', 'geometry', 'places']} language="es" region="CL">
+            <APIProvider
+              key={`gmp-${mapProviderKey}-${mapsApiKey.slice(-6)}`}
+              apiKey={mapsApiKey}
+              libraries={['marker', 'geometry', 'places']}
+              language="es"
+              region="CL"
+            >
+              <MapsApiStatusMonitor
+                onRetryLoad={() => {
+                  setMapProviderKey((prev) => prev + 1);
+                  onRetryMapsKey?.();
+                }}
+              />
               <GoogleMap
                 mapId="DEMO_MAP_ID"
                 mapTypeId={GOOGLE_MAP_TYPE_ID[mapLayer]}
@@ -1313,7 +1433,11 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                 style={{ width: '100%', height: '520px' }}
                 onClick={handleMapClick}
               >
-                <MapCameraController focusTarget={focusTarget} />
+                <MapCameraController
+                  focusTarget={focusTarget}
+                  initialCenter={initialMapCenter}
+                  hasOrchardData={hasOrchardData}
+                />
 
                 {/* 1. Cuarteles de Kiwi (oculta el que se está editando en borrador) */}
                 {(filtroCapa === 'todos' || filtroCapa === 'cuarteles') &&
@@ -1390,12 +1514,37 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               </GoogleMap>
             </APIProvider>
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-stone-300 text-xs gap-2 p-6 text-center">
-              <Compass className="w-8 h-8 text-emerald-400 animate-spin" />
-              <p className="font-bold text-sm text-white">Inicializando Google Maps Platform...</p>
-              <p className="text-stone-400 max-w-md">
-                Verifica que la clave de Google Maps esté activa en Settings &gt; Secrets para visualizar el mapa satelital del huerto.
-              </p>
+            <div className="w-full h-full flex flex-col items-center justify-center text-stone-300 text-xs gap-3 p-6 text-center">
+              {mapsKeyLoading ? (
+                <>
+                  <Compass className="w-8 h-8 text-emerald-400 animate-spin" />
+                  <p className="font-bold text-sm text-white">Conectando con Google Maps Platform...</p>
+                  <p className="text-stone-400 max-w-md">
+                    Obteniendo credenciales seguras de mapa satelital del servidor.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="w-9 h-9 text-amber-400" />
+                  <p className="font-bold text-sm text-white">
+                    {mapsKeyError || 'Mapa satelital temporalmente desconectado'}
+                  </p>
+                  <p className="text-stone-400 max-w-md leading-relaxed">
+                    Verifica que <code className="text-emerald-300">GOOGLE_MAPS_API_KEY</code> (o{' '}
+                    <code className="text-emerald-300">VITE_GOOGLE_MAPS_API_KEY</code>) esté configurada o reintenta la conexión con el servidor.
+                  </p>
+                  {onRetryMapsKey && (
+                    <button
+                      type="button"
+                      onClick={onRetryMapsKey}
+                      className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Reintentar Conexión Mapa</span>
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           )}
 

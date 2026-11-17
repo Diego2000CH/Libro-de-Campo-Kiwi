@@ -114,7 +114,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'pozo', label: 'Control Pozo DGA', icon: Gauge },
     { id: 'riego', label: 'Control Riego', icon: Droplet },
     { id: 'maquinarias', label: 'Maquinarias', icon: Tractor },
-    { id: 'fenologia', label: 'Horas Frío & Reposo', icon: Snowflake },
+    { id: 'fenologia', label: 'Frío, GDD & Fenología', icon: Snowflake },
     { id: 'brotacion', label: '% Brotación', icon: Sprout },
     { id: 'botones', label: 'Botones Florales', icon: Flower2 },
     { id: 'polinizacion', label: 'Polinización & Colmenas', icon: Bug },

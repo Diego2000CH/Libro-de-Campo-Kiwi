@@ -22,6 +22,7 @@ import {
   Waves,
   Info
 } from 'lucide-react';
+import { calcularGradosDiaPeriodo } from '../utils/agroClimaCalculos';
 
 interface ClimaViewProps {
   clima: ClimaCondiciones;
@@ -538,8 +539,11 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
             <span>Mín: <strong className="text-blue-700">{clima.tempMinima}°C</strong></span>
             <span>Máx: <strong className="text-amber-700">{clima.tempMaxima}°C</strong></span>
           </div>
-          <div className="text-[10px] text-stone-400">
-            Sensor a 2.0 m sobre nivel de copa
+          <div className="text-[10px] text-amber-800 font-bold flex items-center justify-between">
+            <span>GDD hoy (base 10°C):</span>
+            <span className="px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 font-mono">
+              +{calcularGradosDiaPeriodo(clima.tempMinima, clima.tempMaxima, 10, 30, 1)} °D
+            </span>
           </div>
         </div>
 

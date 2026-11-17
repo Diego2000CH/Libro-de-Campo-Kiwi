@@ -30,9 +30,15 @@ import {
   TrendingUp,
   FileCheck2,
   Trash2,
-  Edit2
+  Edit2,
+  Flame
 } from 'lucide-react';
 import { ActiveTab } from './Navbar';
+import {
+  calcularGradosDiaPeriodo,
+  estimarEtapaKiwiPorFrioYGradosDia,
+  normalizarCondicionHorasFrio,
+} from '../utils/agroClimaCalculos';
 
 interface DashboardViewProps {
   explotacion: ExplotacionAgricola;
@@ -76,10 +82,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const totalHectareas = parcelas.reduce((acc, p) => acc + p.superficieHa, 0);
   const lowStockItems = inventario.filter((i) => (i.stockMinimo || 0) > 0 && (i.stockActual || 0) <= (i.stockMinimo || 0));
   const parcelasEnCarencia = parcelas.filter((p) => p.estadoActual === 'En Carencia SAG');
-  const totalM3Pozo = registrosPozo.reduce((acc, r) => acc + r.metrosCubicosExtraidos, 0);
-  const hfAcumuladas = horasFrio?.totalAcumuladoHF ?? 0;
-  const hfMeta = horasFrio?.metaVariedadHF ?? 850;
+  const hfNorm = normalizarCondicionHorasFrio(horasFrio);
+  const hfAcumuladas = hfNorm.totalAcumuladoHF ?? 0;
+  const hfMeta = hfNorm.metaVariedadHF ?? 850;
   const hfPct = hfMeta > 0 ? Math.min(100, (hfAcumuladas / hfMeta) * 100) : 0;
+  const gdAcumulados = hfNorm.totalAcumuladoGD ?? 0;
+  const gdMeta = hfNorm.metaVariedadGD ?? 1850;
+  const gdPct = gdMeta > 0 ? Math.min(100, (gdAcumulados / gdMeta) * 100) : 0;
+  const etapaKiwi = estimarEtapaKiwiPorFrioYGradosDia(hfAcumuladas, hfMeta, gdAcumulados, gdMeta);
+  const gddHoy = calcularGradosDiaPeriodo(
+    clima?.tempMinima ?? 7.8,
+    clima?.tempMaxima ?? 26.2,
+    hfNorm.tempBaseGddC ?? 10,
+    hfNorm.tempTechoGddC ?? 30,
+    1
+  );
 
   // Últimas labores ordenadas por fecha
   const ultimasLabores = [...labores]
@@ -176,27 +193,43 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Métrica 3: Horas Frío Acumuladas */}
+        {/* Métrica 3: Horas Frío & Grados Día */}
         <div 
           onClick={() => onNavigateTab('fenologia')}
           className="bg-white rounded-2xl p-4 border border-stone-200 shadow-2xs hover:border-emerald-500/50 transition-all cursor-pointer group"
         >
-          <div className="flex items-center justify-between text-stone-500 mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Horas Frío (&lt;7.2°C)</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Snowflake className="w-4 h-4" />
+          <div className="flex items-center justify-between text-stone-500 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Frío &amp; Grados Día</span>
+            <div className="flex items-center gap-1">
+              <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Snowflake className="w-3.5 h-3.5" />
+              </div>
+              <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Flame className="w-3.5 h-3.5" />
+              </div>
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-black text-stone-900">{hfAcumuladas}</span>
-            <span className="text-xs text-stone-500 font-semibold">/ {hfMeta} HF</span>
+          <div className="flex items-baseline justify-between gap-2">
+            <div>
+              <span className="text-lg font-black text-stone-900">{hfAcumuladas}</span>
+              <span className="text-[11px] text-stone-500 font-semibold">/{hfMeta} HF</span>
+            </div>
+            <div className="text-right">
+              <span className="text-lg font-black text-amber-800">{gdAcumulados}</span>
+              <span className="text-[11px] text-stone-500 font-semibold">/{gdMeta} °D</span>
+            </div>
           </div>
-          <div className="w-full bg-stone-100 rounded-full h-1.5 mt-2 overflow-hidden">
-            <div className="bg-blue-600 h-1.5 rounded-full transition-all" style={{ width: `${hfPct.toFixed(1)}%` }} />
+          <div className="grid grid-cols-2 gap-1.5 mt-1.5">
+            <div className="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden" title={`Horas Frío ${hfPct.toFixed(0)}%`}>
+              <div className="bg-blue-600 h-1.5 rounded-full transition-all" style={{ width: `${hfPct.toFixed(1)}%` }} />
+            </div>
+            <div className="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden" title={`Grados Día ${gdPct.toFixed(0)}%`}>
+              <div className="bg-amber-600 h-1.5 rounded-full transition-all" style={{ width: `${gdPct.toFixed(1)}%` }} />
+            </div>
           </div>
-          <div className="text-[10px] text-stone-500 mt-1 flex justify-between">
-            <span>Meta Hayward {hfMeta} HF</span>
-            <span className="font-bold text-blue-700">{hfPct.toFixed(1)}%</span>
+          <div className="text-[10px] text-stone-600 mt-1.5 flex items-center justify-between gap-1 truncate">
+            <span className="font-bold text-emerald-800 truncate">{etapaKiwi.etapaActual.bbch} · {etapaKiwi.etapaActual.nombre}</span>
+            <ChevronRight className="w-3 h-3 text-stone-400 shrink-0" />
           </div>
         </div>
 
@@ -248,6 +281,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="text-3xl font-black text-stone-900">{clima?.temperaturaActual ?? 21.5}°C</div>
               <div className="text-xs text-stone-500 mt-0.5">
                 Mín: {clima?.tempMinima ?? 7.8}°C · Máx: {clima?.tempMaxima ?? 26.2}°C
+              </div>
+              <div className="text-[11px] text-amber-800 font-bold mt-0.5">
+                +{gddHoy} °D hoy (base {hfNorm.tempBaseGddC}°C)
               </div>
             </div>
             <div className="text-right">

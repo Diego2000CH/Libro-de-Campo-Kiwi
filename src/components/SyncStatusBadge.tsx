@@ -65,14 +65,22 @@ export const SyncStatusBadge: React.FC<SyncStatusBadgeProps> = ({
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-900 border border-rose-300 hover:bg-rose-200 transition-colors">
             <AlertCircle className="w-3.5 h-3.5 text-rose-700" />
-            <span className="hidden sm:inline">Error Nube (Usa Local)</span>
+            <span className="hidden sm:inline">Reintentar Nube (Usa Local)</span>
             <span className="sm:hidden">Error Nube</span>
+          </span>
+        );
+      case 'offline':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-950 border border-amber-300 hover:bg-amber-200 transition-colors">
+            <CloudOff className="w-3.5 h-3.5 text-amber-700" />
+            <span className="hidden sm:inline">Modo Local (Sin Red)</span>
+            <span className="sm:hidden">Sin Red</span>
           </span>
         );
       default:
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-stone-100 text-stone-800 border border-stone-300 hover:bg-stone-200 transition-colors">
-            <Cloud className="w-3.5 h-3.5 text-stone-600" />
+            <CloudCheck className="w-3.5 h-3.5 text-stone-600" />
             <span className="hidden sm:inline">Nube Activa</span>
             <span className="sm:hidden">Nube</span>
           </span>
@@ -84,7 +92,10 @@ export const SyncStatusBadge: React.FC<SyncStatusBadgeProps> = ({
     <>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setConfig(getCloudConfig());
+          setIsOpen(true);
+        }}
         className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-full"
         title="Ver estado de sincronización en la Nube"
       >
@@ -120,7 +131,7 @@ export const SyncStatusBadge: React.FC<SyncStatusBadgeProps> = ({
                 <div className="space-y-1">
                   <p className="font-bold text-emerald-900">Sincronización Multidispositivo Activa</p>
                   <p className="text-emerald-800 text-[11px] leading-relaxed">
-                    Cualquier dato ingresado desde teléfonos, tablets o computadores en el huerto se sincroniza en vivo con tu caja de datos en la nube.
+                    Tus registros se guardan instantáneamente en tu dispositivo y se replican en la nube (Firebase / Cloud SQL y respaldo JSONBin).
                   </p>
                 </div>
               </div>
@@ -128,19 +139,36 @@ export const SyncStatusBadge: React.FC<SyncStatusBadgeProps> = ({
               <div className="space-y-2 bg-stone-50 border border-stone-200 rounded-xl p-3.5">
                 <div className="flex justify-between items-center py-1 border-b border-stone-200">
                   <span className="text-stone-500 font-medium">Estado actual:</span>
-                  <span className="font-bold text-emerald-800 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    Enlace Nube Operativo
-                  </span>
+                  {syncState === 'offline' ? (
+                    <span className="font-bold text-amber-800 flex items-center gap-1">
+                      <CloudOff className="w-3.5 h-3.5 text-amber-600" />
+                      Modo Local (Sin Red)
+                    </span>
+                  ) : syncState === 'error' ? (
+                    <span className="font-bold text-rose-800 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                      Respaldo Local Activo
+                    </span>
+                  ) : (
+                    <span className="font-bold text-emerald-800 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      Enlace Nube Operativo
+                    </span>
+                  )}
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-stone-200">
                   <span className="text-stone-500 font-medium">Última sincronización:</span>
                   <span className="font-mono text-stone-700">{lastSyncTime || config.lastSyncTime || 'Al iniciar la app'}</span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-stone-500 font-medium">Servidor Nube:</span>
-                  <span className="font-mono text-stone-700">JSONBin Cloud Storage</span>
+                  <span className="text-stone-500 font-medium">Servidores Nube:</span>
+                  <span className="font-mono text-stone-700">Firestore / SQL + JSONBin</span>
                 </div>
+                {config.lastErrorMsg && syncState === 'error' && (
+                  <div className="mt-1 p-2 rounded-lg bg-rose-50 border border-rose-200 text-[11px] text-rose-800">
+                    Detalle: {config.lastErrorMsg}
+                  </div>
+                )}
               </div>
 
               {/* Formulario de credenciales */}

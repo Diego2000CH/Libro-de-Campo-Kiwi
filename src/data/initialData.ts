@@ -22,7 +22,8 @@ import {
   SincroniaFloral,
   AplicacionPolenAsistido,
   PlanCargaRaleo,
-  EvaluacionCuajaSemillas
+  EvaluacionCuajaSemillas,
+  RegistroTermicoHuerto
 } from '../types/campo';
 
 export const initialExplotacion: ExplotacionAgricola = {
@@ -1268,8 +1269,110 @@ export const initialCondicionHorasFrio: CondicionHorasFrio = {
   modeloCalculo: 'Weinberger (< 7.2°C)',
   porcentajeCumplimiento: 95.8,
   estadoDormancia: 'Salida de receso',
-  recomendacionRompedor: 'Acumulación favorable de frío invernal. Se recomienda aplicación de Erger al 6% o Cianamida al 4% según pronóstico de brotación de machos Chieftain/Tomuri.'
+  recomendacionRompedor: 'Acumulación favorable de frío invernal. Se recomienda aplicación de Erger al 6% o Cianamida al 4% según pronóstico de brotación de machos Chieftain/Tomuri.',
+  fechaInicioHF: '2026-05-22',
+  fechaFinHF: '2026-08-31',
+  fechaInicioGD: '2026-07-01',
+  fechaFinGD: '2027-04-30',
+  tempBaseGddC: 10,
+  tempTechoGddC: 30,
+  totalAcumuladoGD: 642,
+  metaVariedadGD: 1850,
+  sincronizarDesdeRegistros: false
 };
+
+export const initialRegistrosTermicos: RegistroTermicoHuerto[] = [
+  {
+    id: 'rt-01',
+    periodicidad: 'mensual',
+    fechaInicio: '2026-05-22',
+    fechaFin: '2026-05-31',
+    etiquetaPeriodo: 'Mayo (22–31 May)',
+    tempMinC: 4.2,
+    tempMaxC: 14.5,
+    tempBaseGddC: 10,
+    diasPeriodo: 10,
+    horasFrioPeriodo: 112,
+    gradosDiaPeriodo: 0,
+    fuenteDato: 'Estación Predial',
+    observaciones: 'Inicio oficial ventana Horas Frío (22 de mayo).'
+  },
+  {
+    id: 'rt-02',
+    periodicidad: 'mensual',
+    fechaInicio: '2026-06-01',
+    fechaFin: '2026-06-30',
+    etiquetaPeriodo: 'Junio 2026',
+    tempMinC: 3.1,
+    tempMaxC: 12.8,
+    tempBaseGddC: 10,
+    diasPeriodo: 30,
+    horasFrioPeriodo: 328,
+    gradosDiaPeriodo: 0,
+    fuenteDato: 'Estación Predial',
+    observaciones: 'Dormancia profunda en parrones; fuerte aporte de frío nocturno.'
+  },
+  {
+    id: 'rt-03',
+    periodicidad: 'mensual',
+    fechaInicio: '2026-07-01',
+    fechaFin: '2026-07-31',
+    etiquetaPeriodo: 'Julio 2026',
+    tempMinC: 2.8,
+    tempMaxC: 13.6,
+    tempBaseGddC: 10,
+    diasPeriodo: 31,
+    horasFrioPeriodo: 245,
+    gradosDiaPeriodo: 18.5,
+    fuenteDato: 'Estación Predial',
+    observaciones: 'Inicio acumulación Grados Día (1 de julio) en simultáneo con término de frío invernal.'
+  },
+  {
+    id: 'rt-04',
+    periodicidad: 'mensual',
+    fechaInicio: '2026-08-01',
+    fechaFin: '2026-08-31',
+    etiquetaPeriodo: 'Agosto 2026',
+    tempMinC: 4.6,
+    tempMaxC: 15.9,
+    tempBaseGddC: 10,
+    diasPeriodo: 31,
+    horasFrioPeriodo: 130,
+    gradosDiaPeriodo: 64.0,
+    fuenteDato: 'Estación Predial',
+    observaciones: 'Cierre de ventana Horas Frío (31 de agosto). Yema hinchada en Chieftain.'
+  },
+  {
+    id: 'rt-05',
+    periodicidad: 'mensual',
+    fechaInicio: '2026-09-01',
+    fechaFin: '2026-09-30',
+    etiquetaPeriodo: 'Septiembre 2026',
+    tempMinC: 6.4,
+    tempMaxC: 18.8,
+    tempBaseGddC: 10,
+    diasPeriodo: 30,
+    horasFrioPeriodo: 0,
+    gradosDiaPeriodo: 168.5,
+    fuenteDato: 'Estación Predial',
+    observaciones: 'Brotación activa y hojas desplegadas en Cuarteles 1 al 4.'
+  },
+  {
+    id: 'rt-06',
+    periodicidad: 'mensual',
+    fechaInicio: '2026-10-01',
+    fechaFin: '2026-10-26',
+    etiquetaPeriodo: 'Octubre (01–26 Oct)',
+    tempMinC: 8.5,
+    tempMaxC: 22.4,
+    tempBaseGddC: 10,
+    diasPeriodo: 26,
+    horasFrioPeriodo: 0,
+    gradosDiaPeriodo: 391.0,
+    fuenteDato: 'Estación Predial',
+    observaciones: 'Botones florales avanzados e inicio de apertura floral.'
+  }
+];
 
 export const initialFenologia: SeguimientoFenologico[] = [
   {

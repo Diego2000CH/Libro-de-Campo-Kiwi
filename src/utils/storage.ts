@@ -21,9 +21,11 @@ import {
   SincroniaFloral,
   AplicacionPolenAsistido,
   PlanCargaRaleo,
-  EvaluacionCuajaSemillas
+  EvaluacionCuajaSemillas,
+  RegistroTermicoHuerto
 } from '../types/campo';
 import { getNivelAcceso } from './permissions';
+import { getTemporadaDefaults, normalizarCondicionHorasFrio } from './agroClimaCalculos';
 import {
   initialExplotacion,
   initialParcelas,
@@ -47,7 +49,8 @@ import {
   initialSincroniasFlorales,
   initialAplicacionesPolen,
   initialPlanesCargaRaleo,
-  initialEvaluacionesCuajaSemillas
+  initialEvaluacionesCuajaSemillas,
+  initialRegistrosTermicos
 } from '../data/initialData';
 import { loadDataFromLocalStorage, saveDataToLocalStorage } from '../services/cloudSync';
 
@@ -78,7 +81,8 @@ export const DEMO_RECORD_IDS = new Set<string>([
   'sf-01', 'sf-02',
   'apa-01',
   'pcr-01',
-  'ecs-01', 'ecs-02'
+  'ecs-01', 'ecs-02',
+  'rt-01', 'rt-02', 'rt-03', 'rt-04', 'rt-05', 'rt-06'
 ]);
 
 export function getBlankExplotacion(): ExplotacionAgricola {
@@ -107,14 +111,24 @@ export function getBlankExplotacion(): ExplotacionAgricola {
 }
 
 export function getBlankHorasFrio(): CondicionHorasFrio {
+  const defaults = getTemporadaDefaults();
   return {
     fechaCorte: new Date().toISOString().split('T')[0],
     totalAcumuladoHF: 0,
-    metaVariedadHF: 850,
+    metaVariedadHF: defaults.metaVariedadHF,
     modeloCalculo: 'Weinberger (< 7.2°C)',
     porcentajeCumplimiento: 0,
     estadoDormancia: 'Dormancia profunda',
-    recomendacionRompedor: ''
+    recomendacionRompedor: '',
+    fechaInicioHF: defaults.fechaInicioHF,
+    fechaFinHF: defaults.fechaFinHF,
+    fechaInicioGD: defaults.fechaInicioGD,
+    fechaFinGD: defaults.fechaFinGD,
+    tempBaseGddC: defaults.tempBaseGddC,
+    tempTechoGddC: defaults.tempTechoGddC,
+    totalAcumuladoGD: 0,
+    metaVariedadGD: defaults.metaVariedadGD,
+    sincronizarDesdeRegistros: false
   };
 }
 
@@ -142,6 +156,7 @@ export function getBlankRealOrchardData(
     cosechasLote: [],
     ordenesTrabajo: [],
     horasFrio: getBlankHorasFrio(),
+    registrosTermicos: [],
     fenologia: [],
     polinizacion: [],
     muestreosBrotacion: [],
@@ -181,7 +196,10 @@ export function stripDemoRecords(data: AppStateData): AppStateData {
     muestreosMadurez: filterOutDemo(data.muestreosMadurez),
     cosechasLote: filterOutDemo(data.cosechasLote),
     ordenesTrabajo: filterOutDemo(data.ordenesTrabajo),
-    horasFrio: isDemoHorasFrio ? getBlankHorasFrio() : (data.horasFrio || getBlankHorasFrio()),
+    horasFrio: isDemoHorasFrio
+      ? getBlankHorasFrio()
+      : normalizarCondicionHorasFrio(data.horasFrio, filterOutDemo(data.registrosTermicos)),
+    registrosTermicos: filterOutDemo(data.registrosTermicos),
     fenologia: filterOutDemo(data.fenologia),
     polinizacion: filterOutDemo(data.polinizacion),
     muestreosBrotacion: filterOutDemo(data.muestreosBrotacion),
@@ -215,6 +233,7 @@ export function getDemoSampleData(): AppStateData {
     cosechasLote: initialCosechasLote,
     ordenesTrabajo: initialOrdenesTrabajo,
     horasFrio: initialCondicionHorasFrio,
+    registrosTermicos: initialRegistrosTermicos,
     fenologia: initialFenologia,
     polinizacion: initialPolinizacion,
     muestreosBrotacion: initialMuestreosBrotacion,
@@ -261,7 +280,8 @@ export function getStoredData(): AppStateData {
       muestreosMadurez: stored.muestreosMadurez || [],
       cosechasLote: stored.cosechasLote || [],
       ordenesTrabajo: stored.ordenesTrabajo || [],
-      horasFrio: stored.horasFrio || getBlankHorasFrio(),
+      horasFrio: normalizarCondicionHorasFrio(stored.horasFrio, stored.registrosTermicos || []),
+      registrosTermicos: stored.registrosTermicos || [],
       fenologia: stored.fenologia || [],
       polinizacion: stored.polinizacion || [],
       muestreosBrotacion: stored.muestreosBrotacion || [],
@@ -352,7 +372,12 @@ export function getStoredOrdenesTrabajo(): OrdenTrabajoFitosanitaria[] {
 }
 
 export function getStoredCondicionHorasFrio(): CondicionHorasFrio {
-  return getStoredData().horasFrio || getBlankHorasFrio();
+  const data = getStoredData();
+  return normalizarCondicionHorasFrio(data.horasFrio, data.registrosTermicos || []);
+}
+
+export function getStoredRegistrosTermicos(): RegistroTermicoHuerto[] {
+  return getStoredData().registrosTermicos || [];
 }
 
 export function getStoredFenologia(): SeguimientoFenologico[] {
