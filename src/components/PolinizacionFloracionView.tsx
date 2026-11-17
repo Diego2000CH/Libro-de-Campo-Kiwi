@@ -60,6 +60,7 @@ interface PolinizacionFloracionViewProps {
   onUpdateEvaluacionCuajaSemillas: (e: EvaluacionCuajaSemillas) => void;
   onDeleteEvaluacionCuajaSemillas: (id: string) => void;
   activeUserName?: string;
+  canEdit?: boolean;
 }
 
 const calcularCalificacionAbejas = (
@@ -97,7 +98,8 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
   onAddEvaluacionCuajaSemillas,
   onUpdateEvaluacionCuajaSemillas,
   onDeleteEvaluacionCuajaSemillas,
-  activeUserName = 'Administrador'
+  activeUserName = 'Administrador',
+  canEdit = true
 }) => {
   const [activeTab, setActiveTab] = useState<'brotacion' | 'botones' | 'sincronia' | 'colmenas' | 'polen' | 'carga_raleo' | 'cuaja_semillas'>(initialTab);
 
@@ -625,7 +627,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
             </p>
           </div>
 
-          {(activeTab !== 'carga_raleo' && activeTab !== 'cuaja_semillas') && (
+          {canEdit && activeTab !== 'carga_raleo' && activeTab !== 'cuaja_semillas' && (
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => {
@@ -830,13 +832,15 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 </select>
               </div>
 
-              <button
-                onClick={handleOpenNewBrotacion}
-                className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer flex items-center gap-1 shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Muestrear Hilera
-              </button>
+              {canEdit && (
+                <button
+                  onClick={handleOpenNewBrotacion}
+                  className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer flex items-center gap-1 shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Muestrear Hilera
+                </button>
+              )}
             </div>
           </div>
 
@@ -863,7 +867,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                           <th className="p-3">% Brotación</th>
                           <th className="p-3">Brotes c/Flor</th>
                           <th className="p-3">Distribución Base/Medio/Punta</th>
-                          <th className="p-3 text-right">Acciones</th>
+                          {canEdit && <th className="p-3 text-right">Acciones</th>}
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-stone-100">
@@ -900,24 +904,26 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                             <td className="p-3 text-[10px] text-stone-600 font-mono">
                               B: {m.brotacionBasePct}% · M: {m.brotacionMedioPct}% · P: {m.brotacionPuntaPct}%
                             </td>
-                            <td className="p-3 text-right">
-                              <div className="inline-flex items-center gap-1">
-                                <button
-                                  onClick={() => handleOpenEditBrotacion(m)}
-                                  className="p-1.5 text-stone-500 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg cursor-pointer"
-                                  title="Editar registro de hilera"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => onDeleteMuestreoBrotacion(m.id)}
-                                  className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
-                                  title="Eliminar registro de hilera"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </td>
+                            {canEdit && (
+                              <td className="p-3 text-right">
+                                <div className="inline-flex items-center gap-1">
+                                  <button
+                                    onClick={() => handleOpenEditBrotacion(m)}
+                                    className="p-1.5 text-stone-500 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg cursor-pointer"
+                                    title="Editar registro de hilera"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => onDeleteMuestreoBrotacion(m.id)}
+                                    className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                                    title="Eliminar registro de hilera"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
@@ -1029,13 +1035,15 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 </select>
               </div>
 
-              <button
-                onClick={handleOpenNewBotones}
-                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg cursor-pointer flex items-center gap-1 shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Contar Hilera
-              </button>
+              {canEdit && (
+                <button
+                  onClick={handleOpenNewBotones}
+                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg cursor-pointer flex items-center gap-1 shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Contar Hilera
+                </button>
+              )}
             </div>
           </div>
 
@@ -1061,7 +1069,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                           <th className="p-3">Mariposas / Defectos</th>
                           <th className="p-3">Densidad bot/m²</th>
                           <th className="p-3">Avance Raleo</th>
-                          <th className="p-3 text-right">Acciones</th>
+                          {canEdit && <th className="p-3 text-right">Acciones</th>}
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-stone-100">
@@ -1094,24 +1102,26 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                                 {c.estadoRaleoBotones} ({c.porcentajeAvanceRaleo}%)
                               </span>
                             </td>
-                            <td className="p-3 text-right">
-                              <div className="inline-flex items-center gap-1">
-                                <button
-                                  onClick={() => handleOpenEditBotones(c)}
-                                  className="p-1.5 text-stone-500 hover:text-amber-800 hover:bg-amber-50 rounded-lg cursor-pointer"
-                                  title="Editar conteo de hilera"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => onDeleteConteoBotones(c.id)}
-                                  className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
-                                  title="Eliminar registro"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </td>
+                            {canEdit && (
+                              <td className="p-3 text-right">
+                                <div className="inline-flex items-center gap-1">
+                                  <button
+                                    onClick={() => handleOpenEditBotones(c)}
+                                    className="p-1.5 text-stone-500 hover:text-amber-800 hover:bg-amber-50 rounded-lg cursor-pointer"
+                                    title="Editar conteo de hilera"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => onDeleteConteoBotones(c.id)}
+                                    className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                                    title="Eliminar registro"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
@@ -1227,13 +1237,15 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
               )}
             </div>
 
-            <button
-              onClick={handleOpenNewSincronia}
-              className="px-3.5 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-lg text-xs cursor-pointer flex items-center gap-1.5 shrink-0"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Registrar Conteo de Pecoreo / Colmenas
-            </button>
+            {canEdit && (
+              <button
+                onClick={handleOpenNewSincronia}
+                className="px-3.5 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-lg text-xs cursor-pointer flex items-center gap-1.5 shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Registrar Conteo de Pecoreo / Colmenas
+              </button>
+            )}
           </div>
 
           <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden">
@@ -1259,7 +1271,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                       <th className="p-3">Abejas / m²</th>
                       <th className="p-3">Calificación</th>
                       <th className="p-3">Clima</th>
-                      <th className="p-3 text-right">Acciones</th>
+                      {canEdit && <th className="p-3 text-right">Acciones</th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
@@ -1289,44 +1301,46 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                           </span>
                         </td>
                         <td className="p-3 text-stone-500 whitespace-nowrap">{s.temperaturaAmbienteC}°C · {s.humedadRelativa}% HR</td>
-                        <td className="p-3 text-right whitespace-nowrap">
-                          <div className="inline-flex items-center gap-1">
-                            <button
-                              onClick={() => handleOpenEditSincronia(s)}
-                              className="p-1.5 text-stone-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg cursor-pointer"
-                              title="Editar conteo de colmenas y pecoreo"
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                            </button>
-                            {pendingDeleteKey === `col-${s.id}` ? (
-                              <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
-                                <button
-                                  onClick={() => {
-                                    onDeleteSincroniaFloral(s.id);
-                                    setPendingDeleteKey(null);
-                                  }}
-                                  className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
-                                >
-                                  Eliminar
-                                </button>
-                                <button
-                                  onClick={() => setPendingDeleteKey(null)}
-                                  className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
-                                >
-                                  No
-                                </button>
-                              </div>
-                            ) : (
+                        {canEdit && (
+                          <td className="p-3 text-right whitespace-nowrap">
+                            <div className="inline-flex items-center gap-1">
                               <button
-                                onClick={() => setPendingDeleteKey(`col-${s.id}`)}
-                                className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
-                                title="Eliminar registro"
+                                onClick={() => handleOpenEditSincronia(s)}
+                                className="p-1.5 text-stone-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg cursor-pointer"
+                                title="Editar conteo de colmenas y pecoreo"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Pencil className="w-3.5 h-3.5" />
                               </button>
-                            )}
-                          </div>
-                        </td>
+                              {pendingDeleteKey === `col-${s.id}` ? (
+                                <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                                  <button
+                                    onClick={() => {
+                                      onDeleteSincroniaFloral(s.id);
+                                      setPendingDeleteKey(null);
+                                    }}
+                                    className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
+                                  >
+                                    Eliminar
+                                  </button>
+                                  <button
+                                    onClick={() => setPendingDeleteKey(null)}
+                                    className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
+                                  >
+                                    No
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setPendingDeleteKey(`col-${s.id}`)}
+                                  className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                                  title="Eliminar registro"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -1350,13 +1364,15 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 El kiwi es una especie dioica estricta. Las flores femeninas sólo son receptivas durante 3 a 5 días tras la apertura. Es crucial que los machos florezcan al unísono con las hembras para asegurar granos de polen viables en el estigma.
               </p>
             </div>
-            <button
-              onClick={handleOpenNewSincronia}
-              className="px-3.5 py-2 bg-blue-800 hover:bg-blue-700 text-white font-bold rounded-lg shrink-0 cursor-pointer flex items-center gap-1.5"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Registrar Curva Floral
-            </button>
+            {canEdit && (
+              <button
+                onClick={handleOpenNewSincronia}
+                className="px-3.5 py-2 bg-blue-800 hover:bg-blue-700 text-white font-bold rounded-lg shrink-0 cursor-pointer flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Registrar Curva Floral
+              </button>
+            )}
           </div>
 
           {/* Filtro por cuartel */}
@@ -1403,39 +1419,43 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                         {s.estadoSincronia} ({s.diasDesfase >= 0 ? `+${s.diasDesfase}` : s.diasDesfase} d)
                       </span>
 
-                      <button
-                        onClick={() => handleOpenEditSincronia(s)}
-                        className="p-1.5 text-stone-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg cursor-pointer"
-                        title="Editar sincronía floral"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      {pendingDeleteKey === `sin-${s.id}` ? (
-                        <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                      {canEdit && (
+                        <>
                           <button
-                            onClick={() => {
-                              onDeleteSincroniaFloral(s.id);
-                              setPendingDeleteKey(null);
-                            }}
-                            className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
+                            onClick={() => handleOpenEditSincronia(s)}
+                            className="p-1.5 text-stone-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg cursor-pointer"
+                            title="Editar sincronía floral"
                           >
-                            Eliminar
+                            <Pencil className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            onClick={() => setPendingDeleteKey(null)}
-                            className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
-                          >
-                            No
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setPendingDeleteKey(`sin-${s.id}`)}
-                          className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
-                          title="Eliminar sincronía floral"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          {pendingDeleteKey === `sin-${s.id}` ? (
+                            <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                              <button
+                                onClick={() => {
+                                  onDeleteSincroniaFloral(s.id);
+                                  setPendingDeleteKey(null);
+                                }}
+                                className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
+                              >
+                                Eliminar
+                              </button>
+                              <button
+                                onClick={() => setPendingDeleteKey(null)}
+                                className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
+                              >
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setPendingDeleteKey(`sin-${s.id}`)}
+                              className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                              title="Eliminar sincronía floral"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -1507,13 +1527,15 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 Garantiza entre 1.000 y 1.400 semillas por fruto de kiwi Hayward, requisito biológico indispensable para alcanzar calibres sobre calibre 27-30 (105 a 125 gramos). Se aplica al 40-50% y 80% de flor abierta con polen de viabilidad comprobada &gt;80%.
               </p>
             </div>
-            <button
-              onClick={handleOpenNewPolen}
-              className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-lg shrink-0 cursor-pointer flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" />
-              Nueva Aplicación de Polen
-            </button>
+            {canEdit && (
+              <button
+                onClick={handleOpenNewPolen}
+                className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-lg shrink-0 cursor-pointer flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                Nueva Aplicación de Polen
+              </button>
+            )}
           </div>
 
           {filteredPolen.length === 0 ? (
@@ -1535,42 +1557,44 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => handleOpenEditPolen(a)}
-                        className="p-1.5 text-stone-500 hover:text-purple-700 hover:bg-purple-50 rounded-lg cursor-pointer"
-                        title="Editar aplicación de polen"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      {pendingDeleteKey === `pol-${a.id}` ? (
-                        <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
-                          <button
-                            onClick={() => {
-                              onDeleteAplicacionPolen(a.id);
-                              setPendingDeleteKey(null);
-                            }}
-                            className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
-                          >
-                            Eliminar
-                          </button>
-                          <button
-                            onClick={() => setPendingDeleteKey(null)}
-                            className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
-                          >
-                            No
-                          </button>
-                        </div>
-                      ) : (
+                    {canEdit && (
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
-                          onClick={() => setPendingDeleteKey(`pol-${a.id}`)}
-                          className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
-                          title="Eliminar registro"
+                          onClick={() => handleOpenEditPolen(a)}
+                          className="p-1.5 text-stone-500 hover:text-purple-700 hover:bg-purple-50 rounded-lg cursor-pointer"
+                          title="Editar aplicación de polen"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Pencil className="w-4 h-4" />
                         </button>
-                      )}
-                    </div>
+                        {pendingDeleteKey === `pol-${a.id}` ? (
+                          <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                            <button
+                              onClick={() => {
+                                onDeleteAplicacionPolen(a.id);
+                                setPendingDeleteKey(null);
+                              }}
+                              className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
+                            >
+                              Eliminar
+                            </button>
+                            <button
+                              onClick={() => setPendingDeleteKey(null)}
+                              className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
+                            >
+                              No
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setPendingDeleteKey(`pol-${a.id}`)}
+                            className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                            title="Eliminar registro"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-xs">
@@ -1627,6 +1651,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           onUpdatePlan={onUpdatePlanCargaRaleo}
           onDeletePlan={onDeletePlanCargaRaleo}
           activeUserName={activeUserName}
+          canEdit={canEdit}
         />
       )}
 
@@ -1639,6 +1664,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           onUpdateEvaluacion={onUpdateEvaluacionCuajaSemillas}
           onDeleteEvaluacion={onDeleteEvaluacionCuajaSemillas}
           activeUserName={activeUserName}
+          canEdit={canEdit}
         />
       )}
 

@@ -24,13 +24,15 @@ interface PozoViewProps {
   onAddRegistroPozo: (registro: RegistroExtraccionPozo) => void;
   onUpdateRegistroPozo: (registro: RegistroExtraccionPozo) => void;
   onDeleteRegistroPozo: (id: string) => void;
+  canEdit?: boolean;
 }
 
 export const PozoView: React.FC<PozoViewProps> = ({
   registrosPozo,
   onAddRegistroPozo,
   onUpdateRegistroPozo,
-  onDeleteRegistroPozo
+  onDeleteRegistroPozo,
+  canEdit = true
 }) => {
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -270,24 +272,26 @@ export const PozoView: React.FC<PozoViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setIsSectoresModalOpen(true)}
-            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold border border-stone-300 shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors"
-            title="Editar o agregar sectores de riego del predio"
-          >
-            <Settings className="w-3.5 h-3.5 text-stone-600" />
-            <span>Gestionar Sectores de Riego</span>
-          </button>
+        {canEdit && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setIsSectoresModalOpen(true)}
+              className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold border border-stone-300 shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors"
+              title="Editar o agregar sectores de riego del predio"
+            >
+              <Settings className="w-3.5 h-3.5 text-stone-600" />
+              <span>Gestionar Sectores de Riego</span>
+            </button>
 
-          <button
-            onClick={handleOpenNew}
-            className="px-3.5 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Anotar Muestreo / Lectura DGA</span>
-          </button>
-        </div>
+            <button
+              onClick={handleOpenNew}
+              className="px-3.5 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Anotar Muestreo / Lectura DGA</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tarjetas de Métricas DGA */}
@@ -390,7 +394,7 @@ export const PozoView: React.FC<PozoViewProps> = ({
                 <th className="px-3 py-3">Volumen m³</th>
                 <th className="px-3 py-3">Niveles Piez.</th>
                 <th className="px-3 py-3">Operador</th>
-                <th className="px-3 py-3 text-right">Acciones</th>
+                {canEdit && <th className="px-3 py-3 text-right">Acciones</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 text-stone-700">
@@ -436,26 +440,28 @@ export const PozoView: React.FC<PozoViewProps> = ({
                     <td className="px-3 py-3 text-stone-600 whitespace-nowrap">
                       {r.operadorBomba}
                     </td>
-                    <td className="px-3 py-3 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => handleOpenEdit(r)}
-                          className="px-2 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                          title="Editar lectura DGA"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          <span>Editar</span>
-                        </button>
-                        <button
-                          onClick={() => setRegistroToDelete(r)}
-                          className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                          title="Eliminar lectura DGA"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Eliminar</span>
-                        </button>
-                      </div>
-                    </td>
+                    {canEdit && (
+                      <td className="px-3 py-3 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => handleOpenEdit(r)}
+                            className="px-2 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                            title="Editar lectura DGA"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Editar</span>
+                          </button>
+                          <button
+                            onClick={() => setRegistroToDelete(r)}
+                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                            title="Eliminar lectura DGA"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Eliminar</span>
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

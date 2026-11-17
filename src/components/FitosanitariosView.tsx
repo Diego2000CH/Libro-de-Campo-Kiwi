@@ -30,6 +30,7 @@ interface FitosanitariosViewProps {
   onAddInsumo: (insumo: InsumoInventario) => void;
   onUpdateInsumo: (insumo: InsumoInventario) => void;
   onDeleteInsumo: (id: string) => void;
+  canEdit?: boolean;
 }
 
 const CATEGORIAS_FITOSANITARIOS: { id: string; label: string; icon: string }[] = [
@@ -58,7 +59,8 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
   inventario,
   onAddInsumo,
   onUpdateInsumo,
-  onDeleteInsumo
+  onDeleteInsumo,
+  canEdit = true
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategoria, setSelectedCategoria] = useState<string>('todos');
@@ -338,13 +340,15 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={handleOpenNew}
-          className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Ingresar Producto Fitosanitario</span>
-        </button>
+        {canEdit && (
+          <button
+            onClick={handleOpenNew}
+            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Ingresar Producto Fitosanitario</span>
+          </button>
+        )}
       </div>
 
       {/* Alerta de Stock Crítico */}
@@ -465,13 +469,15 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
             <p className="text-xs text-stone-500 max-w-md mx-auto">
               Puedes ingresar productos agroquímicos reales (Herbicidas, Fungicidas, Acaricidas, etc.) con sus unidades exactas en Kg, Litros, cc, ml o gramos.
             </p>
-            <button
-              onClick={handleOpenNew}
-              className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Ingresar Primer Producto</span>
-            </button>
+            {canEdit && (
+              <button
+                onClick={handleOpenNew}
+                className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Ingresar Primer Producto</span>
+              </button>
+            )}
           </div>
         ) : fitoFiltrados.map((item) => {
             const isLow = (item.stockMinimo || 0) > 0 && item.stockActual <= (item.stockMinimo || 0);
@@ -609,37 +615,39 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               </div>
 
               {/* Botones de Acción */}
-              <div className="flex items-center justify-between gap-2 pt-3 border-t border-stone-100 mt-3">
-                <button
-                  onClick={() => {
-                    setReponiendoId(item.id);
-                    setCantidadReponer(item.stockMinimo * 2 || 10);
-                  }}
-                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs flex items-center gap-1 transition-colors cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Reponer
-                </button>
+              {canEdit && (
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-stone-100 mt-3">
+                  <button
+                    onClick={() => {
+                      setReponiendoId(item.id);
+                      setCantidadReponer(item.stockMinimo * 2 || 10);
+                    }}
+                    className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Reponer
+                  </button>
 
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => handleOpenEdit(item)}
-                    className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                    title="Editar producto fitosanitario"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>Editar</span>
-                  </button>
-                  <button
-                    onClick={() => setInsumoToDelete(item)}
-                    className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                    title="Eliminar insumo"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Eliminar</span>
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleOpenEdit(item)}
+                      className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Editar producto fitosanitario"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>Editar</span>
+                    </button>
+                    <button
+                      onClick={() => setInsumoToDelete(item)}
+                      className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Eliminar insumo"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Eliminar</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           );
         })}

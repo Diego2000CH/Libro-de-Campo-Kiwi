@@ -23,6 +23,7 @@ interface CosechaMadurezViewProps {
   onAddCosecha: (cosecha: RegistroCosechaLote) => void;
   onDeleteCosecha: (id: string) => void;
   activeUserName?: string;
+  canEdit?: boolean;
 }
 
 export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
@@ -33,7 +34,8 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
   cosechas,
   onAddCosecha,
   onDeleteCosecha,
-  activeUserName
+  activeUserName,
+  canEdit = true
 }) => {
   const [activeTabSub, setActiveTabSub] = useState<'madurez' | 'cosecha_bins'>('madurez');
   const [isNewMuestreoOpen, setIsNewMuestreoOpen] = useState(false);
@@ -158,7 +160,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
             </button>
           </div>
 
-          {activeTabSub === 'madurez' ? (
+          {canEdit && (activeTabSub === 'madurez' ? (
             <button
               onClick={() => setIsNewMuestreoOpen(true)}
               className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
@@ -174,7 +176,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
               <Plus className="w-4 h-4" />
               <span>Registrar Despacho Bins</span>
             </button>
-          )}
+          ))}
         </div>
       </div>
 
@@ -285,7 +287,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                     <th className="px-4 py-3">% Mat. Seca</th>
                     <th className="px-4 py-3">Estado SAG</th>
                     <th className="px-4 py-3">Responsable</th>
-                    <th className="px-4 py-3 text-right">Acción</th>
+                    {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 text-stone-700">
@@ -305,15 +307,17 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                         </span>
                       </td>
                       <td className="px-4 py-3 text-stone-600">{m.muestreadoPor}</td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() => onDeleteMuestreo(m.id)}
-                          className="p-1 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50"
-                          title="Eliminar registro"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
+                      {canEdit && (
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => onDeleteMuestreo(m.id)}
+                            className="p-1 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50 cursor-pointer"
+                            title="Eliminar registro"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -375,7 +379,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                     <th className="px-4 py-3">Calibre</th>
                     <th className="px-4 py-3">Packing Destino</th>
                     <th className="px-4 py-3">Chofer / Patente</th>
-                    <th className="px-4 py-3 text-right">Acción</th>
+                    {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 text-stone-700">
@@ -392,15 +396,17 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                         <div>{c.choferCamion}</div>
                         <div className="font-mono text-stone-400">{c.patenteCamion}</div>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() => onDeleteCosecha(c.id)}
-                          className="p-1 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50"
-                          title="Eliminar despacho"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
+                      {canEdit && (
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => onDeleteCosecha(c.id)}
+                            className="p-1 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50 cursor-pointer"
+                            title="Eliminar despacho"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

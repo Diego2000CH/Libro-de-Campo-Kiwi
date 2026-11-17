@@ -16,13 +16,15 @@ interface InformeOficialViewProps {
   parcelas: Parcela[];
   labores: RegistroLabor[];
   onImportJSON: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  isAdmin?: boolean;
 }
 
 export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
   explotacion,
   parcelas,
   labores,
-  onImportJSON
+  onImportJSON,
+  isAdmin = true
 }) => {
   const handlePrint = () => {
     window.print();
@@ -127,11 +129,13 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
             <span>Copia Respaldo JSON</span>
           </button>
 
-          <label className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer">
-            <Upload className="w-4 h-4" />
-            <span>Importar JSON</span>
-            <input type="file" accept=".json" onChange={onImportJSON} className="hidden" />
-          </label>
+          {isAdmin && (
+            <label className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer">
+              <Upload className="w-4 h-4" />
+              <span>Importar JSON</span>
+              <input type="file" accept=".json" onChange={onImportJSON} className="hidden" />
+            </label>
+          )}
         </div>
       </div>
 

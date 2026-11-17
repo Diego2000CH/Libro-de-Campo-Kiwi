@@ -10,7 +10,6 @@ import {
   ArrowRight,
   ShieldCheck,
   AlertCircle,
-  KeyRound,
   Loader2,
 } from 'lucide-react';
 
@@ -90,12 +89,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
     onLoginSuccess(usuarioEncontrado);
   };
 
-  const handleQuickLogin = (usuario: UsuarioPredio) => {
-    setIdentificador(usuario.email);
-    setPassword(usuario.password);
-    onLoginSuccess(usuario);
-  };
-
   return (
     <div className="min-h-screen bg-stone-900 flex flex-col justify-center items-center p-4 relative overflow-hidden select-none">
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-stone-950 to-teal-950 opacity-90 pointer-events-none" />
@@ -115,7 +108,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           </p>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-900/60 border border-emerald-500/30 text-emerald-200 text-[10px] font-bold uppercase tracking-wider">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            Firebase Auth · Cloud SQL · Firestore
+            Acceso Protegido por Credenciales
           </div>
         </div>
 
@@ -123,7 +116,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           <div className="border-b border-stone-100 pb-3">
             <h2 className="text-base font-bold text-stone-900">Iniciar Sesión</h2>
             <p className="text-xs text-stone-500">
-              Conecta tu cuenta Google para sincronización en tiempo real en la nube
+              Ingresa con tu cuenta autorizada para acceder según tu nivel de permisos
             </p>
           </div>
 
@@ -169,7 +162,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           <div className="relative flex items-center py-1">
             <div className="flex-grow border-t border-stone-200" />
             <span className="shrink mx-3 text-[10px] font-bold uppercase text-stone-400 tracking-wider">
-              o acceso local con RUT / Clave
+              o acceso con RUT / Correo y Clave
             </span>
             <div className="flex-grow border-t border-stone-200" />
           </div>
@@ -194,14 +187,14 @@ export const LoginView: React.FC<LoginViewProps> = ({
 
             <div className="space-y-1">
               <label className="block font-bold text-stone-700 text-[11px] uppercase tracking-wide">
-                Clave Personal:
+                Clave / Código de Acceso:
               </label>
               <div className="relative">
                 <input
                   type={mostrarPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Tu contraseña personal"
+                  placeholder="Ingresa tu contraseña personal"
                   className="w-full pl-10 pr-10 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:bg-white transition-all"
                   required
                 />
@@ -221,53 +214,22 @@ export const LoginView: React.FC<LoginViewProps> = ({
               type="submit"
               className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Ingresar con Clave Local</span>
+              <span>Ingresar a la Aplicación</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="pt-3 border-t border-stone-100 space-y-2">
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="font-bold text-stone-500 uppercase tracking-wider flex items-center gap-1">
-                <KeyRound className="w-3.5 h-3.5 text-emerald-700" />
-                Perfiles Prediales:
-              </span>
-              <span className="text-[10px] text-stone-400">1 clic para entrar</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {usuarios.map((u) => {
-                const isAdmin = u.rol === 'administrador';
-                return (
-                  <button
-                    key={u.id}
-                    type="button"
-                    onClick={() => handleQuickLogin(u)}
-                    className={`p-2 rounded-xl border text-left transition-all cursor-pointer group ${
-                      isAdmin
-                        ? 'bg-emerald-50/70 border-emerald-300 hover:bg-emerald-100 hover:border-emerald-500 text-emerald-950'
-                        : 'bg-stone-50 border-stone-200 hover:bg-stone-100 text-stone-800'
-                    }`}
-                  >
-                    <div className="font-bold truncate text-[11px] group-hover:text-emerald-900">
-                      {u.nombre.split(' ')[0]} {u.nombre.split(' ')[1] || ''}
-                    </div>
-                    <div className="text-[10px] text-stone-500 capitalize flex items-center justify-between mt-0.5">
-                      <span>{u.rol.replace('_', ' ')}</span>
-                      <span className="font-mono text-[9px] bg-white px-1.5 py-0.2 rounded border border-stone-200">
-                        {u.password}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+          <div className="pt-3 border-t border-stone-100 text-[11px] text-stone-500 flex items-start gap-2 bg-stone-50/80 p-3 rounded-xl">
+            <Lock className="w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              El acceso rápido está deshabilitado por seguridad. Cada integrante debe ingresar con su usuario y clave asignada por el Administrador.
+            </p>
           </div>
         </div>
 
         <div className="text-center text-xs text-stone-400 space-y-1">
           <p>© 2026 {fundoNombre}</p>
-          <p className="text-[10px] text-emerald-400/70">Sincronización Segura · Firebase & Cloud SQL</p>
+          <p className="text-[10px] text-emerald-400/70">Control de Roles: Administrador · Encargado de Campo · Solo Lectura</p>
         </div>
       </div>
     </div>

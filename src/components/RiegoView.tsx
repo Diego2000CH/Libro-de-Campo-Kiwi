@@ -29,6 +29,7 @@ interface RiegoViewProps {
   onDeleteTurnoRiego: (id: string) => void;
   parcelas: Parcela[];
   clima?: ClimaCondiciones;
+  canEdit?: boolean;
 }
 
 export const RiegoView: React.FC<RiegoViewProps> = ({
@@ -37,7 +38,8 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
   onUpdateTurnoRiego,
   onDeleteTurnoRiego,
   parcelas,
-  clima
+  clima,
+  canEdit = true
 }) => {
   const [isNewTurnoOpen, setIsNewTurnoOpen] = useState(false);
   const [isEditTurnoOpen, setIsEditTurnoOpen] = useState(false);
@@ -311,23 +313,25 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setIsSectoresModalOpen(true)}
-            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors"
-          >
-            <Settings className="w-3.5 h-3.5 text-stone-600" />
-            <span>Gestionar Sectores</span>
-          </button>
+        {canEdit && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setIsSectoresModalOpen(true)}
+              className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <Settings className="w-3.5 h-3.5 text-stone-600" />
+              <span>Gestionar Sectores</span>
+            </button>
 
-          <button
-            onClick={() => handleOpenNewTurno()}
-            className="px-4 py-2 bg-cyan-800 hover:bg-cyan-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Registrar Turno de Riego</span>
-          </button>
-        </div>
+            <button
+              onClick={() => handleOpenNewTurno()}
+              className="px-4 py-2 bg-cyan-800 hover:bg-cyan-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Registrar Turno de Riego</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tarjetas de Resumen Hídrico */}
@@ -425,13 +429,15 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleOpenNewTurno(sec.id)}
-                  className="w-full py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-200 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <Plus className="w-3.5 h-3.5 text-cyan-700" />
-                  <span>Regar este Sector</span>
-                </button>
+                {canEdit && (
+                  <button
+                    onClick={() => handleOpenNewTurno(sec.id)}
+                    className="w-full py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-200 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-cyan-700" />
+                    <span>Regar este Sector</span>
+                  </button>
+                )}
               </div>
             );
           })}
@@ -458,13 +464,15 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
             <Droplet className="w-10 h-10 mx-auto text-stone-300" />
             <p className="font-bold text-sm text-stone-700">No hay turnos de riego registrados</p>
             <p className="text-xs">Comienza registrando el primer turno de riego del huerto.</p>
-            <button
-              onClick={() => handleOpenNewTurno()}
-              className="mt-2 px-3 py-1.5 bg-cyan-800 text-white rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Registrar Turno</span>
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => handleOpenNewTurno()}
+                className="mt-2 px-3 py-1.5 bg-cyan-800 text-white rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Registrar Turno</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -479,7 +487,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                   <th className="p-3">Fertirriego</th>
                   <th className="p-3">Presiones</th>
                   <th className="p-3">Operador</th>
-                  <th className="p-3 text-right">Acciones</th>
+                  {canEdit && <th className="p-3 text-right">Acciones</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100 text-stone-700">
@@ -522,24 +530,26 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                     <td className="p-3 text-[11px] text-stone-600">
                       {turno.operadorRiego}
                     </td>
-                    <td className="p-3 text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <button
-                          onClick={() => handleOpenEditTurno(turno)}
-                          className="p-1.5 text-stone-500 hover:text-cyan-700 hover:bg-cyan-50 rounded-lg transition-colors cursor-pointer"
-                          title="Editar turno"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => setTurnoToDelete(turno)}
-                          className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                          title="Eliminar turno"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
+                    {canEdit && (
+                      <td className="p-3 text-right">
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => handleOpenEditTurno(turno)}
+                            className="p-1.5 text-stone-500 hover:text-cyan-700 hover:bg-cyan-50 rounded-lg transition-colors cursor-pointer"
+                            title="Editar turno"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setTurnoToDelete(turno)}
+                            className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            title="Eliminar turno"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

@@ -26,6 +26,7 @@ interface HorasFrioFenologiaViewProps {
   onUpdatePolinizacion?: (p: RegistroPolinizacion) => void;
   onDeletePolinizacion: (id: string) => void;
   activeUserName?: string;
+  canEdit?: boolean;
 }
 
 export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
@@ -40,6 +41,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
   onAddPolinizacion,
   onUpdatePolinizacion,
   onDeletePolinizacion,
+  canEdit = true
 }) => {
   const [subTab, setSubTab] = useState<'horas_frio' | 'fenologia' | 'polinizacion'>('horas_frio');
   const [isEditHFOpen, setIsEditHFOpen] = useState(false);
@@ -273,12 +275,14 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                 </p>
               </div>
 
-              <button
-                onClick={handleOpenEditHF}
-                className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors border border-white/10 self-start sm:self-center cursor-pointer"
-              >
-                Actualizar Lectura de Frío
-              </button>
+              {canEdit && (
+                <button
+                  onClick={handleOpenEditHF}
+                  className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors border border-white/10 self-start sm:self-center cursor-pointer"
+                >
+                  Actualizar Lectura de Frío
+                </button>
+              )}
             </div>
 
             {/* Barra de progreso */}
@@ -350,13 +354,15 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
               <h2 className="font-bold text-sm text-stone-900">Seguimiento Fenológico BBCH por Cuartel</h2>
               <p className="text-xs text-stone-500">Registro, edición y eliminación de estados del ciclo vegetativo y reproductivo.</p>
             </div>
-            <button
-              onClick={handleOpenNewFen}
-              className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Registrar Estado BBCH</span>
-            </button>
+            {canEdit && (
+              <button
+                onClick={handleOpenNewFen}
+                className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Registrar Estado BBCH</span>
+              </button>
+            )}
           </div>
 
           {fenologia.length === 0 ? (
@@ -377,42 +383,44 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                         <h3 className="font-bold text-stone-900 text-sm mt-1">{f.parcelaNombre}</h3>
                         <span className="text-[10px] text-stone-400">{f.fecha}</span>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => handleOpenEditFen(f)}
-                          className="p-1.5 text-stone-500 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 cursor-pointer"
-                          title="Editar estado BBCH"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        {confirmDeleteKey === delKey ? (
-                          <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
-                            <button
-                              onClick={() => {
-                                onDeleteFenologia(f.id);
-                                setConfirmDeleteKey(null);
-                              }}
-                              className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
-                            >
-                              Eliminar
-                            </button>
-                            <button
-                              onClick={() => setConfirmDeleteKey(null)}
-                              className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
-                            >
-                              No
-                            </button>
-                          </div>
-                        ) : (
+                      {canEdit && (
+                        <div className="flex items-center gap-1 shrink-0">
                           <button
-                            onClick={() => setConfirmDeleteKey(delKey)}
-                            className="p-1.5 text-stone-400 hover:text-rose-700 rounded-lg hover:bg-rose-50 cursor-pointer"
-                            title="Eliminar estado BBCH"
+                            onClick={() => handleOpenEditFen(f)}
+                            className="p-1.5 text-stone-500 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 cursor-pointer"
+                            title="Editar estado BBCH"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Pencil className="w-3.5 h-3.5" />
                           </button>
-                        )}
-                      </div>
+                          {confirmDeleteKey === delKey ? (
+                            <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                              <button
+                                onClick={() => {
+                                  onDeleteFenologia(f.id);
+                                  setConfirmDeleteKey(null);
+                                }}
+                                className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
+                              >
+                                Eliminar
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteKey(null)}
+                                className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
+                              >
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteKey(delKey)}
+                              className="p-1.5 text-stone-400 hover:text-rose-700 rounded-lg hover:bg-rose-50 cursor-pointer"
+                              title="Eliminar estado BBCH"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <p className="text-stone-700 leading-relaxed font-medium">
@@ -453,13 +461,15 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                 {totalHa > 0 && ` Superficie predial actual: ${totalHa.toFixed(1)} ha.`}
               </p>
             </div>
-            <button
-              onClick={handleOpenNewPol}
-              className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Nuevo Registro Colmenas</span>
-            </button>
+            {canEdit && (
+              <button
+                onClick={handleOpenNewPol}
+                className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Nuevo Registro Colmenas</span>
+              </button>
+            )}
           </div>
 
           {polinizacion.length === 0 ? (
@@ -480,42 +490,44 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                         <span className="font-mono text-stone-400 text-[10px]">{p.fecha}</span>
                         <h3 className="font-bold text-stone-900 text-sm mt-0.5">Polinización Mixta del Huerto</h3>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => handleOpenEditPol(p)}
-                          className="p-1.5 text-stone-500 hover:text-amber-800 rounded-lg hover:bg-amber-50 cursor-pointer"
-                          title="Editar registro de colmenas"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        {confirmDeleteKey === delKey ? (
-                          <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
-                            <button
-                              onClick={() => {
-                                onDeletePolinizacion(p.id);
-                                setConfirmDeleteKey(null);
-                              }}
-                              className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
-                            >
-                              Eliminar
-                            </button>
-                            <button
-                              onClick={() => setConfirmDeleteKey(null)}
-                              className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
-                            >
-                              No
-                            </button>
-                          </div>
-                        ) : (
+                      {canEdit && (
+                        <div className="flex items-center gap-1 shrink-0">
                           <button
-                            onClick={() => setConfirmDeleteKey(delKey)}
-                            className="p-1.5 text-stone-400 hover:text-rose-700 rounded-lg hover:bg-rose-50 cursor-pointer"
-                            title="Eliminar registro de colmenas"
+                            onClick={() => handleOpenEditPol(p)}
+                            className="p-1.5 text-stone-500 hover:text-amber-800 rounded-lg hover:bg-amber-50 cursor-pointer"
+                            title="Editar registro de colmenas"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Pencil className="w-3.5 h-3.5" />
                           </button>
-                        )}
-                      </div>
+                          {confirmDeleteKey === delKey ? (
+                            <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                              <button
+                                onClick={() => {
+                                  onDeletePolinizacion(p.id);
+                                  setConfirmDeleteKey(null);
+                                }}
+                                className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
+                              >
+                                Eliminar
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteKey(null)}
+                                className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
+                              >
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteKey(delKey)}
+                              className="p-1.5 text-stone-400 hover:text-rose-700 rounded-lg hover:bg-rose-50 cursor-pointer"
+                              title="Eliminar registro de colmenas"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">

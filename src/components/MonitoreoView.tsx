@@ -17,13 +17,15 @@ interface MonitoreoViewProps {
   parcelas: Parcela[];
   onOpenNewLaborWithDefaults: (parcelaId?: string, tipoLabor?: TipoLabor) => void;
   onSaveQuickObservation: (labor: RegistroLabor) => void;
+  canEdit?: boolean;
 }
 
 export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
   labores,
   parcelas,
   onOpenNewLaborWithDefaults,
-  onSaveQuickObservation
+  onSaveQuickObservation,
+  canEdit = true
 }) => {
   const [selectedPlaga, setSelectedPlaga] = useState<string>('todas');
   const [isQuickObsOpen, setIsQuickObsOpen] = useState(false);
@@ -110,13 +112,15 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={() => setIsQuickObsOpen(true)}
-          className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Nueva Inspección de Campo</span>
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => setIsQuickObsOpen(true)}
+            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Nueva Inspección de Campo</span>
+          </button>
+        )}
       </div>
 
       {/* Tarjetas de Plagas Clave de Hayward */}
@@ -138,14 +142,16 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
               <p className="text-emerald-900"><strong>Estrategia Recomendada:</strong> {p.controlSugerido}</p>
             </div>
 
-            <div className="pt-2 border-t border-stone-100 flex justify-end">
-              <button
-                onClick={() => onOpenNewLaborWithDefaults(undefined, 'fitosanitario')}
-                className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                Recetar Tratamiento en Cuaderno →
-              </button>
-            </div>
+            {canEdit && (
+              <div className="pt-2 border-t border-stone-100 flex justify-end">
+                <button
+                  onClick={() => onOpenNewLaborWithDefaults(undefined, 'fitosanitario')}
+                  className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  Recetar Tratamiento en Cuaderno →
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>

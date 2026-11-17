@@ -1309,7 +1309,7 @@ export const initialPolinizacion: RegistroPolinizacion[] = [
   }
 ];
 
-// USUARIOS DEL SISTEMA CON CLAVE PERSONAL
+// USUARIOS DEL SISTEMA CON CLAVE PERSONAL Y NIVEL DE ACCESO
 export const initialUsuarios: UsuarioPredio[] = [
   {
     id: 'usr-1',
@@ -1318,6 +1318,7 @@ export const initialUsuarios: UsuarioPredio[] = [
     email: 'diego@fundolacabana.cl',
     password: 'admin', // Clave administrador
     rol: 'administrador',
+    nivelAcceso: 'admin',
     carnetSAGVigente: true,
     numeroCarnetSAG: 'SAG-ADM-1029',
     fechaVencimientoCarnetSAG: '2028-12-31',
@@ -1331,11 +1332,26 @@ export const initialUsuarios: UsuarioPredio[] = [
     email: 'rodrigo.agronomo@fundolacabana.cl',
     password: 'agro', // Clave personal agrónomo
     rol: 'agronomo',
+    nivelAcceso: 'editor_campo',
     carnetSAGVigente: true,
     numeroCarnetSAG: 'COL-AGR-4912',
     fechaVencimientoCarnetSAG: '2029-06-30',
     telefono: '+56 9 9231 4410',
     cargo: 'Ingeniero Agrónomo Fitosanitario'
+  },
+  {
+    id: 'usr-5',
+    nombre: 'Marcos Fuentes Riquelme',
+    rut: '13.512.740-8',
+    email: 'encargado@fundolacabana.cl',
+    password: 'campo', // Clave encargado de campo
+    rol: 'encargado_campo',
+    nivelAcceso: 'editor_campo',
+    carnetSAGVigente: true,
+    numeroCarnetSAG: 'SAG-MAULE-55210',
+    fechaVencimientoCarnetSAG: '2028-10-15',
+    telefono: '+56 9 7845 2190',
+    cargo: 'Encargado de Campo y Bodega Fitosanitaria'
   },
   {
     id: 'usr-3',
@@ -1344,6 +1360,7 @@ export const initialUsuarios: UsuarioPredio[] = [
     email: 'juan.tapia@fundolacabana.cl',
     password: 'tapia', // Clave personal aplicador
     rol: 'aplicador_sag',
+    nivelAcceso: 'solo_lectura',
     carnetSAGVigente: true,
     numeroCarnetSAG: 'SAG-MAULE-88192',
     fechaVencimientoCarnetSAG: '2027-04-18',
@@ -1357,9 +1374,22 @@ export const initialUsuarios: UsuarioPredio[] = [
     email: 'carlos.riego@fundolacabana.cl',
     password: 'riego', // Clave personal operador riego
     rol: 'operador_riego',
+    nivelAcceso: 'solo_lectura',
     carnetSAGVigente: false,
     telefono: '+56 9 6619 4021',
     cargo: 'Encargado de Cabezal de Riego y Pozo'
+  },
+  {
+    id: 'usr-6',
+    nombre: 'Inspector / Visita Externa',
+    rut: '19.000.111-K',
+    email: 'consulta@fundolacabana.cl',
+    password: 'lectura', // Clave consulta solo lectura
+    rol: 'solo_lectura',
+    nivelAcceso: 'solo_lectura',
+    carnetSAGVigente: false,
+    telefono: '+56 9 0000 0000',
+    cargo: 'Consulta / Auditoría Externa (Solo Lectura)'
   }
 ];
 

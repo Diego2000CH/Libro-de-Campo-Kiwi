@@ -40,6 +40,7 @@ interface ParcelasViewProps {
   onUpdateLugar?: (lugar: LugarPredio) => void;
   onDeleteLugar: (id: string) => void;
   onRegisterLaborForParcela: (parcelaId: string) => void;
+  canEdit?: boolean;
 }
 
 const SISTEMAS_CONDUCCION = [
@@ -499,7 +500,8 @@ const CuartelAdvancedMarker: React.FC<{
   onCloseInfo: () => void;
   onStartEditPolygon: (parcela: Parcela) => void;
   showInfo: boolean;
-}> = ({ parcela, isSelected, onSelect, onCloseInfo, onStartEditPolygon, showInfo }) => {
+  canEdit?: boolean;
+}> = ({ parcela, isSelected, onSelect, onCloseInfo, onStartEditPolygon, showInfo, canEdit = true }) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
   const hasPolygon = Array.isArray(parcela.coordenadasPoligono) && parcela.coordenadasPoligono.length >= 3;
   const polygonCenter = hasPolygon ? calcularCentroidePoligono(parcela.coordenadasPoligono) : null;
@@ -582,13 +584,15 @@ const CuartelAdvancedMarker: React.FC<{
               <span className="text-[10px] text-stone-500">
                 📍 {markerPos.lat.toFixed(5)}, {markerPos.lng.toFixed(5)}
               </span>
-              <button
-                type="button"
-                onClick={() => onStartEditPolygon(parcela)}
-                className="px-2 py-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded-md text-[10px] font-bold cursor-pointer"
-              >
-                ✏️ {hasPolygon ? 'Editar Polígono' : 'Trazar Polígono'}
-              </button>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => onStartEditPolygon(parcela)}
+                  className="px-2 py-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded-md text-[10px] font-bold cursor-pointer"
+                >
+                  ✏️ {hasPolygon ? 'Editar Polígono' : 'Trazar Polígono'}
+                </button>
+              )}
             </div>
           </div>
         </InfoWindow>
@@ -669,7 +673,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   onAddLugar,
   onUpdateLugar,
   onDeleteLugar,
-  onRegisterLaborForParcela
+  onRegisterLaborForParcela,
+  canEdit = true
 }) => {
   const orchardOrigin = defaultCenter || { lat: -39.628593, lng: -72.461085 };
   const [selectedParcelaId, setSelectedParcelaId] = useState<string>(parcelas[0]?.id || '');
@@ -804,6 +809,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
   const handleMapClick = useCallback(
     (ev: MapMouseEvent) => {
+      if (!canEdit) return;
       const latLng = ev.detail?.latLng;
       if (!latLng) return;
       const point = {
@@ -821,7 +827,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
         lng: Number(latLng.lng.toFixed(5)),
       });
     },
-    [polygonEditorMode]
+    [canEdit, polygonEditorMode]
   );
 
   // Centrar mapa en una coordenada
@@ -1178,34 +1184,36 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={() => handleStartNewPolygon()}
-            className="px-3.5 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
-          >
-            <PenTool className="w-3.5 h-3.5" />
-            <span>Trazar Polígono de Cuartel</span>
-          </button>
+        {canEdit && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => handleStartNewPolygon()}
+              className="px-3.5 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <PenTool className="w-3.5 h-3.5" />
+              <span>Trazar Polígono de Cuartel</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => handleOpenAddLugar()}
-            className="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            <span>+ Agregar Punto</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => handleOpenAddLugar()}
+              className="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>+ Agregar Punto</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => handleOpenAddParcela()}
-            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ Cuartel Rápido</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => handleOpenAddParcela()}
+              className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Cuartel Rápido</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* CONTENEDOR DEL MAPA SATELITAL INTERACTIVO */}
@@ -1317,6 +1325,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                         parcela={p}
                         isSelected={selectedParcelaId === p.id}
                         showInfo={activeInfoId === p.id}
+                        canEdit={canEdit}
                         onSelect={() => {
                           if (polygonEditorMode) return;
                           setSelectedParcelaId(p.id);
@@ -1569,13 +1578,15 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
             </p>
           </div>
 
-          <button
-            onClick={() => handleOpenAddLugar()}
-            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Nuevo Punto</span>
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => handleOpenAddLugar()}
+              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Nuevo Punto</span>
+            </button>
+          )}
         </div>
 
         {lugares.length === 0 ? (
@@ -1636,24 +1647,26 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                       <ExternalLink className="w-3 h-3" />
                     </button>
 
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditLugar(lug)}
-                        className="p-1.5 text-stone-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg cursor-pointer"
-                        title="Editar"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLugarToDelete(lug)}
-                        className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
-                        title="Eliminar"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    {canEdit && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditLugar(lug)}
+                          className="p-1.5 text-stone-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg cursor-pointer"
+                          title="Editar"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLugarToDelete(lug)}
+                          className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -1676,12 +1689,14 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
             <TreeDeciduous className="w-10 h-10 mx-auto text-stone-300" />
             <p className="font-bold text-sm text-stone-700">No hay cuarteles registrados en tu huerto</p>
             <p className="text-xs">Comienza agregando tu primer cuartel real con sus hectáreas y coordenadas.</p>
-            <button
-              onClick={() => handleOpenAddParcela()}
-              className="mt-2 px-4 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold cursor-pointer"
-            >
-              + Agregar Cuartel
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => handleOpenAddParcela()}
+                className="mt-2 px-4 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold cursor-pointer"
+              >
+                + Agregar Cuartel
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1756,44 +1771,48 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                       >
                         Centrar
                       </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStartEditPolygonForParcela(p);
-                        }}
-                        className="text-[11px] font-bold text-emerald-700 hover:underline cursor-pointer flex items-center gap-0.5"
-                        title="Dibujar o ajustar el contorno irregular del cuartel"
-                      >
-                        <PenTool className="w-3 h-3" />
-                        <span>{hasPolygon ? 'Polígono' : 'Trazar'}</span>
-                      </button>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartEditPolygonForParcela(p);
+                          }}
+                          className="text-[11px] font-bold text-emerald-700 hover:underline cursor-pointer flex items-center gap-0.5"
+                          title="Dibujar o ajustar el contorno irregular del cuartel"
+                        >
+                          <PenTool className="w-3 h-3" />
+                          <span>{hasPolygon ? 'Polígono' : 'Trazar'}</span>
+                        </button>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenEditParcela(p);
-                        }}
-                        className="p-1.5 text-stone-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg cursor-pointer"
-                        title="Editar cuartel"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCuartelToDelete(p);
-                        }}
-                        className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
-                        title="Eliminar cuartel"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    {canEdit && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEditParcela(p);
+                          }}
+                          className="p-1.5 text-stone-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg cursor-pointer"
+                          title="Editar cuartel"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCuartelToDelete(p);
+                          }}
+                          className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                          title="Eliminar cuartel"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

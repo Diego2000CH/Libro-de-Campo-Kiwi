@@ -31,6 +31,7 @@ interface CargaObjetivoRaleoPanelProps {
   onUpdatePlan: (p: PlanCargaRaleo) => void;
   onDeletePlan: (id: string) => void;
   activeUserName?: string;
+  canEdit?: boolean;
 }
 
 const CALIBRE_PRESETS = [
@@ -109,7 +110,8 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
   onAddPlan,
   onUpdatePlan,
   onDeletePlan,
-  activeUserName = 'Administrador'
+  activeUserName = 'Administrador',
+  canEdit = true
 }) => {
   const todayISO = () => new Date().toISOString().split('T')[0];
 
@@ -666,14 +668,16 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
           </span>
         </div>
 
-        <button
-          onClick={handleOpenNew}
-          disabled={parcelas.length === 0}
-          className="px-3.5 py-2 bg-indigo-800 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-lg cursor-pointer flex items-center gap-1.5 shrink-0"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Nuevo Plan de Raleo
-        </button>
+        {canEdit && (
+          <button
+            onClick={handleOpenNew}
+            disabled={parcelas.length === 0}
+            className="px-3.5 py-2 bg-indigo-800 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-lg cursor-pointer flex items-center gap-1.5 shrink-0"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Nuevo Plan de Raleo
+          </button>
+        )}
       </div>
 
       {/* LISTA DE PLANES DE CARGA Y RALEO */}
@@ -715,42 +719,44 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => handleOpenEdit(plan)}
-                    className="p-1.5 text-stone-500 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg cursor-pointer"
-                    title="Editar plan de raleo"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  {confirmDeleteId === plan.id ? (
-                    <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
-                      <button
-                        onClick={() => {
-                          onDeletePlan(plan.id);
-                          setConfirmDeleteId(null);
-                        }}
-                        className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
-                      >
-                        Eliminar
-                      </button>
-                      <button
-                        onClick={() => setConfirmDeleteId(null)}
-                        className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
-                      >
-                        No
-                      </button>
-                    </div>
-                  ) : (
+                {canEdit && (
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
-                      onClick={() => setConfirmDeleteId(plan.id)}
-                      className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
-                      title="Eliminar plan"
+                      onClick={() => handleOpenEdit(plan)}
+                      className="p-1.5 text-stone-500 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg cursor-pointer"
+                      title="Editar plan de raleo"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Pencil className="w-4 h-4" />
                     </button>
-                  )}
-                </div>
+                    {confirmDeleteId === plan.id ? (
+                      <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                        <button
+                          onClick={() => {
+                            onDeletePlan(plan.id);
+                            setConfirmDeleteId(null);
+                          }}
+                          className="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[10px] cursor-pointer"
+                        >
+                          Eliminar
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(plan.id)}
+                        className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                        title="Eliminar plan"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Métricas Carga Objetivo vs Actual */}

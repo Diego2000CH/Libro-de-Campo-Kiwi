@@ -23,6 +23,7 @@ import {
   PlanCargaRaleo,
   EvaluacionCuajaSemillas
 } from '../types/campo';
+import { getNivelAcceso } from './permissions';
 import {
   initialExplotacion,
   initialParcelas,
@@ -231,17 +232,17 @@ export function getDemoSampleData(): AppStateData {
 export function getStoredData(): AppStateData {
   const stored = loadDataFromLocalStorage();
   if (stored && stored.explotacion) {
-    // Asegurar que usuarios tengan contraseñas si provienen de versión anterior
+    // Asegurar que usuarios tengan contraseñas y nivelAcceso si provienen de versión anterior
     if (stored.usuarios && stored.usuarios.length) {
       stored.usuarios = stored.usuarios.map((u) => {
-        if (!u.password) {
-          const match = initialUsuarios.find((initU) => initU.id === u.id || initU.rut === u.rut);
-          return {
-            ...u,
-            password: match ? match.password : '1234'
-          };
-        }
-        return u;
+        const match = initialUsuarios.find((initU) => initU.id === u.id || initU.rut === u.rut);
+        const password = u.password || (match ? match.password : '1234');
+        const nivelAcceso = getNivelAcceso({ ...u, password });
+        return {
+          ...u,
+          password,
+          nivelAcceso
+        };
       });
     } else {
       stored.usuarios = initialUsuarios;

@@ -21,6 +21,7 @@ interface LaboresViewProps {
   onOpenNewLabor: () => void;
   onEditLabor: (labor: RegistroLabor) => void;
   onDeleteLabor: (id: string) => void;
+  canEdit?: boolean;
 }
 
 export const LaboresView: React.FC<LaboresViewProps> = ({
@@ -28,7 +29,8 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
   parcelas,
   onOpenNewLabor,
   onEditLabor,
-  onDeleteLabor
+  onDeleteLabor,
+  canEdit = true
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTipo, setSelectedTipo] = useState<string>('todos');
@@ -60,13 +62,15 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={onOpenNewLabor}
-          className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Nueva Labor</span>
-        </button>
+        {canEdit && (
+          <button
+            onClick={onOpenNewLabor}
+            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Nueva Labor</span>
+          </button>
+        )}
       </div>
 
       {/* Barra de Filtros */}
@@ -127,14 +131,16 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
                 ? 'Aún no hay labores registradas en tu Cuaderno de Campo.'
                 : 'No se encontraron labores que coincidan con los filtros aplicados.'}
             </p>
-            <button
-              type="button"
-              onClick={onOpenNewLabor}
-              className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl inline-flex items-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              Registrar Primera Labor
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={onOpenNewLabor}
+                className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                Registrar Primera Labor
+              </button>
+            )}
           </div>
         ) : (
           laboresFiltradas.map((labor) => {
@@ -163,24 +169,26 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 self-start sm:self-center">
-                    <button
-                      onClick={() => onEditLabor(labor)}
-                      className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                      title="Editar registro"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>Editar</span>
-                    </button>
-                    <button
-                      onClick={() => setLaborToDelete(labor)}
-                      className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                      title="Eliminar registro"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Eliminar</span>
-                    </button>
-                  </div>
+                  {canEdit && (
+                    <div className="flex items-center gap-1.5 self-start sm:self-center">
+                      <button
+                        onClick={() => onEditLabor(labor)}
+                        className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Editar registro"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Editar</span>
+                      </button>
+                      <button
+                        onClick={() => setLaborToDelete(labor)}
+                        className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Eliminar registro"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Eliminar</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <p className="text-xs text-stone-700 leading-relaxed">

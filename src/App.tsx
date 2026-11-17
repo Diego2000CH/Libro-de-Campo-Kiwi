@@ -93,7 +93,14 @@ import {
   subscribeToOrchard,
   syncUserProfileToFirestore,
 } from './lib/firestoreSync';
-import { RotateCcw, X } from 'lucide-react';
+import {
+  canEditAppData,
+  getNivelAcceso,
+  getNivelAccesoMeta,
+  getRolLabel,
+  isAdminUser,
+} from './utils/permissions';
+import { KeyRound, Lock, RotateCcw, ShieldAlert, X } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -161,6 +168,14 @@ export default function App() {
   const [defaultTipoLabor, setDefaultTipoLabor] = useState<TipoLabor | undefined>(undefined);
   const [isExplotacionModalOpen, setIsExplotacionModalOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+
+  // Modal de cambio de cuenta (siempre exige contraseña, nunca acceso directo)
+  const [isSwitchUserModalOpen, setIsSwitchUserModalOpen] = useState(false);
+  const [switchTargetUser, setSwitchTargetUser] = useState<UsuarioPredio | null>(null);
+  const [switchIdentifier, setSwitchIdentifier] = useState('');
+  const [switchPassword, setSwitchPassword] = useState('');
+  const [switchError, setSwitchError] = useState<string | null>(null);
+  const [permissionErrorToast, setPermissionErrorToast] = useState<string | null>(null);
 
   const buildFullStateData = (): AppStateData => ({
     explotacion,
@@ -234,6 +249,7 @@ export default function App() {
       email: user.email || '',
       password: '',
       rol: 'administrador',
+      nivelAcceso: 'admin',
       carnetSAGVigente: true,
       telefono: '',
       cargo: 'Administrador de Huerto',
@@ -559,12 +575,91 @@ export default function App() {
     }
   };
 
-  // Usuario Activo
-  const activeUser = usuarios.find((u) => u.id === (currentUser?.id || activeUserId)) || usuarios[0];
+  // Usuario Activo y Permisos
+  const activeUser = usuarios.find((u) => u.id === (currentUser?.id || activeUserId)) || currentUser || usuarios[0];
+  const isAdmin = isAdminUser(activeUser);
+  const canEdit = canEditAppData(activeUser);
+
+  const notifyPermissionDenied = (required: 'edit' | 'admin') => {
+    setPermissionErrorToast(
+      required === 'admin'
+        ? 'Acción restringida: solo el Administrador del Huerto puede realizar esta operación.'
+        : 'Modo Solo Lectura: puedes explorar mapas, filtros y simuladores, pero no agregar, editar ni eliminar datos.'
+    );
+  };
+
+  const guardEdit = <T extends unknown[]>(fn: (...args: T) => void) => (...args: T) => {
+    if (!canEdit) {
+      notifyPermissionDenied('edit');
+      return;
+    }
+    fn(...args);
+  };
+
+  const guardAdmin = <T extends unknown[]>(fn: (...args: T) => void) => (...args: T) => {
+    if (!isAdmin) {
+      notifyPermissionDenied('admin');
+      return;
+    }
+    fn(...args);
+  };
+
+  const openSwitchUserModal = (target?: UsuarioPredio) => {
+    setSwitchTargetUser(target || null);
+    setSwitchIdentifier(
+      target ? (target.rut && target.rut !== 'Google Auth' ? target.rut : target.email) : ''
+    );
+    setSwitchPassword('');
+    setSwitchError(null);
+    setIsSwitchUserModalOpen(true);
+  };
+
+  const handleConfirmSwitchUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSwitchError(null);
+
+    const normalizeRut = (str: string) => str.replace(/[\.\s]/g, '').toLowerCase();
+    const idNorm = switchIdentifier.trim().toLowerCase();
+    const rutNorm = normalizeRut(switchIdentifier);
+
+    const matched = switchTargetUser
+      ? usuarios.find((u) => u.id === switchTargetUser.id)
+      : usuarios.find((u) => {
+          const uRut = normalizeRut(u.rut || '');
+          const uEmail = (u.email || '').toLowerCase();
+          return (uRut !== '' && uRut === rutNorm) || (uEmail !== '' && uEmail === idNorm);
+        });
+
+    if (!matched) {
+      setSwitchError('No se encontró ningún usuario con ese RUT o correo.');
+      return;
+    }
+
+    if (!matched.password) {
+      setSwitchError('Esta cuenta inicia sesión únicamente con Google. Cierra sesión e ingresa con Google.');
+      return;
+    }
+
+    if (matched.password !== switchPassword) {
+      setSwitchError('Clave incorrecta. Se requiere la contraseña personal de esa cuenta.');
+      return;
+    }
+
+    setActiveUserId(matched.id);
+    setCurrentUser(matched);
+    setPermissionErrorToast(null);
+    try {
+      sessionStorage.setItem('fundo_session_user', JSON.stringify(matched));
+    } catch (err) {}
+    setIsSwitchUserModalOpen(false);
+    setSwitchTargetUser(null);
+    setSwitchPassword('');
+  };
 
   const handleLoginSuccess = (user: UsuarioPredio) => {
     setCurrentUser(user);
     setActiveUserId(user.id);
+    setPermissionErrorToast(null);
     try {
       sessionStorage.setItem('fundo_session_user', JSON.stringify(user));
     } catch (e) {}
@@ -575,6 +670,7 @@ export default function App() {
     const mapped = mapFirebaseUserToPredio(user);
     setCurrentUser(mapped);
     setActiveUserId(mapped.id);
+    setPermissionErrorToast(null);
     setUsuarios((prev) => {
       if (prev.some((u) => u.id === mapped.id)) return prev;
       return [mapped, ...prev];
@@ -587,6 +683,8 @@ export default function App() {
   const handleLogout = async () => {
     setCurrentUser(null);
     setFirebaseUser(null);
+    setPermissionErrorToast(null);
+    setIsSwitchUserModalOpen(false);
     try {
       sessionStorage.removeItem('fundo_session_user');
     } catch (e) {}
@@ -642,10 +740,18 @@ export default function App() {
   };
 
   const handleUpdateOrden = (ordenActualizada: OrdenTrabajoFitosanitaria) => {
+    if (!canEdit) {
+      notifyPermissionDenied('edit');
+      return;
+    }
     setOrdenesTrabajo((prev) => prev.map((o) => (o.id === ordenActualizada.id ? ordenActualizada : o)));
   };
 
   const handleOpenNewLabor = () => {
+    if (!canEdit) {
+      notifyPermissionDenied('edit');
+      return;
+    }
     setEditingLabor(null);
     setDefaultParcelaId(undefined);
     setDefaultTipoLabor(undefined);
@@ -653,6 +759,10 @@ export default function App() {
   };
 
   const handleOpenNewLaborWithDefaults = (parcelaId?: string, tipoLabor?: TipoLabor) => {
+    if (!canEdit) {
+      notifyPermissionDenied('edit');
+      return;
+    }
     setEditingLabor(null);
     setDefaultParcelaId(parcelaId);
     setDefaultTipoLabor(tipoLabor);
@@ -660,6 +770,10 @@ export default function App() {
   };
 
   const handleEditLabor = (labor: RegistroLabor) => {
+    if (!canEdit) {
+      notifyPermissionDenied('edit');
+      return;
+    }
     setEditingLabor(labor);
     setDefaultParcelaId(undefined);
     setDefaultTipoLabor(undefined);
@@ -667,6 +781,10 @@ export default function App() {
   };
 
   const handleSaveLabor = (laborToSave: RegistroLabor) => {
+    if (!canEdit) {
+      notifyPermissionDenied('edit');
+      return;
+    }
     // Descuento de stock si aplica a la labor
     if (laborToSave.insumoId && laborToSave.totalInsumoUtilizado) {
       const cantidad = Number(laborToSave.totalInsumoUtilizado);
@@ -699,6 +817,10 @@ export default function App() {
   };
 
   const handleDeleteLabor = (id: string) => {
+    if (!canEdit) {
+      notifyPermissionDenied('edit');
+      return;
+    }
     const labor = labores.find((l) => l.id === id);
     if (labor) {
       if (labor.insumoId && labor.totalInsumoUtilizado) {
@@ -724,6 +846,10 @@ export default function App() {
   };
 
   const handleExecuteReset = () => {
+    if (!isAdmin) {
+      notifyPermissionDenied('admin');
+      return;
+    }
     const defaults = resetStorageToDefaults();
     setExplotacion(defaults.explotacion);
     setParcelas(defaults.parcelas);
@@ -747,11 +873,14 @@ export default function App() {
     setPlanesCargaRaleo(defaults.planesCargaRaleo || []);
     setEvaluacionesCuajaSemillas(defaults.evaluacionesCuajaSemillas || []);
     setTurnosRiego(defaults.turnosRiego || []);
-    setActiveUserId(defaults.usuarios[0]?.id || 'usr-1');
     setIsResetConfirmOpen(false);
   };
 
   const handleVaciarDatosMuestra = () => {
+    if (!isAdmin) {
+      notifyPermissionDenied('admin');
+      return;
+    }
     // Deja el huerto 100% en blanco para ingresar datos reales (local y en la nube)
     const blank = resetStorageToRealOrchard(explotacion, usuarios);
     setExplotacion(blank.explotacion);
@@ -780,6 +909,35 @@ export default function App() {
     } catch (e) {}
     void persistAllTargets(blank);
     setIsResetConfirmOpen(false);
+  };
+
+  const handleUpdateUsuarioSafe = (u: UsuarioPredio) => {
+    if (!isAdmin) {
+      if (!activeUser || u.id !== activeUser.id) {
+        notifyPermissionDenied('admin');
+        return;
+      }
+      // Un usuario no-admin solo puede editar su propia clave/datos, nunca su rol ni nivelAcceso
+      const safeUser: UsuarioPredio = {
+        ...u,
+        rol: activeUser.rol,
+        nivelAcceso: activeUser.nivelAcceso,
+      };
+      setUsuarios((prev) => prev.map((item) => (item.id === safeUser.id ? safeUser : item)));
+      setCurrentUser(safeUser);
+      try {
+        sessionStorage.setItem('fundo_session_user', JSON.stringify(safeUser));
+      } catch (e) {}
+      return;
+    }
+
+    setUsuarios((prev) => prev.map((item) => (item.id === u.id ? u : item)));
+    if (activeUser && activeUser.id === u.id) {
+      setCurrentUser(u);
+      try {
+        sessionStorage.setItem('fundo_session_user', JSON.stringify(u));
+      } catch (e) {}
+    }
   };
 
   const lowStockCount = inventario.filter((i) => (i.stockMinimo || 0) > 0 && i.stockActual <= (i.stockMinimo || 0)).length;
@@ -840,19 +998,34 @@ export default function App() {
         lowStockFitoCount={lowStockFitoCount}
         lowStockMaterialesCount={lowStockMaterialesCount}
         onOpenAlertsModal={() => setIsAlertsModalOpen(true)}
-        activeUser={currentUser || activeUser}
-        usuarios={usuarios}
-        onSelectUser={(uId) => {
-          setActiveUserId(uId);
-          const found = usuarios.find((u) => u.id === uId);
-          if (found) setCurrentUser(found);
-        }}
+        activeUser={activeUser}
+        canEdit={canEdit}
+        isAdmin={isAdmin}
+        onRequestSwitchUser={() => openSwitchUserModal()}
         onLogout={handleLogout}
         syncState={syncState}
         lastSyncTime={lastSyncTime}
         onForceSync={handleForceSync}
-        onOpenResetModal={() => setIsResetConfirmOpen(true)}
+        onOpenResetModal={guardAdmin(() => setIsResetConfirmOpen(true))}
       />
+
+      {permissionErrorToast && (
+        <div className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-3">
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 text-xs flex items-center justify-between gap-2 shadow-2xs">
+            <div className="flex items-center gap-2 font-semibold">
+              <ShieldAlert className="w-4 h-4 text-rose-700 shrink-0" />
+              <span>{permissionErrorToast}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPermissionErrorToast(null)}
+              className="text-rose-700 hover:text-rose-950 p-1 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <ErrorBoundary fallbackTab={() => setActiveTab('dashboard')}>
         <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6">
@@ -866,10 +1039,12 @@ export default function App() {
             clima={clima}
             horasFrio={horasFrio}
             usuarios={usuarios}
-            activeUserId={activeUserId}
+            activeUserId={activeUser?.id || activeUserId}
+            canEdit={canEdit}
+            isAdmin={isAdmin}
             onOpenNewLaborWithDefaults={handleOpenNewLaborWithDefaults}
             onNavigateTab={setActiveTab}
-            onEditExplotacion={() => setIsExplotacionModalOpen(true)}
+            onEditExplotacion={guardAdmin(() => setIsExplotacionModalOpen(true))}
             onOpenAlertsModal={() => setIsAlertsModalOpen(true)}
             onEditLabor={handleEditLabor}
             onDeleteLabor={handleDeleteLabor}
@@ -885,12 +1060,13 @@ export default function App() {
               lat: explotacion.latitud ?? -39.628593,
               lng: explotacion.longitud ?? -72.461085,
             }}
-            onAddParcela={(p) => setParcelas((prev) => [...prev, p])}
-            onUpdateParcela={(p) => setParcelas((prev) => prev.map((item) => item.id === p.id ? p : item))}
-            onDeleteParcela={(id) => setParcelas((prev) => prev.filter((item) => item.id !== id))}
-            onAddLugar={(l) => setLugares((prev) => [...prev, l])}
-            onUpdateLugar={(l) => setLugares((prev) => prev.map((item) => item.id === l.id ? l : item))}
-            onDeleteLugar={(id) => setLugares((prev) => prev.filter((item) => item.id !== id))}
+            canEdit={canEdit}
+            onAddParcela={guardEdit((p) => setParcelas((prev) => [...prev, p]))}
+            onUpdateParcela={guardEdit((p) => setParcelas((prev) => prev.map((item) => item.id === p.id ? p : item)))}
+            onDeleteParcela={guardEdit((id) => setParcelas((prev) => prev.filter((item) => item.id !== id)))}
+            onAddLugar={guardEdit((l) => setLugares((prev) => [...prev, l]))}
+            onUpdateLugar={guardEdit((l) => setLugares((prev) => prev.map((item) => item.id === l.id ? l : item)))}
+            onDeleteLugar={guardEdit((id) => setLugares((prev) => prev.filter((item) => item.id !== id)))}
             onRegisterLaborForParcela={(pId) => handleOpenNewLaborWithDefaults(pId, undefined)}
           />
         )}
@@ -899,12 +1075,13 @@ export default function App() {
           <CosechaMadurezView
             parcelas={parcelas}
             muestreos={muestreosMadurez}
-            onAddMuestreo={(m) => setMuestreosMadurez((prev) => [m, ...prev])}
-            onDeleteMuestreo={(id) => setMuestreosMadurez((prev) => prev.filter((m) => m.id !== id))}
+            onAddMuestreo={guardEdit((m) => setMuestreosMadurez((prev) => [m, ...prev]))}
+            onDeleteMuestreo={guardEdit((id) => setMuestreosMadurez((prev) => prev.filter((m) => m.id !== id)))}
             cosechas={cosechasLote}
-            onAddCosecha={(c) => setCosechasLote((prev) => [c, ...prev])}
-            onDeleteCosecha={(id) => setCosechasLote((prev) => prev.filter((c) => c.id !== id))}
+            onAddCosecha={guardEdit((c) => setCosechasLote((prev) => [c, ...prev]))}
+            onDeleteCosecha={guardEdit((id) => setCosechasLote((prev) => prev.filter((c) => c.id !== id)))}
             activeUserName={activeUser?.nombre}
+            canEdit={canEdit}
           />
         )}
 
@@ -915,9 +1092,10 @@ export default function App() {
             inventario={inventario}
             usuarios={usuarios}
             activeUser={activeUser}
-            onAddOrden={handleAddOrden}
+            canEdit={canEdit}
+            onAddOrden={guardEdit(handleAddOrden)}
             onUpdateOrden={handleUpdateOrden}
-            onExecuteOrden={(ordenId, aplicadorNombre, firma) => {
+            onExecuteOrden={guardEdit((ordenId, aplicadorNombre, firma) => {
               setOrdenesTrabajo((prev) =>
                 prev.map((o) => o.id === ordenId ? { 
                   ...o, 
@@ -927,46 +1105,50 @@ export default function App() {
                   fechaEjecucion: new Date().toISOString().split('T')[0] 
                 } : o)
               );
-            }}
-            onDeleteOrden={(id) => setOrdenesTrabajo((prev) => prev.filter((o) => o.id !== id))}
+            })}
+            onDeleteOrden={guardEdit((id) => setOrdenesTrabajo((prev) => prev.filter((o) => o.id !== id)))}
           />
         )}
 
         {(activeTab === 'fitosanitarios' || activeTab === 'inventario') && (
           <FitosanitariosView
             inventario={inventario}
-            onAddInsumo={(i) => setInventario((prev) => [...prev, i])}
-            onUpdateInsumo={(i) => setInventario((prev) => prev.map((item) => item.id === i.id ? i : item))}
-            onDeleteInsumo={(id) => setInventario((prev) => prev.filter((item) => item.id !== id))}
+            canEdit={canEdit}
+            onAddInsumo={guardEdit((i) => setInventario((prev) => [...prev, i]))}
+            onUpdateInsumo={guardEdit((i) => setInventario((prev) => prev.map((item) => item.id === i.id ? i : item)))}
+            onDeleteInsumo={guardEdit((id) => setInventario((prev) => prev.filter((item) => item.id !== id)))}
           />
         )}
 
         {activeTab === 'materiales' && (
           <MaterialesRiegoView
             inventario={inventario}
-            onAddInsumo={(i) => setInventario((prev) => [...prev, i])}
-            onUpdateInsumo={(i) => setInventario((prev) => prev.map((item) => item.id === i.id ? i : item))}
-            onDeleteInsumo={(id) => setInventario((prev) => prev.filter((item) => item.id !== id))}
+            canEdit={canEdit}
+            onAddInsumo={guardEdit((i) => setInventario((prev) => [...prev, i]))}
+            onUpdateInsumo={guardEdit((i) => setInventario((prev) => prev.map((item) => item.id === i.id ? i : item)))}
+            onDeleteInsumo={guardEdit((id) => setInventario((prev) => prev.filter((item) => item.id !== id)))}
           />
         )}
 
         {activeTab === 'pozo' && (
           <PozoView
             registrosPozo={registrosPozo}
-            onAddRegistroPozo={(r) => setRegistrosPozo((prev) => [r, ...prev])}
-            onUpdateRegistroPozo={(r) => setRegistrosPozo((prev) => prev.map((item) => item.id === r.id ? r : item))}
-            onDeleteRegistroPozo={(id) => setRegistrosPozo((prev) => prev.filter((p) => p.id !== id))}
+            canEdit={canEdit}
+            onAddRegistroPozo={guardEdit((r) => setRegistrosPozo((prev) => [r, ...prev]))}
+            onUpdateRegistroPozo={guardEdit((r) => setRegistrosPozo((prev) => prev.map((item) => item.id === r.id ? r : item)))}
+            onDeleteRegistroPozo={guardEdit((id) => setRegistrosPozo((prev) => prev.filter((p) => p.id !== id)))}
           />
         )}
 
         {activeTab === 'riego' && (
           <RiegoView
             turnosRiego={turnosRiego}
-            onAddTurnoRiego={(t) => setTurnosRiego((prev) => [t, ...prev])}
-            onUpdateTurnoRiego={(t) => setTurnosRiego((prev) => prev.map((item) => item.id === t.id ? t : item))}
-            onDeleteTurnoRiego={(id) => setTurnosRiego((prev) => prev.filter((t) => t.id !== id))}
+            onAddTurnoRiego={guardEdit((t) => setTurnosRiego((prev) => [t, ...prev]))}
+            onUpdateTurnoRiego={guardEdit((t) => setTurnosRiego((prev) => prev.map((item) => item.id === t.id ? t : item)))}
+            onDeleteTurnoRiego={guardEdit((id) => setTurnosRiego((prev) => prev.filter((t) => t.id !== id)))}
             parcelas={parcelas}
             clima={clima}
+            canEdit={canEdit}
           />
         )}
 
@@ -974,11 +1156,12 @@ export default function App() {
           <MaquinariasView
             maquinarias={maquinarias}
             registrosMantencion={registrosMantencion}
-            onAddMaquinaria={(m) => setMaquinarias((prev) => [m, ...prev])}
-            onUpdateMaquinaria={(m) => setMaquinarias((prev) => prev.map((item) => item.id === m.id ? m : item))}
-            onDeleteMaquinaria={(id) => setMaquinarias((prev) => prev.filter((item) => item.id !== id))}
-            onAddMantencion={(reg) => setRegistrosMantencion((prev) => [reg, ...prev])}
-            onDeleteMantencion={(id) => setRegistrosMantencion((prev) => prev.filter((item) => item.id !== id))}
+            canEdit={canEdit}
+            onAddMaquinaria={guardEdit((m) => setMaquinarias((prev) => [m, ...prev]))}
+            onUpdateMaquinaria={guardEdit((m) => setMaquinarias((prev) => prev.map((item) => item.id === m.id ? m : item)))}
+            onDeleteMaquinaria={guardEdit((id) => setMaquinarias((prev) => prev.filter((item) => item.id !== id)))}
+            onAddMantencion={guardEdit((reg) => setRegistrosMantencion((prev) => [reg, ...prev]))}
+            onDeleteMantencion={guardEdit((id) => setRegistrosMantencion((prev) => prev.filter((item) => item.id !== id)))}
           />
         )}
 
@@ -986,16 +1169,17 @@ export default function App() {
           <HorasFrioFenologiaView
             parcelas={parcelas}
             horasFrio={horasFrio}
-            onUpdateHorasFrio={setHorasFrio}
+            onUpdateHorasFrio={guardEdit(setHorasFrio)}
             fenologia={fenologia}
-            onAddFenologia={(f) => setFenologia((prev) => [f, ...prev])}
-            onUpdateFenologia={(f) => setFenologia((prev) => prev.map((item) => item.id === f.id ? f : item))}
-            onDeleteFenologia={(id) => setFenologia((prev) => prev.filter((f) => f.id !== id))}
+            onAddFenologia={guardEdit((f) => setFenologia((prev) => [f, ...prev]))}
+            onUpdateFenologia={guardEdit((f) => setFenologia((prev) => prev.map((item) => item.id === f.id ? f : item)))}
+            onDeleteFenologia={guardEdit((id) => setFenologia((prev) => prev.filter((f) => f.id !== id)))}
             polinizacion={polinizacion}
-            onAddPolinizacion={(p) => setPolinizacion((prev) => [p, ...prev])}
-            onUpdatePolinizacion={(p) => setPolinizacion((prev) => prev.map((item) => item.id === p.id ? p : item))}
-            onDeletePolinizacion={(id) => setPolinizacion((prev) => prev.filter((p) => p.id !== id))}
+            onAddPolinizacion={guardEdit((p) => setPolinizacion((prev) => [p, ...prev]))}
+            onUpdatePolinizacion={guardEdit((p) => setPolinizacion((prev) => prev.map((item) => item.id === p.id ? p : item)))}
+            onDeletePolinizacion={guardEdit((id) => setPolinizacion((prev) => prev.filter((p) => p.id !== id)))}
             activeUserName={activeUser?.nombre}
+            canEdit={canEdit}
           />
         )}
 
@@ -1014,30 +1198,31 @@ export default function App() {
             }
             parcelas={parcelas}
             muestreosBrotacion={muestreosBrotacion}
-            onAddMuestreoBrotacion={(m) => setMuestreosBrotacion((prev) => [m, ...prev])}
-            onUpdateMuestreoBrotacion={(m) => setMuestreosBrotacion((prev) => prev.map((item) => (item.id === m.id ? m : item)))}
-            onDeleteMuestreoBrotacion={(id) => setMuestreosBrotacion((prev) => prev.filter((m) => m.id !== id))}
+            onAddMuestreoBrotacion={guardEdit((m) => setMuestreosBrotacion((prev) => [m, ...prev]))}
+            onUpdateMuestreoBrotacion={guardEdit((m) => setMuestreosBrotacion((prev) => prev.map((item) => (item.id === m.id ? m : item))))}
+            onDeleteMuestreoBrotacion={guardEdit((id) => setMuestreosBrotacion((prev) => prev.filter((m) => m.id !== id)))}
             conteosBotones={conteosBotones}
-            onAddConteoBotones={(c) => setConteosBotones((prev) => [c, ...prev])}
-            onUpdateConteoBotones={(c) => setConteosBotones((prev) => prev.map((item) => (item.id === c.id ? c : item)))}
-            onDeleteConteoBotones={(id) => setConteosBotones((prev) => prev.filter((c) => c.id !== id))}
+            onAddConteoBotones={guardEdit((c) => setConteosBotones((prev) => [c, ...prev]))}
+            onUpdateConteoBotones={guardEdit((c) => setConteosBotones((prev) => prev.map((item) => (item.id === c.id ? c : item))))}
+            onDeleteConteoBotones={guardEdit((id) => setConteosBotones((prev) => prev.filter((c) => c.id !== id)))}
             sincroniasFlorales={sincroniasFlorales}
-            onAddSincroniaFloral={(s) => setSincroniasFlorales((prev) => [s, ...prev])}
-            onUpdateSincroniaFloral={(s) => setSincroniasFlorales((prev) => prev.map((item) => (item.id === s.id ? s : item)))}
-            onDeleteSincroniaFloral={(id) => setSincroniasFlorales((prev) => prev.filter((s) => s.id !== id))}
+            onAddSincroniaFloral={guardEdit((s) => setSincroniasFlorales((prev) => [s, ...prev]))}
+            onUpdateSincroniaFloral={guardEdit((s) => setSincroniasFlorales((prev) => prev.map((item) => (item.id === s.id ? s : item))))}
+            onDeleteSincroniaFloral={guardEdit((id) => setSincroniasFlorales((prev) => prev.filter((s) => s.id !== id)))}
             aplicacionesPolen={aplicacionesPolen}
-            onAddAplicacionPolen={(a) => setAplicacionesPolen((prev) => [a, ...prev])}
-            onUpdateAplicacionPolen={(a) => setAplicacionesPolen((prev) => prev.map((item) => (item.id === a.id ? a : item)))}
-            onDeleteAplicacionPolen={(id) => setAplicacionesPolen((prev) => prev.filter((a) => a.id !== id))}
+            onAddAplicacionPolen={guardEdit((a) => setAplicacionesPolen((prev) => [a, ...prev]))}
+            onUpdateAplicacionPolen={guardEdit((a) => setAplicacionesPolen((prev) => prev.map((item) => (item.id === a.id ? a : item))))}
+            onDeleteAplicacionPolen={guardEdit((id) => setAplicacionesPolen((prev) => prev.filter((a) => a.id !== id)))}
             planesCargaRaleo={planesCargaRaleo}
-            onAddPlanCargaRaleo={(p) => setPlanesCargaRaleo((prev) => [p, ...prev])}
-            onUpdatePlanCargaRaleo={(p) => setPlanesCargaRaleo((prev) => prev.map((item) => (item.id === p.id ? p : item)))}
-            onDeletePlanCargaRaleo={(id) => setPlanesCargaRaleo((prev) => prev.filter((p) => p.id !== id))}
+            onAddPlanCargaRaleo={guardEdit((p) => setPlanesCargaRaleo((prev) => [p, ...prev]))}
+            onUpdatePlanCargaRaleo={guardEdit((p) => setPlanesCargaRaleo((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
+            onDeletePlanCargaRaleo={guardEdit((id) => setPlanesCargaRaleo((prev) => prev.filter((p) => p.id !== id)))}
             evaluacionesCuajaSemillas={evaluacionesCuajaSemillas}
-            onAddEvaluacionCuajaSemillas={(e) => setEvaluacionesCuajaSemillas((prev) => [e, ...prev])}
-            onUpdateEvaluacionCuajaSemillas={(e) => setEvaluacionesCuajaSemillas((prev) => prev.map((item) => (item.id === e.id ? e : item)))}
-            onDeleteEvaluacionCuajaSemillas={(id) => setEvaluacionesCuajaSemillas((prev) => prev.filter((e) => e.id !== id))}
-            activeUserName={currentUser?.nombre}
+            onAddEvaluacionCuajaSemillas={guardEdit((e) => setEvaluacionesCuajaSemillas((prev) => [e, ...prev]))}
+            onUpdateEvaluacionCuajaSemillas={guardEdit((e) => setEvaluacionesCuajaSemillas((prev) => prev.map((item) => (item.id === e.id ? e : item))))}
+            onDeleteEvaluacionCuajaSemillas={guardEdit((id) => setEvaluacionesCuajaSemillas((prev) => prev.filter((e) => e.id !== id)))}
+            activeUserName={activeUser?.nombre}
+            canEdit={canEdit}
           />
         )}
 
@@ -1045,6 +1230,7 @@ export default function App() {
           <LaboresView
             labores={labores}
             parcelas={parcelas}
+            canEdit={canEdit}
             onOpenNewLabor={handleOpenNewLabor}
             onEditLabor={handleEditLabor}
             onDeleteLabor={handleDeleteLabor}
@@ -1054,7 +1240,8 @@ export default function App() {
         {activeTab === 'clima' && (
           <ClimaView
             clima={clima}
-            onUpdateClima={setClima}
+            onUpdateClima={guardEdit(setClima)}
+            canEdit={canEdit}
           />
         )}
 
@@ -1062,6 +1249,7 @@ export default function App() {
           <MonitoreoView
             labores={labores}
             parcelas={parcelas}
+            canEdit={canEdit}
             onOpenNewLaborWithDefaults={handleOpenNewLaborWithDefaults}
             onSaveQuickObservation={handleSaveLabor}
           />
@@ -1092,7 +1280,8 @@ export default function App() {
             explotacion={explotacion}
             parcelas={parcelas}
             labores={labores}
-            onImportJSON={(e) => {
+            isAdmin={isAdmin}
+            onImportJSON={guardAdmin((e) => {
               const file = e.target.files?.[0];
               if (file) {
                 const reader = new FileReader();
@@ -1120,84 +1309,176 @@ export default function App() {
                 };
                 reader.readAsText(file);
               }
-            }}
+            })}
           />
         )}
 
         {activeTab === 'usuarios' && (
           <UsuariosView
             usuarios={usuarios}
-            currentUser={currentUser}
-            activeUserId={currentUser.id || activeUserId}
-            onSetActiveUser={(uId) => {
-              setActiveUserId(uId);
-              const found = usuarios.find((u) => u.id === uId);
-              if (found) setCurrentUser(found);
-            }}
-            onAddUsuario={(u) => setUsuarios((prev) => [...prev, u])}
-            onUpdateUsuario={(u) => {
-              setUsuarios((prev) => prev.map((item) => item.id === u.id ? u : item));
-              if (currentUser && currentUser.id === u.id) {
-                setCurrentUser(u);
-                try {
-                  sessionStorage.setItem('fundo_session_user', JSON.stringify(u));
-                } catch (e) {}
-              }
-            }}
-            onDeleteUsuario={(id) => setUsuarios((prev) => prev.filter((item) => item.id !== id))}
+            currentUser={activeUser}
+            activeUserId={activeUser?.id || activeUserId}
+            fundoNombre={explotacion.nombreFundo}
+            onRequestSwitchUser={openSwitchUserModal}
+            onAddUsuario={guardAdmin((u) => setUsuarios((prev) => [...prev, u]))}
+            onUpdateUsuario={handleUpdateUsuarioSafe}
+            onDeleteUsuario={guardAdmin((id) => setUsuarios((prev) => prev.filter((item) => item.id !== id)))}
           />
         )}
       </main>
       </ErrorBoundary>
 
       {/* Modales Globales */}
-      <ModalLabor
-        isOpen={isLaborModalOpen}
-        onClose={() => {
-          setIsLaborModalOpen(false);
-          setEditingLabor(null);
-        }}
-        onSave={handleSaveLabor}
-        parcelas={parcelas}
-        inventario={inventario}
-        climaActual={clima}
-        usuarios={usuarios}
-        activeUserId={currentUser.id || activeUserId}
-        initialLabor={editingLabor}
-        defaultParcelaId={defaultParcelaId}
-        defaultTipoLabor={defaultTipoLabor}
-      />
+      {canEdit && (
+        <ModalLabor
+          isOpen={isLaborModalOpen}
+          onClose={() => {
+            setIsLaborModalOpen(false);
+            setEditingLabor(null);
+          }}
+          onSave={handleSaveLabor}
+          parcelas={parcelas}
+          inventario={inventario}
+          climaActual={clima}
+          usuarios={usuarios}
+          activeUserId={activeUser?.id || activeUserId}
+          initialLabor={editingLabor}
+          defaultParcelaId={defaultParcelaId}
+          defaultTipoLabor={defaultTipoLabor}
+        />
+      )}
 
-      <ModalExplotacion
-        isOpen={isExplotacionModalOpen}
-        onClose={() => setIsExplotacionModalOpen(false)}
-        explotacion={explotacion}
-        onSave={setExplotacion}
-      />
+      {isAdmin && (
+        <ModalExplotacion
+          isOpen={isExplotacionModalOpen}
+          onClose={() => setIsExplotacionModalOpen(false)}
+          explotacion={explotacion}
+          onSave={guardAdmin(setExplotacion)}
+        />
+      )}
 
       <AlertasStockModal
         isOpen={isAlertsModalOpen}
         onClose={() => setIsAlertsModalOpen(false)}
         inventario={inventario}
-        onUpdateInsumo={(updated) => {
+        canEdit={canEdit}
+        isAdmin={isAdmin}
+        onUpdateInsumo={guardEdit((updated) => {
           setInventario((prev) =>
             prev.map((i) => (i.id === updated.id ? updated : i))
           );
-        }}
-        onDeleteInsumo={(id) => {
+        })}
+        onDeleteInsumo={guardEdit((id) => {
           setInventario((prev) => prev.filter((i) => i.id !== id));
-        }}
-        onClearInventario={() => {
+        })}
+        onClearInventario={guardAdmin(() => {
           setInventario([]);
-        }}
+        })}
         onNavigateToInventario={() => {
           setIsAlertsModalOpen(false);
           setActiveTab('fitosanitarios');
         }}
       />
 
-      {/* Modal de Opciones de Reinicio / Huerto en Blanco */}
-      {isResetConfirmOpen && (
+      {/* Modal Seguro de Cambio de Cuenta (Exige Contraseña Obligatoria) */}
+      {isSwitchUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-emerald-400" />
+                <h3 className="font-bold text-sm">Cambiar de Usuario (Verificación de Clave)</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSwitchUserModalOpen(false);
+                  setSwitchTargetUser(null);
+                  setSwitchPassword('');
+                  setSwitchError(null);
+                }}
+                className="text-emerald-200 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmSwitchUser} className="p-5 space-y-3.5 text-xs">
+              {switchTargetUser ? (
+                <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 space-y-1">
+                  <div className="text-[10px] font-bold uppercase text-stone-500">Cuenta Seleccionada</div>
+                  <div className="font-bold text-sm text-stone-900">{switchTargetUser.nombre}</div>
+                  <div className="text-[11px] text-stone-600 flex items-center gap-2">
+                    <span>{getRolLabel(switchTargetUser.rol)}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getNivelAccesoMeta(getNivelAcceso(switchTargetUser)).badgeClass}`}>
+                      {getNivelAccesoMeta(getNivelAcceso(switchTargetUser)).shortLabel}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">RUT o Correo del Usuario:</label>
+                  <input
+                    type="text"
+                    value={switchIdentifier}
+                    onChange={(e) => setSwitchIdentifier(e.target.value)}
+                    placeholder="Ej. 12.845.219-4 o usuario@fundolacabana.cl"
+                    className="w-full p-2.5 bg-white border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    required
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1 flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Código o Clave Personal Obligatoria:</span>
+                </label>
+                <input
+                  type="password"
+                  value={switchPassword}
+                  onChange={(e) => setSwitchPassword(e.target.value)}
+                  placeholder="Ingresa la contraseña de la cuenta..."
+                  className="w-full p-2.5 bg-white border border-stone-300 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  required
+                  autoFocus
+                />
+              </div>
+
+              {switchError && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 font-semibold flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{switchError}</span>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSwitchUserModalOpen(false);
+                    setSwitchTargetUser(null);
+                    setSwitchPassword('');
+                    setSwitchError(null);
+                  }}
+                  className="px-4 py-2 border border-stone-300 rounded-xl text-stone-700 hover:bg-stone-50 cursor-pointer font-semibold"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl font-bold cursor-pointer shadow-xs"
+                >
+                  Verificar e Ingresar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Opciones de Reinicio / Huerto en Blanco (Solo Administrador) */}
+      {isAdmin && isResetConfirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95">
             <div className="bg-stone-900 text-white p-4 flex items-center justify-between">

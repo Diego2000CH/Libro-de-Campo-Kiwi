@@ -9,12 +9,16 @@ export type TipoLabor =
   | 'mantenimiento' 
   | 'desmalezado';
 
+export type NivelAcceso = 'admin' | 'editor_campo' | 'solo_lectura';
+
 export type RolUsuario = 
   | 'administrador' 
+  | 'encargado_campo'
   | 'agronomo' 
   | 'capataz' 
   | 'aplicador_sag' 
-  | 'operador_riego';
+  | 'operador_riego'
+  | 'solo_lectura';
 
 export interface ExplotacionAgricola {
   id: string;
@@ -417,6 +421,7 @@ export interface UsuarioPredio {
   email: string;
   password: string; // Clave personal de acceso a la app
   rol: RolUsuario;
+  nivelAcceso?: NivelAcceso; // Control de permisos: admin | editor_campo | solo_lectura
   carnetSAGVigente: boolean;
   numeroCarnetSAG?: string;
   fechaVencimientoCarnetSAG?: string;

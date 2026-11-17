@@ -38,6 +38,7 @@ interface OrdenesTrabajoViewProps {
   onUpdateOrden?: (orden: OrdenTrabajoFitosanitaria) => void;
   onExecuteOrden: (ordenId: string, aplicadorNombre: string, firma: string) => void;
   onDeleteOrden: (id: string) => void;
+  canEdit?: boolean;
 }
 
 const DESTINOS_APLICACION: { id: DestinoProducto; label: string; icon: string }[] = [
@@ -56,7 +57,8 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
   onAddOrden,
   onUpdateOrden,
   onExecuteOrden,
-  onDeleteOrden
+  onDeleteOrden,
+  canEdit = true
 }) => {
   const [isNewOrdenOpen, setIsNewOrdenOpen] = useState(false);
   const [isEditOrdenOpen, setIsEditOrdenOpen] = useState(false);
@@ -295,13 +297,15 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={handleOpenNewOrden}
-          className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>Emitir Nueva Receta Fitosanitaria</span>
-        </button>
+        {canEdit && (
+          <button
+            onClick={handleOpenNewOrden}
+            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Emitir Nueva Receta Fitosanitaria</span>
+          </button>
+        )}
       </div>
 
       {/* Tarjeta Informativa de Descuento Automático de Bodega */}
@@ -391,13 +395,15 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                 {/* Acciones de la orden */}
                 <div className="flex items-center gap-2 self-start sm:self-center">
                   {!isCompletada ? (
-                    <button
-                      onClick={() => setExecutingOrdenId(orden.id)}
-                      className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Check className="w-3.5 h-3.5 stroke-[3]" />
-                      Finalizar Aplicación
-                    </button>
+                    canEdit ? (
+                      <button
+                        onClick={() => setExecutingOrdenId(orden.id)}
+                        className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        Finalizar Aplicación
+                      </button>
+                    ) : null
                   ) : (
                     <div className="text-right text-[11px] text-stone-500">
                       <div>Aplicador: <strong className="text-emerald-950">{orden.aplicadorNombre}</strong></div>
@@ -405,23 +411,27 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                     </div>
                   )}
 
-                  <button
-                    onClick={() => handleOpenEdit(orden)}
-                    className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                    title="Editar receta fitosanitaria"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>Editar</span>
-                  </button>
+                  {canEdit && (
+                    <>
+                      <button
+                        onClick={() => handleOpenEdit(orden)}
+                        className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Editar receta fitosanitaria"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Editar</span>
+                      </button>
 
-                  <button
-                    onClick={() => setOrdenToDelete(orden)}
-                    className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                    title="Eliminar receta"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Eliminar</span>
-                  </button>
+                      <button
+                        onClick={() => setOrdenToDelete(orden)}
+                        className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Eliminar receta"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Eliminar</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 

@@ -50,6 +50,8 @@ interface DashboardViewProps {
   onOpenAlertsModal: () => void;
   onEditLabor: (labor: RegistroLabor) => void;
   onDeleteLabor: (id: string) => void;
+  canEdit?: boolean;
+  isAdmin?: boolean;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -67,7 +69,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onEditExplotacion,
   onOpenAlertsModal,
   onEditLabor,
-  onDeleteLabor
+  onDeleteLabor,
+  canEdit = true,
+  isAdmin = true
 }) => {
   const totalHectareas = parcelas.reduce((acc, p) => acc + p.superficieHa, 0);
   const lowStockItems = inventario.filter((i) => (i.stockMinimo || 0) > 0 && (i.stockActual || 0) <= (i.stockMinimo || 0));
@@ -104,12 +108,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 self-start md:self-center">
-            <button
-              onClick={onEditExplotacion}
-              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors border border-white/10 cursor-pointer"
-            >
-              Ficha del Fundo
-            </button>
+            {isAdmin && (
+              <button
+                onClick={onEditExplotacion}
+                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors border border-white/10 cursor-pointer"
+              >
+                Ficha del Fundo
+              </button>
+            )}
             <button
               onClick={() => onNavigateTab('asistente_ia')}
               className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
@@ -298,23 +304,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <button
-              onClick={() => onOpenNewLaborWithDefaults(undefined, 'fitosanitario')}
+              onClick={() =>
+                canEdit ? onOpenNewLaborWithDefaults(undefined, 'fitosanitario') : onNavigateTab('fitosanitarios')
+              }
               className="p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-200 font-semibold text-xs flex flex-col items-center justify-center gap-2 transition-all cursor-pointer text-center"
             >
               <div className="w-8 h-8 rounded-lg bg-emerald-700 text-white flex items-center justify-center">
                 <FileText className="w-4 h-4" />
               </div>
-              <span>Aplicación Fitosanitaria</span>
+              <span>{canEdit ? 'Aplicación Fitosanitaria' : 'Bodega Fitosanitarios'}</span>
             </button>
 
             <button
-              onClick={() => onOpenNewLaborWithDefaults(undefined, 'riego')}
+              onClick={() =>
+                canEdit ? onOpenNewLaborWithDefaults(undefined, 'riego') : onNavigateTab('riego')
+              }
               className="p-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-950 border border-blue-200 font-semibold text-xs flex flex-col items-center justify-center gap-2 transition-all cursor-pointer text-center"
             >
               <div className="w-8 h-8 rounded-lg bg-blue-700 text-white flex items-center justify-center">
                 <Droplet className="w-4 h-4" />
               </div>
-              <span>Riego de Pozo</span>
+              <span>{canEdit ? 'Riego de Pozo' : 'Control Riego'}</span>
             </button>
 
             <button
@@ -409,14 +419,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <th className="px-4 py-3">Labor</th>
                 <th className="px-4 py-3">Insumo / Dosis</th>
                 <th className="px-4 py-3">Responsable</th>
-                <th className="px-4 py-3 text-right">Acciones</th>
+                {canEdit && <th className="px-4 py-3 text-right">Acciones</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 text-stone-700">
               {ultimasLabores.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-stone-400">
-                    Sin labores registradas todavía. Usa el botón <strong>+ Nueva Labor</strong> para registrar tu primera faena.
+                  <td colSpan={canEdit ? 6 : 5} className="px-4 py-8 text-center text-stone-400">
+                    Sin labores registradas todavía.{canEdit ? ' Usa el botón + Nueva Labor para registrar tu primera faena.' : ''}
                   </td>
                 </tr>
               ) : (
@@ -443,24 +453,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       )}
                     </td>
                     <td className="px-4 py-3 text-stone-600 truncate max-w-[150px]">{l.registradoPor}</td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => onEditLabor(l)}
-                          className="p-1 text-stone-400 hover:text-emerald-700 rounded hover:bg-stone-100"
-                          title="Editar labor"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => onDeleteLabor(l.id)}
-                          className="p-1 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50"
-                          title="Eliminar labor"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
+                    {canEdit && (
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => onEditLabor(l)}
+                            className="p-1 text-stone-400 hover:text-emerald-700 rounded hover:bg-stone-100 cursor-pointer"
+                            title="Editar labor"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => onDeleteLabor(l.id)}
+                            className="p-1 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50 cursor-pointer"
+                            title="Eliminar labor"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

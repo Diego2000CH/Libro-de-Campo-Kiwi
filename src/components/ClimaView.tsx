@@ -26,6 +26,7 @@ import {
 interface ClimaViewProps {
   clima: ClimaCondiciones;
   onUpdateClima: (clima: ClimaCondiciones) => void;
+  canEdit?: boolean;
 }
 
 interface GeoResultado {
@@ -68,9 +69,12 @@ const COMUNAS_RAPIDAS = [
 ];
 
 export const ClimaView: React.FC<ClimaViewProps> = ({
-  clima,
-  onUpdateClima
+  clima: climaProp,
+  onUpdateClima,
+  canEdit = true
 }) => {
+  const [localClima, setLocalClima] = useState<ClimaCondiciones>(climaProp);
+  const clima = canEdit ? climaProp : localClima;
   // Ubicación seleccionada (prioriza la Entrada Principal especificada por el usuario)
   const [ubicacionNombre, setUbicacionNombre] = useState<string>(() => {
     const saved = localStorage.getItem('fundo_clima_nombre');
@@ -228,8 +232,11 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
       localStorage.setItem('fundo_clima_lng', lng.toString());
       setCoords({ lat, lng });
 
-      // Actualizar estado global del applet
-      onUpdateClima(nuevoClima);
+      // Actualizar vista local y estado global si tiene permiso de edición
+      setLocalClima(nuevoClima);
+      if (canEdit) {
+        onUpdateClima(nuevoClima);
+      }
     } catch (err: any) {
       console.error('Error al obtener clima en vivo:', err);
       setErrorMensaje(err.message || 'No se pudo conectar a la estación meteorológica');
@@ -340,14 +347,16 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
               <span>{isLoadingClima ? 'Sincronizando...' : 'Actualizar Clima en Vivo'}</span>
             </button>
 
-            <button
-              onClick={handleOpenEdit}
-              className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 rounded-xl text-xs font-semibold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors"
-              title="Ajuste manual de parámetros de estación"
-            >
-              <Edit3 className="w-3.5 h-3.5 text-stone-600" />
-              <span>Ajuste Manual</span>
-            </button>
+            {canEdit && (
+              <button
+                onClick={handleOpenEdit}
+                className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 rounded-xl text-xs font-semibold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                title="Ajuste manual de parámetros de estación"
+              >
+                <Edit3 className="w-3.5 h-3.5 text-stone-600" />
+                <span>Ajuste Manual</span>
+              </button>
+            )}
           </div>
         </div>
 

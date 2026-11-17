@@ -27,6 +27,7 @@ interface MaquinariasViewProps {
   onDeleteMaquinaria: (id: string) => void;
   onAddMantencion: (mantencion: RegistroMantencionMaquinaria, nuevoHorometro?: number) => void;
   onDeleteMantencion: (id: string) => void;
+  canEdit?: boolean;
 }
 
 export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
@@ -36,7 +37,8 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
   onUpdateMaquinaria,
   onDeleteMaquinaria,
   onAddMantencion,
-  onDeleteMantencion
+  onDeleteMantencion,
+  canEdit = true
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [tipoFilter, setTipoFilter] = useState<string>('todos');
@@ -247,31 +249,33 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            setMaquinariaForm({
-              codigoInterno: 'EQ-0' + (maquinarias.length + 1),
-              nombre: '',
-              tipo: 'tractor',
-              marcaModelo: '',
-              patenteOSerie: '',
-              anio: new Date().getFullYear(),
-              horometroActual: 0,
-              horometroUltimaMantencion: 0,
-              frecuenciaMantencionHoras: 250,
-              estado: 'operativo',
-              operadorAsignado: 'Carlos Morales Vega',
-              fechaUltimaMantencion: new Date().toISOString().split('T')[0],
-              fechaProximaMantencion: 'Al cumplir 250 hrs',
-              observaciones: ''
-            });
-            setIsNewModalOpen(true);
-          }}
-          className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Registrar Maquinaria</span>
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => {
+              setMaquinariaForm({
+                codigoInterno: 'EQ-0' + (maquinarias.length + 1),
+                nombre: '',
+                tipo: 'tractor',
+                marcaModelo: '',
+                patenteOSerie: '',
+                anio: new Date().getFullYear(),
+                horometroActual: 0,
+                horometroUltimaMantencion: 0,
+                frecuenciaMantencionHoras: 250,
+                estado: 'operativo',
+                operadorAsignado: 'Carlos Morales Vega',
+                fechaUltimaMantencion: new Date().toISOString().split('T')[0],
+                fechaProximaMantencion: 'Al cumplir 250 hrs',
+                observaciones: ''
+              });
+              setIsNewModalOpen(true);
+            }}
+            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Registrar Maquinaria</span>
+          </button>
+        )}
       </div>
 
       {/* Tarjetas de Métricas */}
@@ -397,24 +401,26 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                     <p className="text-xs text-stone-500">{m.marcaModelo} · {m.anio} · Pat/Serie: <strong className="font-mono text-stone-700">{m.patenteOSerie}</strong></p>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => handleOpenEdit(m)}
-                      className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                      title="Editar ficha maquinaria"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>Editar</span>
-                    </button>
-                    <button
-                      onClick={() => setMaquinariaToDelete(m)}
-                      className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                      title="Eliminar maquinaria"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Eliminar</span>
-                    </button>
-                  </div>
+                  {canEdit && (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleOpenEdit(m)}
+                        className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Editar ficha maquinaria"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Editar</span>
+                      </button>
+                      <button
+                        onClick={() => setMaquinariaToDelete(m)}
+                        className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Eliminar maquinaria"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Eliminar</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Horómetro Actual */}
@@ -426,13 +432,15 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-base font-black font-mono text-stone-900">{m.horometroActual} hrs</span>
-                      <button
-                        onClick={() => handleOpenHorometro(m)}
-                        className="px-2 py-0.5 bg-white border border-stone-300 rounded text-[11px] font-bold text-stone-700 hover:bg-stone-100 cursor-pointer"
-                        title="Actualizar horómetro"
-                      >
-                        Ajustar
-                      </button>
+                      {canEdit && (
+                        <button
+                          onClick={() => handleOpenHorometro(m)}
+                          className="px-2 py-0.5 bg-white border border-stone-300 rounded text-[11px] font-bold text-stone-700 hover:bg-stone-100 cursor-pointer"
+                          title="Actualizar horómetro"
+                        >
+                          Ajustar
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -476,15 +484,17 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
               </div>
 
               {/* Botón de Mantención */}
-              <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
-                <button
-                  onClick={() => handleOpenMantencion(m)}
-                  className="w-full py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
-                >
-                  <Wrench className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Registrar Servicio / Mantención</span>
-                </button>
-              </div>
+              {canEdit && (
+                <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => handleOpenMantencion(m)}
+                    className="w-full py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                  >
+                    <Wrench className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Registrar Servicio / Mantención</span>
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
@@ -511,7 +521,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 <th className="px-4 py-3">Mecánico / Taller</th>
                 <th className="px-4 py-3">Repuestos / Insumos</th>
                 <th className="px-4 py-3">Costo (CLP)</th>
-                <th className="px-4 py-3 text-right">Acción</th>
+                {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 text-stone-700">
@@ -527,15 +537,17 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                   <td className="px-4 py-3 text-stone-600">{reg.tallerOMecanico}</td>
                   <td className="px-4 py-3 text-stone-500 text-[11px] max-w-xs truncate">{reg.repuestosUtilizados}</td>
                   <td className="px-4 py-3 font-mono font-bold text-stone-900">${reg.costoCLP.toLocaleString('es-CL')}</td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => onDeleteMantencion(reg.id)}
-                      className="p-1 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50 cursor-pointer"
-                      title="Eliminar registro"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </td>
+                  {canEdit && (
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => onDeleteMantencion(reg.id)}
+                        className="p-1 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50 cursor-pointer"
+                        title="Eliminar registro"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { InsumoInventario } from '../types/campo';
-import { X, AlertTriangle, Plus, Package, CheckCircle2, Trash2, RefreshCw } from 'lucide-react';
+import { X, AlertTriangle, Plus, Package, CheckCircle2, Trash2 } from 'lucide-react';
 
 interface AlertasStockModalProps {
   isOpen: boolean;
@@ -10,6 +10,8 @@ interface AlertasStockModalProps {
   onNavigateToInventario: () => void;
   onDeleteInsumo?: (id: string) => void;
   onClearInventario?: () => void;
+  canEdit?: boolean;
+  isAdmin?: boolean;
 }
 
 export const AlertasStockModal: React.FC<AlertasStockModalProps> = ({
@@ -19,13 +21,19 @@ export const AlertasStockModal: React.FC<AlertasStockModalProps> = ({
   onUpdateInsumo,
   onNavigateToInventario,
   onDeleteInsumo,
-  onClearInventario
+  onClearInventario,
+  canEdit = true,
+  isAdmin = true
 }) => {
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
+
   if (!isOpen) return null;
 
   const lowStockItems = inventario.filter((i) => (i.stockMinimo || 0) > 0 && (i.stockActual || 0) <= (i.stockMinimo || 0));
 
   const handleQuickAdd = (item: InsumoInventario, amount: number) => {
+    if (!canEdit) return;
     onUpdateInsumo({
       ...item,
       stockActual: Number(((item.stockActual || 0) + amount).toFixed(2))
@@ -50,7 +58,7 @@ export const AlertasStockModal: React.FC<AlertasStockModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-stone-300 hover:text-white hover:bg-white/10"
+            className="p-1 rounded-lg text-stone-300 hover:text-white hover:bg-white/10 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -65,16 +73,18 @@ export const AlertasStockModal: React.FC<AlertasStockModalProps> = ({
               <p className="text-xs text-stone-500">
                 No tienes productos registrados en bodega actualmente, por lo que no existen alertas de faltantes.
               </p>
-              <button
-                onClick={() => {
-                  onNavigateToInventario();
-                  onClose();
-                }}
-                className="mt-3 px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs inline-flex items-center gap-1 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Ingresar mis propios productos
-              </button>
+              {canEdit && (
+                <button
+                  onClick={() => {
+                    onNavigateToInventario();
+                    onClose();
+                  }}
+                  className="mt-3 px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs inline-flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Ingresar mis propios productos
+                </button>
+              )}
             </div>
           ) : lowStockItems.length === 0 ? (
             <div className="p-8 text-center text-stone-500 space-y-2">
@@ -98,30 +108,50 @@ export const AlertasStockModal: React.FC<AlertasStockModalProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => handleQuickAdd(item, item.stockMinimo || 10)}
-                    className="px-2.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1 shadow-2xs cursor-pointer"
-                    title={`Reponer +${item.stockMinimo || 10} ${item.unidad}`}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    +{item.stockMinimo || 10} {item.unidad}
-                  </button>
-
-                  {onDeleteInsumo && (
+                {canEdit && (
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <button
-                      onClick={() => {
-                        if (confirm(`¿Eliminar ${item.nombreComercial} de la bodega ya que no lo utilizas?`)) {
-                          onDeleteInsumo(item.id);
-                        }
-                      }}
-                      className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer"
-                      title="No utilizo este producto (Quitar de bodega)"
+                      onClick={() => handleQuickAdd(item, item.stockMinimo || 10)}
+                      className="px-2.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1 shadow-2xs cursor-pointer"
+                      title={`Reponer +${item.stockMinimo || 10} ${item.unidad}`}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Plus className="w-3.5 h-3.5" />
+                      +{item.stockMinimo || 10} {item.unidad}
                     </button>
-                  )}
-                </div>
+
+                    {onDeleteInsumo && (
+                      confirmDeleteId === item.id ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onDeleteInsumo(item.id);
+                              setConfirmDeleteId(null);
+                            }}
+                            className="px-2 py-1 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-lg text-[10px] cursor-pointer"
+                          >
+                            Sí
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="px-2 py-1 bg-stone-200 text-stone-700 font-bold rounded-lg text-[10px] cursor-pointer"
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteId(item.id)}
+                          className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer"
+                          title="Quitar producto de bodega"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )
+                    )}
+                  </div>
+                )}
               </div>
             ))
           )}
@@ -141,17 +171,35 @@ export const AlertasStockModal: React.FC<AlertasStockModalProps> = ({
               Ir a la Bodega Completa →
             </button>
 
-            {onClearInventario && inventario.length > 0 && (
-              <button
-                onClick={() => {
-                  if (confirm('¿Deseas vaciar completamente todos los productos de muestra de la bodega para comenzar en limpio con tus propios insumos?')) {
-                    onClearInventario();
-                  }
-                }}
-                className="text-stone-500 hover:text-rose-700 text-[11px] underline cursor-pointer"
-              >
-                Vaciar bodega de muestra
-              </button>
+            {isAdmin && onClearInventario && inventario.length > 0 && (
+              confirmClearAll ? (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClearInventario();
+                      setConfirmClearAll(false);
+                    }}
+                    className="px-2 py-1 bg-rose-700 text-white rounded text-[10px] font-bold cursor-pointer"
+                  >
+                    Confirmar vaciar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmClearAll(false)}
+                    className="px-2 py-1 bg-stone-200 text-stone-700 rounded text-[10px] cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmClearAll(true)}
+                  className="text-stone-500 hover:text-rose-700 text-[11px] underline cursor-pointer"
+                >
+                  Vaciar bodega
+                </button>
+              )
             )}
           </div>
 
