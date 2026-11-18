@@ -11,7 +11,7 @@ import {
   MapMouseEvent,
 } from '@vis.gl/react-google-maps';
 import { Parcela, LugarPredio, TipoLugarPredio, SectorRiego } from '../types/campo';
-import { getStoredSectoresRiego } from '../utils/storage';
+import { getStoredSectoresRiego, saveStoredSectoresRiego } from '../utils/storage';
 import { 
   Compass, 
   MapPin, 
@@ -28,7 +28,11 @@ import {
   Check,
   X,
   RotateCcw,
-  RefreshCw
+  RefreshCw,
+  Droplet,
+  Search,
+  ClipboardList,
+  CheckCircle2
 } from 'lucide-react';
 
 interface ParcelasViewProps {
@@ -99,6 +103,33 @@ const COLORES_PRESET = [
   '#dc2626', // Red
   '#4f46e5'  // Indigo
 ];
+
+const parseDecimalInput = (raw: string, fallback = 0): number => {
+  const normalized = String(raw || '').trim().replace(',', '.');
+  if (!normalized) return fallback;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const formatSectorLabel = (
+  sectorId: number | string,
+  sectoresDisponibles: SectorRiego[]
+): string => {
+  const found = sectoresDisponibles.find((s) => String(s.id) === String(sectorId));
+  if (found?.nombre) return found.nombre;
+  const raw = String(sectorId).trim();
+  if (!raw) return 'Sin sector';
+  return /^\d+$/.test(raw) ? `Sector ${raw}` : raw;
+};
+
+const getEstadoBadgeClasses = (estado: string): string => {
+  if (estado === 'Listo para Cosecha') return 'bg-emerald-100 text-emerald-900 border-emerald-200';
+  if (estado === 'En Carencia SAG') return 'bg-rose-100 text-rose-900 border-rose-200';
+  if (estado === 'En Riego') return 'bg-cyan-100 text-cyan-900 border-cyan-200';
+  if (estado === 'En Floración') return 'bg-amber-100 text-amber-900 border-amber-200';
+  if (estado === 'Receso Invernal') return 'bg-slate-100 text-slate-800 border-slate-200';
+  return 'bg-stone-100 text-stone-800 border-stone-200';
+};
 
 // Cálculo de radio métrico en base al área en hectáreas: A = ha * 10.000 m² -> r = sqrt(A / pi)
 export const calcularRadioMetros = (ha: number): number => {
@@ -573,13 +604,14 @@ const EditableDraftPolygon: React.FC<{
 
 const CuartelAdvancedMarker: React.FC<{
   parcela: Parcela;
+  sectoresDisponibles: SectorRiego[];
   isSelected: boolean;
   onSelect: () => void;
   onCloseInfo: () => void;
   onStartEditPolygon: (parcela: Parcela) => void;
   showInfo: boolean;
   canEdit?: boolean;
-}> = ({ parcela, isSelected, onSelect, onCloseInfo, onStartEditPolygon, showInfo, canEdit = true }) => {
+}> = ({ parcela, sectoresDisponibles, isSelected, onSelect, onCloseInfo, onStartEditPolygon, showInfo, canEdit = true }) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
   const validPolyPoints = Array.isArray(parcela.coordenadasPoligono)
     ? parcela.coordenadasPoligono.filter((pt) => isValidLatLng(pt?.lat, pt?.lng))
@@ -599,8 +631,10 @@ const CuartelAdvancedMarker: React.FC<{
   const radioM = calcularRadioMetros(parcela.superficieHa || 1);
   const sectoresText =
     parcela.sectoresRiego && parcela.sectoresRiego.length > 0
-      ? parcela.sectoresRiego.map((s) => `Sector ${s}`).join(', ')
-      : `Sector ${parcela.sectorRiegoNumero || 1}`;
+      ? parcela.sectoresRiego.map((s) => formatSectorLabel(s, sectoresDisponibles)).join(', ')
+      : parcela.sectorRiegoNumero
+      ? formatSectorLabel(parcela.sectorRiegoNumero, sectoresDisponibles)
+      : 'Sin sector asignado';
 
   return (
     <>
@@ -802,65 +836,89 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
     return () => window.removeEventListener('fundo_sectores_updated', handleSectoresUpdate);
   }, []);
   
-  // Modales
+  // Modales y estado explícito de edición (evita editar un cuartel distinto al seleccionado)
   const [isAddParcelaOpen, setIsAddParcelaOpen] = useState(false);
   const [isEditParcelaOpen, setIsEditParcelaOpen] = useState(false);
+  const [editingParcelaId, setEditingParcelaId] = useState<string | null>(null);
   const [isAddLugarOpen, setIsAddLugarOpen] = useState(false);
   const [isEditLugarOpen, setIsEditLugarOpen] = useState(false);
   const [editingLugar, setEditingLugar] = useState<LugarPredio | null>(null);
   const [cuartelToDelete, setCuartelToDelete] = useState<Parcela | null>(null);
   const [lugarToDelete, setLugarToDelete] = useState<LugarPredio | null>(null);
+  const [busquedaCuartel, setBusquedaCuartel] = useState('');
+  const [cuartelModalError, setCuartelModalError] = useState<string | null>(null);
+  const [gpsFeedback, setGpsFeedback] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [cuartelSavedBanner, setCuartelSavedBanner] = useState<string | null>(null);
+  const [nuevoSectorNombre, setNuevoSectorNombre] = useState('');
+  const [nuevoSectorHa, setNuevoSectorHa] = useState('');
 
-  // Cuartel actualmente seleccionado
+  // Cuartel actualmente seleccionado en el mapa/tarjetas
   const selectedParcela = parcelas.find((p) => p.id === selectedParcelaId) || parcelas[0] || null;
+  const editingParcela = editingParcelaId
+    ? parcelas.find((p) => p.id === editingParcelaId) || null
+    : null;
 
-  // Formulario Cuartel
+  // Formulario Cuartel (con campos de texto para números decimales para evitar saltos al escribir)
   const [parcelaForm, setParcelaForm] = useState<{
     nombre: string;
     codigoCuartel: string;
-    sectorRiegoNumero: 1 | 2 | 3 | 4;
+    sectorRiegoNumero: number;
     sectoresRiego: (number | string)[];
     superficieHa: number;
+    superficieHaStr: string;
     variedad: string;
     patronPortainjerto: string;
     polinizador: string;
-    sistemaConduccion: 'Parrón Español' | 'Espaldera en T' | 'T-Bar Pergola';
+    sistemaConduccion: string;
     marcoPlantacion: string;
     plantasPorHa: number;
-    totalPlantasCalculado: number;
+    plantasPorHaStr: string;
     anioPlantacion: number;
+    anioPlantacionStr: string;
     estadoFenologico: string;
-    estadoActual: 'Normal' | 'En Carencia SAG' | 'Listo para Cosecha' | 'En Riego';
+    estadoActual: string;
     lmrActivo: string;
     diasCarenciaRestantes: number;
+    diasCarenciaStr: string;
     rendimientoEstimadoTonHa: number;
+    rendimientoStr: string;
     colorHex: string;
     lat: number;
+    latStr: string;
     lng: number;
+    lngStr: string;
     coordenadasPoligono: { lat: number; lng: number }[];
+    notas: string;
   }>({
     nombre: '',
     codigoCuartel: '',
     sectorRiegoNumero: 1,
-    sectoresRiego: [1],
+    sectoresRiego: [],
     superficieHa: 5.0,
+    superficieHaStr: '5.0',
     variedad: 'Kiwi Hayward',
     patronPortainjerto: 'Franco / Semilla Hayward',
     polinizador: 'Tomuri / Chieftain (1:8)',
     sistemaConduccion: 'Parrón Español',
     marcoPlantacion: '4.5m x 4.0m',
     plantasPorHa: 555,
-    totalPlantasCalculado: 2775,
-    anioPlantacion: 2018,
-    estadoFenologico: 'Maduración y acumulación azúcares',
+    plantasPorHaStr: '555',
+    anioPlantacion: new Date().getFullYear(),
+    anioPlantacionStr: String(new Date().getFullYear()),
+    estadoFenologico: 'Maduración y acumulación azúcares (BBCH 85)',
     estadoActual: 'Normal',
     lmrActivo: '',
     diasCarenciaRestantes: 0,
-    rendimientoEstimadoTonHa: 40.0,
+    diasCarenciaStr: '0',
+    rendimientoEstimadoTonHa: 38.0,
+    rendimientoStr: '38',
     colorHex: '#059669',
     lat: orchardOrigin.lat,
+    latStr: String(orchardOrigin.lat),
     lng: orchardOrigin.lng,
-    coordenadasPoligono: []
+    lngStr: String(orchardOrigin.lng),
+    coordenadasPoligono: [],
+    notas: ''
   });
 
   // Formulario Lugar / Punto Importante
@@ -1007,30 +1065,42 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
     if (polygonEditorMode.kind === 'new') {
       const nextNum = parcelas.length + 1;
-      const defaultSector = nextNum % 4 || 4;
+      const areaFinal = measuredHa > 0 ? measuredHa : 1.0;
+      const defaultSecs = sectoresDisponibles.length > 0 ? [sectoresDisponibles[0].id] : [];
+      setEditingParcelaId(null);
+      setIsEditParcelaOpen(false);
+      setCuartelModalError(null);
+      setGpsFeedback(null);
       setParcelaForm({
         nombre: `Cuartel ${nextNum}`,
         codigoCuartel: `C${nextNum}`,
-        sectorRiegoNumero: defaultSector as any,
-        sectoresRiego: [defaultSector],
-        superficieHa: measuredHa > 0 ? measuredHa : 1.0,
+        sectorRiegoNumero: Number(defaultSecs[0]) || 1,
+        sectoresRiego: defaultSecs,
+        superficieHa: areaFinal,
+        superficieHaStr: String(areaFinal),
         variedad: 'Kiwi Hayward',
         patronPortainjerto: 'Franco / Semilla Hayward',
         polinizador: 'Tomuri / Chieftain (1:8)',
         sistemaConduccion: 'Parrón Español',
         marcoPlantacion: '4.5m x 4.0m',
         plantasPorHa: 555,
-        totalPlantasCalculado: Math.round((measuredHa > 0 ? measuredHa : 1.0) * 555),
-        anioPlantacion: 2020,
-        estadoFenologico: 'Maduración y acumulación azúcares',
+        plantasPorHaStr: '555',
+        anioPlantacion: new Date().getFullYear(),
+        anioPlantacionStr: String(new Date().getFullYear()),
+        estadoFenologico: 'Maduración y acumulación azúcares (BBCH 85)',
         estadoActual: 'Normal',
         lmrActivo: '',
         diasCarenciaRestantes: 0,
+        diasCarenciaStr: '0',
         rendimientoEstimadoTonHa: 38.0,
+        rendimientoStr: '38',
         colorHex: polygonEditorMode.colorHex,
         lat: centroid.lat,
+        latStr: String(centroid.lat),
         lng: centroid.lng,
+        lngStr: String(centroid.lng),
         coordenadasPoligono: draftPolygonPoints,
+        notas: ''
       });
       setPolygonEditorMode(null);
       setDraftPolygonPoints([]);
@@ -1063,63 +1133,102 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   // Abrir Modal para Crear Cuartel
   const handleOpenAddParcela = (presetCoords?: { lat: number; lng: number }) => {
     const nextNum = parcelas.length + 1;
-    const defaultSector = ((nextNum % 4) || 4);
+    const defaultSecs = sectoresDisponibles.length > 0 ? [sectoresDisponibles[0].id] : [];
+    const latInit = presetCoords?.lat ?? orchardOrigin.lat;
+    const lngInit = presetCoords?.lng ?? orchardOrigin.lng;
+    setEditingParcelaId(null);
+    setIsEditParcelaOpen(false);
+    setCuartelModalError(null);
+    setGpsFeedback(null);
+    setNuevoSectorNombre('');
+    setNuevoSectorHa('');
     setParcelaForm({
       nombre: `Cuartel ${nextNum}`,
       codigoCuartel: `C${nextNum}`,
-      sectorRiegoNumero: defaultSector as any,
-      sectoresRiego: [defaultSector],
+      sectorRiegoNumero: Number(defaultSecs[0]) || 1,
+      sectoresRiego: defaultSecs,
       superficieHa: 5.0,
+      superficieHaStr: '5.0',
       variedad: 'Kiwi Hayward',
       patronPortainjerto: 'Franco / Semilla Hayward',
       polinizador: 'Tomuri / Chieftain (1:8)',
       sistemaConduccion: 'Parrón Español',
       marcoPlantacion: '4.5m x 4.0m',
       plantasPorHa: 555,
-      totalPlantasCalculado: Math.round(5.0 * 555),
-      anioPlantacion: 2020,
-      estadoFenologico: 'Maduración y acumulación azúcares',
+      plantasPorHaStr: '555',
+      anioPlantacion: new Date().getFullYear(),
+      anioPlantacionStr: String(new Date().getFullYear()),
+      estadoFenologico: 'Maduración y acumulación azúcares (BBCH 85)',
       estadoActual: 'Normal',
       lmrActivo: '',
       diasCarenciaRestantes: 0,
+      diasCarenciaStr: '0',
       rendimientoEstimadoTonHa: 38.0,
+      rendimientoStr: '38',
       colorHex: COLORES_PRESET[(nextNum - 1) % COLORES_PRESET.length],
-      lat: presetCoords?.lat ?? orchardOrigin.lat,
-      lng: presetCoords?.lng ?? orchardOrigin.lng,
-      coordenadasPoligono: []
+      lat: latInit,
+      latStr: String(latInit),
+      lng: lngInit,
+      lngStr: String(lngInit),
+      coordenadasPoligono: [],
+      notas: ''
     });
     setIsAddParcelaOpen(true);
   };
 
-  // Abrir Modal para Editar Cuartel
+  // Abrir Modal para Editar Cuartel (fija editingParcelaId explícitamente para no sobrescribir otro cuartel)
   const handleOpenEditParcela = (cuartel: Parcela) => {
-    const secs = (cuartel.sectoresRiego && cuartel.sectoresRiego.length > 0)
+    const secs = Array.isArray(cuartel.sectoresRiego) && cuartel.sectoresRiego.length > 0
       ? cuartel.sectoresRiego
-      : [cuartel.sectorRiegoNumero || 1];
+      : cuartel.sectorRiegoNumero
+      ? [cuartel.sectorRiegoNumero]
+      : [];
+    const sup = Number(cuartel.superficieHa) || 0;
+    const latVal = typeof cuartel.lat === 'number' ? cuartel.lat : orchardOrigin.lat;
+    const lngVal = typeof cuartel.lng === 'number' ? cuartel.lng : orchardOrigin.lng;
+    const plHa = Number(cuartel.plantasPorHa) || 555;
+    const anio = Number(cuartel.anioPlantacion) || 2018;
+    const rend = Number(cuartel.rendimientoEstimadoTonHa) || 35.0;
+    const diasCar = Number(cuartel.diasCarenciaRestantes) || 0;
+
+    setSelectedParcelaId(cuartel.id);
+    setEditingParcelaId(cuartel.id);
+    setIsAddParcelaOpen(false);
+    setCuartelModalError(null);
+    setGpsFeedback(null);
+    setNuevoSectorNombre('');
+    setNuevoSectorHa('');
 
     setParcelaForm({
-      nombre: cuartel.nombre,
+      nombre: cuartel.nombre || '',
       codigoCuartel: cuartel.codigoCuartel || '',
-      sectorRiegoNumero: (cuartel.sectorRiegoNumero || 1) as any,
+      sectorRiegoNumero: Number(cuartel.sectorRiegoNumero) || 1,
       sectoresRiego: secs,
-      superficieHa: cuartel.superficieHa || 0,
+      superficieHa: sup,
+      superficieHaStr: String(sup),
       variedad: cuartel.variedad || 'Kiwi Hayward',
       patronPortainjerto: cuartel.patronPortainjerto || '',
       polinizador: cuartel.polinizador || '',
-      sistemaConduccion: (cuartel.sistemaConduccion as any) || 'Parrón Español',
+      sistemaConduccion: cuartel.sistemaConduccion || 'Parrón Español',
       marcoPlantacion: cuartel.marcoPlantacion || '4.5m x 4.0m',
-      plantasPorHa: cuartel.plantasPorHa || 555,
-      totalPlantasCalculado: Math.round((cuartel.superficieHa || 0) * (cuartel.plantasPorHa || 555)),
-      anioPlantacion: cuartel.anioPlantacion || 2018,
-      estadoFenologico: cuartel.estadoFenologico || 'Maduración',
+      plantasPorHa: plHa,
+      plantasPorHaStr: String(plHa),
+      anioPlantacion: anio,
+      anioPlantacionStr: String(anio),
+      estadoFenologico: cuartel.estadoFenologico || ESTADOS_FENOLOGICOS[7],
       estadoActual: cuartel.estadoActual || 'Normal',
       lmrActivo: cuartel.lmrActivo || '',
-      diasCarenciaRestantes: cuartel.diasCarenciaRestantes || 0,
-      rendimientoEstimadoTonHa: cuartel.rendimientoEstimadoTonHa || 35.0,
+      diasCarenciaRestantes: diasCar,
+      diasCarenciaStr: String(diasCar),
+      rendimientoEstimadoTonHa: rend,
+      rendimientoStr: String(rend),
       colorHex: cuartel.colorHex || '#059669',
-      lat: cuartel.lat ?? orchardOrigin.lat,
-      lng: cuartel.lng ?? orchardOrigin.lng,
-      coordenadasPoligono: Array.isArray(cuartel.coordenadasPoligono) ? cuartel.coordenadasPoligono : []
+      lat: latVal,
+      latStr: String(latVal),
+      lng: lngVal,
+      lngStr: String(lngVal),
+      coordenadasPoligono: Array.isArray(cuartel.coordenadasPoligono) ? cuartel.coordenadasPoligono : [],
+      notas: cuartel.notas || ''
     });
     setIsEditParcelaOpen(true);
   };
@@ -1127,6 +1236,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   // Abrir Modal para Crear Lugar / Punto Importante
   const handleOpenAddLugar = (presetCoords?: { lat: number; lng: number }) => {
     setEditingLugar(null);
+    setGpsFeedback(null);
     setLugarForm({
       id: `lug-${Date.now()}`,
       nombre: '',
@@ -1143,6 +1253,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   // Abrir Modal para Editar Lugar
   const handleOpenEditLugar = (lugar: LugarPredio) => {
     setEditingLugar(lugar);
+    setGpsFeedback(null);
     setLugarForm({ ...lugar });
     setIsEditLugarOpen(true);
   };
@@ -1150,10 +1261,15 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   // Guardar Nuevo / Editar Lugar
   const handleSaveLugar = (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanedLugar: LugarPredio = {
+      ...lugarForm,
+      nombre: lugarForm.nombre.trim(),
+    };
+    if (!cleanedLugar.nombre) return;
     if (editingLugar && onUpdateLugar) {
-      onUpdateLugar(lugarForm);
+      onUpdateLugar(cleanedLugar);
     } else {
-      onAddLugar(lugarForm);
+      onAddLugar(cleanedLugar);
     }
     setIsAddLugarOpen(false);
     setIsEditLugarOpen(false);
@@ -1161,106 +1277,203 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
     setClickedCoords(null);
   };
 
+  const buildParcelaPayloadFromForm = (base?: Parcela): Parcela | null => {
+    const nombreLimpio = parcelaForm.nombre.trim();
+    const codigoLimpio = parcelaForm.codigoCuartel.trim() || nombreLimpio.slice(0, 8).toUpperCase();
+    if (!nombreLimpio) {
+      setCuartelModalError('Ingresa un nombre válido para el cuartel.');
+      return null;
+    }
+
+    const supVal = Math.max(0.01, parseDecimalInput(parcelaForm.superficieHaStr, parcelaForm.superficieHa || 1));
+    const latVal = parseDecimalInput(parcelaForm.latStr, orchardOrigin.lat);
+    const lngVal = parseDecimalInput(parcelaForm.lngStr, orchardOrigin.lng);
+    if (!isValidLatLng(latVal, lngVal)) {
+      setCuartelModalError('Las coordenadas Latitud (-90 a 90) y Longitud (-180 a 180) no son válidas.');
+      return null;
+    }
+
+    const plantasHaVal = Math.max(0, Math.round(parseDecimalInput(parcelaForm.plantasPorHaStr, parcelaForm.plantasPorHa || 0)));
+    const anioVal = Math.max(1950, Math.round(parseDecimalInput(parcelaForm.anioPlantacionStr, parcelaForm.anioPlantacion || new Date().getFullYear())));
+    const rendVal = Math.max(0, parseDecimalInput(parcelaForm.rendimientoStr, parcelaForm.rendimientoEstimadoTonHa || 0));
+    const diasCarenciaVal = parcelaForm.estadoActual === 'En Carencia SAG'
+      ? Math.max(0, Math.round(parseDecimalInput(parcelaForm.diasCarenciaStr, 0)))
+      : 0;
+
+    const firstSector = parcelaForm.sectoresRiego[0];
+    const sectorNum =
+      typeof firstSector === 'number'
+        ? firstSector
+        : parseInt(String(firstSector ?? ''), 10) || parcelaForm.sectorRiegoNumero || 1;
+
+    return {
+      ...(base || {}),
+      id: base?.id || `cuartel-${Date.now()}`,
+      nombre: nombreLimpio,
+      codigoCuartel: codigoLimpio,
+      sectorRiegoNumero: sectorNum,
+      sectoresRiego: parcelaForm.sectoresRiego,
+      superficieHa: Number(supVal.toFixed(2)),
+      variedad: parcelaForm.variedad.trim() || 'Kiwi Hayward',
+      patronPortainjerto: parcelaForm.patronPortainjerto.trim(),
+      polinizador: parcelaForm.polinizador.trim(),
+      sistemaConduccion: parcelaForm.sistemaConduccion.trim() || 'Parrón Español',
+      marcoPlantacion: parcelaForm.marcoPlantacion.trim() || '4.5m x 4.0m',
+      plantasPorHa: plantasHaVal,
+      anioPlantacion: anioVal,
+      estadoFenologico: parcelaForm.estadoFenologico.trim() || 'Normal',
+      estadoActual: parcelaForm.estadoActual.trim() || 'Normal',
+      lmrActivo: parcelaForm.estadoActual === 'En Carencia SAG' ? parcelaForm.lmrActivo.trim() : '',
+      diasCarenciaRestantes: diasCarenciaVal,
+      rendimientoEstimadoTonHa: Number(rendVal.toFixed(1)),
+      colorHex: parcelaForm.colorHex || '#059669',
+      lat: Number(latVal.toFixed(6)),
+      lng: Number(lngVal.toFixed(6)),
+      coordenadasPoligono: parcelaForm.coordenadasPoligono || base?.coordenadasPoligono || [],
+      notas: parcelaForm.notas.trim() || undefined,
+    };
+  };
+
   // Guardar Nuevo Cuartel
   const handleSaveAddParcela = (e: React.FormEvent) => {
     e.preventDefault();
-    const id = `cuartel-${Date.now()}`;
-    const newParcela: Parcela = {
-      id,
-      nombre: parcelaForm.nombre,
-      codigoCuartel: parcelaForm.codigoCuartel,
-      sectorRiegoNumero: parcelaForm.sectorRiegoNumero,
-      sectoresRiego: parcelaForm.sectoresRiego,
-      superficieHa: parcelaForm.superficieHa,
-      variedad: parcelaForm.variedad,
-      patronPortainjerto: parcelaForm.patronPortainjerto,
-      polinizador: parcelaForm.polinizador,
-      sistemaConduccion: parcelaForm.sistemaConduccion,
-      marcoPlantacion: parcelaForm.marcoPlantacion,
-      plantasPorHa: parcelaForm.plantasPorHa,
-      anioPlantacion: parcelaForm.anioPlantacion,
-      estadoFenologico: parcelaForm.estadoFenologico,
-      estadoActual: parcelaForm.estadoActual,
-      lmrActivo: parcelaForm.lmrActivo,
-      diasCarenciaRestantes: parcelaForm.diasCarenciaRestantes,
-      rendimientoEstimadoTonHa: parcelaForm.rendimientoEstimadoTonHa,
-      colorHex: parcelaForm.colorHex,
-      lat: parcelaForm.lat,
-      lng: parcelaForm.lng,
-      coordenadasPoligono: parcelaForm.coordenadasPoligono || []
-    };
+    const newParcela = buildParcelaPayloadFromForm();
+    if (!newParcela) return;
+
     onAddParcela(newParcela);
-    setSelectedParcelaId(id);
+    setSelectedParcelaId(newParcela.id);
+    setEditingParcelaId(null);
     setIsAddParcelaOpen(false);
     setClickedCoords(null);
+    setCuartelModalError(null);
+    setCuartelSavedBanner(`Cuartel "${newParcela.nombre}" creado correctamente.`);
+    setTimeout(() => setCuartelSavedBanner(null), 4000);
   };
 
-  // Guardar Cuartel Editado
+  // Guardar Cuartel Editado (siempre actualiza editingParcelaId exacto)
   const handleSaveEditParcela = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedParcela) return;
-    const updatedParcela: Parcela = {
-      ...selectedParcela,
-      nombre: parcelaForm.nombre,
-      codigoCuartel: parcelaForm.codigoCuartel,
-      sectorRiegoNumero: parcelaForm.sectorRiegoNumero,
-      sectoresRiego: parcelaForm.sectoresRiego,
-      superficieHa: parcelaForm.superficieHa,
-      variedad: parcelaForm.variedad,
-      patronPortainjerto: parcelaForm.patronPortainjerto,
-      polinizador: parcelaForm.polinizador,
-      sistemaConduccion: parcelaForm.sistemaConduccion,
-      marcoPlantacion: parcelaForm.marcoPlantacion,
-      plantasPorHa: parcelaForm.plantasPorHa,
-      anioPlantacion: parcelaForm.anioPlantacion,
-      estadoFenologico: parcelaForm.estadoFenologico,
-      estadoActual: parcelaForm.estadoActual,
-      lmrActivo: parcelaForm.lmrActivo,
-      diasCarenciaRestantes: parcelaForm.diasCarenciaRestantes,
-      rendimientoEstimadoTonHa: parcelaForm.rendimientoEstimadoTonHa,
-      colorHex: parcelaForm.colorHex,
-      lat: parcelaForm.lat,
-      lng: parcelaForm.lng,
-      coordenadasPoligono: parcelaForm.coordenadasPoligono || selectedParcela.coordenadasPoligono || []
-    };
+    const target = editingParcela || selectedParcela;
+    if (!target) {
+      setCuartelModalError('No se encontró el cuartel a editar.');
+      return;
+    }
+    const updatedParcela = buildParcelaPayloadFromForm(target);
+    if (!updatedParcela) return;
+
     onUpdateParcela(updatedParcela);
+    setSelectedParcelaId(updatedParcela.id);
+    setEditingParcelaId(null);
     setIsEditParcelaOpen(false);
+    setCuartelModalError(null);
+    setCuartelSavedBanner(`Cambios guardados en "${updatedParcela.nombre}".`);
+    setTimeout(() => setCuartelSavedBanner(null), 4000);
   };
 
   const handleToggleSectorRiego = (sectorId: number | string) => {
     setParcelaForm((prev) => {
       const exists = prev.sectoresRiego.some((s) => String(s) === String(sectorId));
-      let updated: (number | string)[];
-      if (exists) {
-        if (prev.sectoresRiego.length <= 1) return prev;
-        updated = prev.sectoresRiego.filter((s) => String(s) !== String(sectorId));
-      } else {
-        updated = [...prev.sectoresRiego, sectorId];
-      }
+      const updated = exists
+        ? prev.sectoresRiego.filter((s) => String(s) !== String(sectorId))
+        : [...prev.sectoresRiego, sectorId];
+      const first = updated[0];
+      const numericFirst =
+        typeof first === 'number'
+          ? first
+          : parseInt(String(first ?? ''), 10) || prev.sectorRiegoNumero || 1;
       return {
         ...prev,
         sectoresRiego: updated,
-        sectorRiegoNumero: (typeof updated[0] === 'number' ? updated[0] : parseInt(String(updated[0])) || 1) as any
+        sectorRiegoNumero: numericFirst,
       };
     });
   };
 
+  const handleCreateAndAssignSector = (customLabel?: string) => {
+    const label = (customLabel ?? nuevoSectorNombre).trim();
+    if (!label) return;
+
+    const existing = sectoresDisponibles.find(
+      (s) => s.nombre.toLowerCase() === label.toLowerCase()
+    );
+    if (existing) {
+      setParcelaForm((prev) => {
+        if (prev.sectoresRiego.some((s) => String(s) === String(existing.id))) return prev;
+        return { ...prev, sectoresRiego: [...prev.sectoresRiego, existing.id] };
+      });
+      setNuevoSectorNombre('');
+      setNuevoSectorHa('');
+      return;
+    }
+
+    const numericIds = sectoresDisponibles
+      .map((s) => (typeof s.id === 'number' ? s.id : parseInt(String(s.id), 10)))
+      .filter((n) => Number.isFinite(n));
+    const nextId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+    const haSec = parseDecimalInput(nuevoSectorHa, 0);
+
+    const nuevoSector: SectorRiego = {
+      id: nextId,
+      nombre: label,
+      ...(haSec > 0 ? { ha: haSec } : {}),
+    };
+    const nextList = [...sectoresDisponibles, nuevoSector];
+    setSectoresDisponibles(nextList);
+    saveStoredSectoresRiego(nextList);
+
+    setParcelaForm((prev) => ({
+      ...prev,
+      sectoresRiego: [...prev.sectoresRiego, nuevoSector.id],
+      sectorRiegoNumero: prev.sectoresRiego.length === 0 ? nextId : prev.sectorRiegoNumero,
+    }));
+    setNuevoSectorNombre('');
+    setNuevoSectorHa('');
+  };
+
+  const handleCalcularPlantasDesdeMarco = () => {
+    const nums = (parcelaForm.marcoPlantacion || '')
+      .replace(/,/g, '.')
+      .match(/\d+(?:\.\d+)?/g);
+    if (!nums || nums.length < 2) return;
+    const d1 = parseFloat(nums[0]);
+    const d2 = parseFloat(nums[1]);
+    if (d1 > 0 && d2 > 0) {
+      const calc = Math.round(10000 / (d1 * d2));
+      setParcelaForm((prev) => ({
+        ...prev,
+        plantasPorHa: calc,
+        plantasPorHaStr: String(calc),
+      }));
+    }
+  };
+
   const handleUsarGpsEnForm = (esLugar = false) => {
+    setGpsFeedback(null);
     if (!navigator.geolocation) {
-      alert('Tu navegador no soporta GPS.');
+      setGpsFeedback({ type: 'err', text: 'Tu navegador no soporta geolocalización GPS.' });
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const lat = Number(pos.coords.latitude.toFixed(5));
-        const lng = Number(pos.coords.longitude.toFixed(5));
+        const lat = Number(pos.coords.latitude.toFixed(6));
+        const lng = Number(pos.coords.longitude.toFixed(6));
         if (esLugar) {
-          setLugarForm(prev => ({ ...prev, lat, lng }));
+          setLugarForm((prev) => ({ ...prev, lat, lng }));
         } else {
-          setParcelaForm(prev => ({ ...prev, lat, lng }));
+          setParcelaForm((prev) => ({
+            ...prev,
+            lat,
+            latStr: String(lat),
+            lng,
+            lngStr: String(lng),
+          }));
         }
+        setGpsFeedback({ type: 'ok', text: `Ubicación GPS capturada: ${lat}, ${lng}` });
       },
-      (err) => alert('Error obteniendo GPS: ' + err.message)
+      (err) => {
+        setGpsFeedback({ type: 'err', text: `No se pudo obtener GPS: ${err.message}` });
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 
@@ -1436,6 +1649,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                       <CuartelAdvancedMarker
                         key={p.id}
                         parcela={p}
+                        sectoresDisponibles={sectoresDisponibles}
                         isSelected={selectedParcelaId === p.id}
                         showInfo={activeInfoId === p.id}
                         canEdit={canEdit}
@@ -1818,146 +2032,262 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
       {/* LISTA / TARJETAS DE CUARTELES DE KIWI */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-extrabold text-sm text-stone-900 flex items-center gap-2">
-            <TreeDeciduous className="w-4 h-4 text-emerald-700" />
-            Cuarteles de Kiwi Registrados ({parcelas.length} cuarteles · {totalHa.toFixed(1)} ha totales)
-          </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div>
+            <h2 className="font-extrabold text-sm text-stone-900 flex items-center gap-2">
+              <TreeDeciduous className="w-4 h-4 text-emerald-700" />
+              Cuarteles de Kiwi Registrados ({parcelas.length} cuarteles · {totalHa.toFixed(1)} ha totales)
+            </h2>
+            <p className="text-[11px] text-stone-500">
+              Selecciona un cuartel para destacarlo en el mapa o usa «Editar» para modificar nombre, sectores de riego, polígono y ficha agronómica completa.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {parcelas.length > 3 && (
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={busquedaCuartel}
+                  onChange={(e) => setBusquedaCuartel(e.target.value)}
+                  placeholder="Buscar cuartel o variedad..."
+                  className="pl-8 pr-3 py-1.5 bg-white border border-stone-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600 w-48"
+                />
+              </div>
+            )}
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => handleOpenAddParcela()}
+                className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Nuevo Cuartel</span>
+              </button>
+            )}
+          </div>
         </div>
+
+        {cuartelSavedBanner && (
+          <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-bold flex items-center justify-between gap-2 animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+              <span>{cuartelSavedBanner}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCuartelSavedBanner(null)}
+              className="text-emerald-700 hover:text-emerald-950 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {parcelas.length === 0 ? (
           <div className="p-8 bg-white rounded-2xl border border-stone-200 text-center text-stone-400 space-y-2">
             <TreeDeciduous className="w-10 h-10 mx-auto text-stone-300" />
             <p className="font-bold text-sm text-stone-700">No hay cuarteles registrados en tu huerto</p>
-            <p className="text-xs">Comienza agregando tu primer cuartel real con sus hectáreas y coordenadas.</p>
+            <p className="text-xs">Comienza agregando tu primer cuartel real con sus hectáreas, sectores de riego y coordenadas.</p>
             {canEdit && (
               <button
+                type="button"
                 onClick={() => handleOpenAddParcela()}
-                className="mt-2 px-4 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold cursor-pointer"
+                className="mt-2 px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer"
               >
                 + Agregar Cuartel
               </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {parcelas.map((p) => {
-              const hasPolygon = Array.isArray(p.coordenadasPoligono) && p.coordenadasPoligono.length >= 3;
-              const radioM = calcularRadioMetros(p.superficieHa || 1);
-              const isSelected = selectedParcelaId === p.id;
-              const sectoresText = (p.sectoresRiego && p.sectoresRiego.length > 0)
-                ? p.sectoresRiego.map(s => `Sector ${s}`).join(', ')
-                : `Sector ${p.sectorRiegoNumero || 1}`;
-              const displayCenter =
-                (hasPolygon ? calcularCentroidePoligono(p.coordenadasPoligono) : null) ||
-                (typeof p.lat === 'number' && typeof p.lng === 'number' ? { lat: p.lat, lng: p.lng } : null);
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {parcelas
+              .filter((p) => {
+                const q = busquedaCuartel.trim().toLowerCase();
+                if (!q) return true;
+                return (
+                  (p.nombre || '').toLowerCase().includes(q) ||
+                  (p.codigoCuartel || '').toLowerCase().includes(q) ||
+                  (p.variedad || '').toLowerCase().includes(q) ||
+                  (p.sistemaConduccion || '').toLowerCase().includes(q)
+                );
+              })
+              .map((p) => {
+                const hasPolygon = Array.isArray(p.coordenadasPoligono) && p.coordenadasPoligono.length >= 3;
+                const radioM = calcularRadioMetros(p.superficieHa || 1);
+                const isSelected = selectedParcelaId === p.id;
+                const sectoresRaw =
+                  p.sectoresRiego && p.sectoresRiego.length > 0
+                    ? p.sectoresRiego
+                    : p.sectorRiegoNumero
+                    ? [p.sectorRiegoNumero]
+                    : [];
+                const sectoresText =
+                  sectoresRaw.length > 0
+                    ? sectoresRaw.map((s) => formatSectorLabel(s, sectoresDisponibles)).join(', ')
+                    : 'Sin asignar';
+                const displayCenter =
+                  (hasPolygon ? calcularCentroidePoligono(p.coordenadasPoligono) : null) ||
+                  (typeof p.lat === 'number' && typeof p.lng === 'number' ? { lat: p.lat, lng: p.lng } : null);
+                const totalPlantas = Math.round((p.superficieHa || 0) * (p.plantasPorHa || 0));
 
-              return (
-                <div
-                  key={p.id}
-                  onClick={() => setSelectedParcelaId(p.id)}
-                  className={`p-4 rounded-2xl border transition-all cursor-pointer bg-white space-y-3 ${
-                    isSelected
-                      ? 'border-emerald-600 ring-2 ring-emerald-600/20 shadow-xs'
-                      : 'border-stone-200 hover:border-emerald-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span 
-                      className="px-2 py-0.5 rounded-md font-extrabold text-white text-[10px]"
-                      style={{ backgroundColor: p.colorHex || '#059669' }}
-                    >
-                      {p.codigoCuartel}
-                    </span>
-                    <span className="font-mono font-bold text-xs text-stone-800">
-                      {p.superficieHa} ha
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="font-black text-stone-900 text-sm">{p.nombre}</h3>
-                    <p className="text-[11px] text-stone-500 mt-0.5">{p.variedad} · {p.sistemaConduccion}</p>
-                  </div>
-
-                  <div className="p-2 bg-stone-50 rounded-xl space-y-1 text-xs">
-                    <div className="flex justify-between text-stone-600">
-                      <span>Geometría:</span>
-                      {hasPolygon ? (
-                        <strong className="text-emerald-800 font-mono">
-                          Polígono ({p.coordenadasPoligono.length} vért.)
-                        </strong>
-                      ) : (
-                        <strong className="text-stone-900 font-mono">Círculo ({radioM.toFixed(0)} m)</strong>
-                      )}
-                    </div>
-                    <div className="flex justify-between text-stone-600">
-                      <span>Sectores Riego:</span>
-                      <strong className="text-cyan-800">{sectoresText}</strong>
-                    </div>
-                    <div className="flex justify-between text-stone-600">
-                      <span>Estado actual:</span>
-                      <strong className="text-stone-800">{p.estadoActual}</strong>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1 border-t border-stone-100 gap-1">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (displayCenter) centrarMapa(displayCenter.lat, displayCenter.lng);
-                        }}
-                        className="text-[11px] font-bold text-blue-700 hover:underline cursor-pointer"
-                      >
-                        Centrar
-                      </button>
-                      {canEdit && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStartEditPolygonForParcela(p);
-                          }}
-                          className="text-[11px] font-bold text-emerald-700 hover:underline cursor-pointer flex items-center gap-0.5"
-                          title="Dibujar o ajustar el contorno irregular del cuartel"
+                return (
+                  <div
+                    key={p.id}
+                    onClick={() => setSelectedParcelaId(p.id)}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer bg-white flex flex-col justify-between space-y-3 ${
+                      isSelected
+                        ? 'border-emerald-600 ring-2 ring-emerald-600/20 shadow-sm'
+                        : 'border-stone-200 hover:border-emerald-300 shadow-2xs'
+                    }`}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className="px-2 py-0.5 rounded-md font-extrabold text-white text-[10px] truncate max-w-[120px]"
+                          style={{ backgroundColor: p.colorHex || '#059669' }}
+                          title={p.codigoCuartel}
                         >
-                          <PenTool className="w-3 h-3" />
-                          <span>{hasPolygon ? 'Polígono' : 'Trazar'}</span>
-                        </button>
-                      )}
-                    </div>
-
-                    {canEdit && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenEditParcela(p);
-                          }}
-                          className="p-1.5 text-stone-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg cursor-pointer"
-                          title="Editar cuartel"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCuartelToDelete(p);
-                          }}
-                          className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
-                          title="Eliminar cuartel"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          {p.codigoCuartel || 'S/C'}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getEstadoBadgeClasses(p.estadoActual)}`}>
+                            {p.estadoActual || 'Normal'}
+                          </span>
+                          <span className="font-mono font-bold text-xs text-stone-900">
+                            {p.superficieHa} ha
+                          </span>
+                        </div>
                       </div>
-                    )}
+
+                      <div>
+                        <h3 className="font-black text-stone-900 text-base leading-snug">{p.nombre}</h3>
+                        <p className="text-[11px] text-stone-500 mt-0.5">
+                          {p.variedad} · {p.sistemaConduccion}
+                        </p>
+                        {(p.anioPlantacion || totalPlantas > 0 || p.rendimientoEstimadoTonHa > 0) && (
+                          <p className="text-[10px] text-stone-400 mt-0.5">
+                            {p.anioPlantacion ? `Año ${p.anioPlantacion}` : ''}
+                            {p.anioPlantacion && totalPlantas > 0 ? ' · ' : ''}
+                            {totalPlantas > 0 ? `${totalPlantas.toLocaleString('es-CL')} pl.` : ''}
+                            {p.rendimientoEstimadoTonHa > 0 ? ` · Meta ${p.rendimientoEstimadoTonHa} t/ha` : ''}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="p-2.5 bg-stone-50 rounded-xl space-y-1.5 text-xs border border-stone-100">
+                        <div className="flex justify-between gap-2 text-stone-600">
+                          <span>Geometría:</span>
+                          {hasPolygon ? (
+                            <strong className="text-emerald-800 font-mono text-right">
+                              Polígono ({p.coordenadasPoligono.length} vért.)
+                            </strong>
+                          ) : (
+                            <strong className="text-stone-900 font-mono text-right">Círculo ({radioM.toFixed(0)} m)</strong>
+                          )}
+                        </div>
+                        <div className="flex justify-between gap-2 text-stone-600">
+                          <span className="shrink-0">Sectores Riego:</span>
+                          <strong className="text-cyan-800 text-right truncate" title={sectoresText}>
+                            {sectoresText}
+                          </strong>
+                        </div>
+                        {p.estadoFenologico && (
+                          <div className="flex justify-between gap-2 text-stone-600">
+                            <span className="shrink-0">Fenología:</span>
+                            <strong className="text-stone-700 text-right truncate max-w-[165px]" title={p.estadoFenologico}>
+                              {p.estadoFenologico}
+                            </strong>
+                          </div>
+                        )}
+                        {p.estadoActual === 'En Carencia SAG' && (p.lmrActivo || p.diasCarenciaRestantes) && (
+                          <div className="flex justify-between gap-2 text-rose-700 font-bold text-[11px]">
+                            <span>Carencia LMR:</span>
+                            <span className="truncate">{p.lmrActivo || 'Activa'} ({p.diasCarenciaRestantes || 0}d)</span>
+                          </div>
+                        )}
+                        {p.notas && (
+                          <div className="text-[10px] text-stone-500 pt-1 border-t border-stone-200/70 line-clamp-1" title={p.notas}>
+                            {p.notas}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-stone-100 gap-1">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (displayCenter) centrarMapa(displayCenter.lat, displayCenter.lng);
+                          }}
+                          className="text-[11px] font-bold text-blue-700 hover:underline cursor-pointer"
+                        >
+                          Centrar
+                        </button>
+                        {canEdit && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartEditPolygonForParcela(p);
+                            }}
+                            className="text-[11px] font-bold text-emerald-700 hover:underline cursor-pointer flex items-center gap-0.5"
+                            title="Dibujar o ajustar el contorno irregular del cuartel"
+                          >
+                            <PenTool className="w-3 h-3" />
+                            <span>{hasPolygon ? 'Polígono' : 'Trazar'}</span>
+                          </button>
+                        )}
+                        {canEdit && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRegisterLaborForParcela(p.id);
+                            }}
+                            className="text-[11px] font-bold text-amber-700 hover:underline cursor-pointer flex items-center gap-0.5"
+                            title="Registrar una labor en este cuartel"
+                          >
+                            <ClipboardList className="w-3 h-3" />
+                            <span>Labor</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {canEdit && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEditParcela(p);
+                            }}
+                            className="px-2 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg cursor-pointer flex items-center gap-1"
+                            title="Editar todos los datos del cuartel"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            <span>Editar</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCuartelToDelete(p);
+                            }}
+                            className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                            title="Eliminar cuartel"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         )}
       </div>
@@ -2025,6 +2355,18 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     <span>Mi GPS</span>
                   </button>
                 </div>
+
+                {gpsFeedback && (
+                  <div
+                    className={`p-2 rounded-lg text-[11px] font-bold ${
+                      gpsFeedback.type === 'ok'
+                        ? 'bg-emerald-100 text-emerald-900'
+                        : 'bg-rose-100 text-rose-800'
+                    }`}
+                  >
+                    {gpsFeedback.text}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -2115,36 +2457,64 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
         </div>
       )}
 
-      {/* MODAL AGREGAR / EDITAR CUARTEL */}
+      {/* MODAL AGREGAR / EDITAR CUARTEL COMPLETO */}
       {(isAddParcelaOpen || isEditParcelaOpen) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/65 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-stone-200 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
-              <h3 className="font-bold text-sm flex items-center gap-2">
-                <TreeDeciduous className="w-4 h-4 text-emerald-400" />
-                {isAddParcelaOpen ? 'Agregar Nuevo Cuartel' : `Editar: ${parcelaForm.nombre}`}
-              </h3>
-              <button 
-                onClick={() => { setIsAddParcelaOpen(false); setIsEditParcelaOpen(false); }} 
-                className="text-emerald-200 hover:text-white cursor-pointer"
+              <div>
+                <h3 className="font-bold text-sm flex items-center gap-2">
+                  <TreeDeciduous className="w-4 h-4 text-emerald-400" />
+                  <span>
+                    {isAddParcelaOpen
+                      ? 'Agregar Nuevo Cuartel'
+                      : `Editar Cuartel: ${parcelaForm.nombre || editingParcela?.nombre || ''}`}
+                  </span>
+                </h3>
+                <p className="text-[11px] text-emerald-200/80 mt-0.5">
+                  Configura nombre libre, ubicación GPS/polígono, sectores de riego y ficha agronómica completa.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddParcelaOpen(false);
+                  setIsEditParcelaOpen(false);
+                  setEditingParcelaId(null);
+                  setCuartelModalError(null);
+                  setGpsFeedback(null);
+                }}
+                className="text-emerald-200 hover:text-white cursor-pointer p-1"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form 
-              onSubmit={isAddParcelaOpen ? handleSaveAddParcela : handleSaveEditParcela} 
-              className="p-5 space-y-3.5 text-xs max-h-[85vh] overflow-y-auto"
+            <form
+              onSubmit={isAddParcelaOpen ? handleSaveAddParcela : handleSaveEditParcela}
+              className="p-5 space-y-4 text-xs max-h-[84vh] overflow-y-auto"
             >
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+              {cuartelModalError && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-bold flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+                  <span>{cuartelModalError}</span>
+                </div>
+              )}
+
+              {/* 1. Identificación y Estado */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
                   <label className="block font-bold text-stone-700 mb-1">Nombre del Cuartel:</label>
                   <input
                     type="text"
                     value={parcelaForm.nombre}
-                    onChange={(e) => setParcelaForm({ ...parcelaForm, nombre: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
-                    placeholder="ej. Cuartel 1 - Parrón Norte"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCuartelModalError(null);
+                      setParcelaForm((prev) => ({ ...prev, nombre: val }));
+                    }}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    placeholder="Ej. Cuartel 1 - Parrón Norte"
                     required
                   />
                 </div>
@@ -2153,24 +2523,26 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   <input
                     type="text"
                     value={parcelaForm.codigoCuartel}
-                    onChange={(e) => setParcelaForm({ ...parcelaForm, codigoCuartel: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
-                    placeholder="ej. C1 o C1-PN"
-                    required
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setParcelaForm((prev) => ({ ...prev, codigoCuartel: val }));
+                    }}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    placeholder="Ej. C1 o C1-PN"
                   />
                 </div>
               </div>
 
-              {/* Coordenadas & Polígono Real / Círculo */}
-              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+              {/* 2. Ubicación, Polígono y Superficie */}
+              <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <span className="font-bold text-stone-800">Ubicación, Polígono y Superficie:</span>
-                  <div className="flex items-center gap-1.5">
-                    {isEditParcelaOpen && selectedParcela && (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {isEditParcelaOpen && (editingParcela || selectedParcela) && (
                       <button
                         type="button"
-                        onClick={() => handleStartEditPolygonForParcela(selectedParcela)}
-                        className="px-2 py-0.5 bg-blue-700 hover:bg-blue-600 text-white rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                        onClick={() => handleStartEditPolygonForParcela((editingParcela || selectedParcela)!)}
+                        className="px-2.5 py-1 bg-blue-700 hover:bg-blue-600 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                       >
                         <PenTool className="w-3 h-3" />
                         <span>Editar Contorno en Mapa</span>
@@ -2179,7 +2551,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     <button
                       type="button"
                       onClick={() => handleUsarGpsEnForm(false)}
-                      className="px-2 py-0.5 bg-emerald-700 text-white rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <LocateFixed className="w-3 h-3" />
                       <span>Mi GPS</span>
@@ -2187,109 +2559,277 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                {gpsFeedback && (
+                  <div
+                    className={`p-2 rounded-lg text-[11px] font-bold ${
+                      gpsFeedback.type === 'ok'
+                        ? 'bg-emerald-100 text-emerald-900'
+                        : 'bg-rose-100 text-rose-800'
+                    }`}
+                  >
+                    {gpsFeedback.text}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div>
                     <label className="text-[10px] text-stone-500 block mb-0.5">Latitud Centro:</label>
                     <input
-                      type="number"
-                      step="0.00001"
-                      value={parcelaForm.lat}
-                      onChange={(e) => setParcelaForm({ ...parcelaForm, lat: parseFloat(e.target.value) || 0 })}
-                      className="w-full p-1.5 bg-white border border-stone-300 rounded font-mono font-bold"
+                      type="text"
+                      inputMode="decimal"
+                      value={parcelaForm.latStr}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        setParcelaForm((prev) => ({
+                          ...prev,
+                          latStr: raw,
+                          lat: parseDecimalInput(raw, prev.lat),
+                        }));
+                      }}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
                       required
                     />
                   </div>
                   <div>
                     <label className="text-[10px] text-stone-500 block mb-0.5">Longitud Centro:</label>
                     <input
-                      type="number"
-                      step="0.00001"
-                      value={parcelaForm.lng}
-                      onChange={(e) => setParcelaForm({ ...parcelaForm, lng: parseFloat(e.target.value) || 0 })}
-                      className="w-full p-1.5 bg-white border border-stone-300 rounded font-mono font-bold"
+                      type="text"
+                      inputMode="decimal"
+                      value={parcelaForm.lngStr}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        setParcelaForm((prev) => ({
+                          ...prev,
+                          lngStr: raw,
+                          lng: parseDecimalInput(raw, prev.lng),
+                        }));
+                      }}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
                       required
                     />
                   </div>
                   <div>
                     <label className="text-[10px] text-stone-500 block mb-0.5">Superficie (ha):</label>
                     <input
-                      type="number"
-                      step="0.01"
-                      value={parcelaForm.superficieHa}
-                      onChange={(e) => setParcelaForm({ ...parcelaForm, superficieHa: parseFloat(e.target.value) || 0 })}
-                      className="w-full p-1.5 bg-white border border-stone-300 rounded font-mono font-bold"
+                      type="text"
+                      inputMode="decimal"
+                      value={parcelaForm.superficieHaStr}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        setParcelaForm((prev) => ({
+                          ...prev,
+                          superficieHaStr: raw,
+                          superficieHa: parseDecimalInput(raw, prev.superficieHa),
+                        }));
+                      }}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="text-[10px] text-emerald-800 bg-emerald-50 p-2 rounded flex justify-between items-center font-bold">
+                <div className="text-[10px] text-emerald-800 bg-emerald-50 p-2 rounded-lg flex justify-between items-center font-bold gap-2 flex-wrap">
                   {parcelaForm.coordenadasPoligono && parcelaForm.coordenadasPoligono.length >= 3 ? (
                     <>
-                      <span>Polígono georreferenciado ({parcelaForm.coordenadasPoligono.length} vértices):</span>
-                      <span className="font-mono text-emerald-950 font-black">
-                        {(calcularAreaPoligonoM2(parcelaForm.coordenadasPoligono) / 10000).toFixed(2)} ha medidas
+                      <span>
+                        Polígono georreferenciado ({parcelaForm.coordenadasPoligono.length} vértices):{' '}
+                        <strong className="font-mono text-emerald-950">
+                          {(calcularAreaPoligonoM2(parcelaForm.coordenadasPoligono) / 10000).toFixed(2)} ha
+                        </strong>
                       </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const haPoly = Number(
+                              (calcularAreaPoligonoM2(parcelaForm.coordenadasPoligono) / 10000).toFixed(2)
+                            );
+                            if (haPoly > 0) {
+                              setParcelaForm((prev) => ({
+                                ...prev,
+                                superficieHa: haPoly,
+                                superficieHaStr: String(haPoly),
+                              }));
+                            }
+                          }}
+                          className="underline text-emerald-900 cursor-pointer"
+                        >
+                          Usar ha medidas
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setParcelaForm((prev) => ({ ...prev, coordenadasPoligono: [] }))
+                          }
+                          className="underline text-rose-700 cursor-pointer"
+                        >
+                          Quitar polígono
+                        </button>
+                      </div>
                     </>
                   ) : (
                     <>
                       <span>Sin polígono aún (usa círculo aprox.):</span>
                       <span className="font-mono text-emerald-950 font-black">
-                        Radio {calcularRadioMetros(parcelaForm.superficieHa).toFixed(1)} metros
+                        Radio {calcularRadioMetros(parseDecimalInput(parcelaForm.superficieHaStr, parcelaForm.superficieHa)).toFixed(1)} metros
                       </span>
                     </>
                   )}
                 </div>
               </div>
 
-              {/* Sectores de Riego Múltiples */}
-              <div className="p-3 bg-cyan-50/60 border border-cyan-200 rounded-xl space-y-2">
-                <label className="block font-bold text-cyan-950">
-                  Sectores de Riego Destinados (Puedes seleccionar más de uno):
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {sectoresDisponibles.map((sec) => {
-                    const isChecked = parcelaForm.sectoresRiego.some((s) => String(s) === String(sec.id));
-                    return (
-                      <label 
-                        key={sec.id} 
-                        className={`flex items-center gap-1.5 p-2 rounded-lg border cursor-pointer text-xs transition-colors ${
-                          isChecked 
-                            ? 'bg-cyan-700 text-white border-cyan-700 font-bold' 
-                            : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => handleToggleSectorRiego(sec.id)}
-                          className="w-3.5 h-3.5 rounded"
-                        />
-                        <span className="truncate">Sector {sec.id}</span>
-                      </label>
-                    );
-                  })}
+              {/* 3. Sectores de Riego Destinados (Siempre funcional + creación rápida inline) */}
+              <div className="p-3.5 bg-cyan-50/60 border border-cyan-200 rounded-xl space-y-2.5">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <label className="font-bold text-cyan-950 flex items-center gap-1.5">
+                    <Droplet className="w-3.5 h-3.5 text-cyan-700" />
+                    <span>Sectores de Riego Destinados (puedes seleccionar uno o varios):</span>
+                  </label>
+                  {parcelaForm.sectoresRiego.length > 0 && (
+                    <span className="text-[10px] font-bold text-cyan-800">
+                      {parcelaForm.sectoresRiego.length} seleccionado(s)
+                    </span>
+                  )}
+                </div>
+
+                {sectoresDisponibles.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {sectoresDisponibles.map((sec) => {
+                      const isChecked = parcelaForm.sectoresRiego.some(
+                        (s) => String(s) === String(sec.id)
+                      );
+                      return (
+                        <label
+                          key={sec.id}
+                          className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-colors ${
+                            isChecked
+                              ? 'bg-cyan-700 text-white border-cyan-700 font-bold'
+                              : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => handleToggleSectorRiego(sec.id)}
+                            className="w-3.5 h-3.5 rounded accent-cyan-900 shrink-0"
+                          />
+                          <span className="truncate" title={sec.nombre}>
+                            {sec.nombre}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-2.5 bg-white/90 border border-cyan-200 rounded-lg space-y-2">
+                    <p className="text-[11px] text-cyan-900 font-medium">
+                      Aún no tienes sectores de riego creados en el predio. Crea uno con el nombre que quieras abajo o activa rápidamente un sector base:
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[1, 2, 3, 4].map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => handleCreateAndAssignSector(`Sector ${num}`)}
+                          className="px-2.5 py-1 bg-cyan-100 hover:bg-cyan-700 hover:text-white text-cyan-900 border border-cyan-300 rounded-lg text-[11px] font-bold cursor-pointer transition-colors"
+                        >
+                          + Sector {num}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mostrar sectores asignados que quizás no estén en el catálogo (legacy) para poder quitarlos */}
+                {parcelaForm.sectoresRiego.some(
+                  (s) => !sectoresDisponibles.some((sec) => String(sec.id) === String(s))
+                ) && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] font-bold text-cyan-900">Asignados actuales:</span>
+                    {parcelaForm.sectoresRiego
+                      .filter((s) => !sectoresDisponibles.some((sec) => String(sec.id) === String(s)))
+                      .map((s) => (
+                        <button
+                          key={String(s)}
+                          type="button"
+                          onClick={() => handleToggleSectorRiego(s)}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-cyan-700 text-white rounded-md text-[11px] font-bold cursor-pointer hover:bg-rose-600"
+                          title="Clic para quitar este sector"
+                        >
+                          <span>{formatSectorLabel(s, sectoresDisponibles)}</span>
+                          <X className="w-3 h-3" />
+                        </button>
+                      ))}
+                  </div>
+                )}
+
+                {/* Crear nuevo sector personalizado directo desde aquí */}
+                <div className="flex flex-col sm:flex-row gap-2 pt-1 border-t border-cyan-200/70">
+                  <input
+                    type="text"
+                    value={nuevoSectorNombre}
+                    onChange={(e) => setNuevoSectorNombre(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleCreateAndAssignSector();
+                      }
+                    }}
+                    placeholder="Nombre nuevo sector (ej. Sector Norte Bombeo)"
+                    className="flex-1 p-2 bg-white border border-cyan-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-cyan-600"
+                  />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={nuevoSectorHa}
+                    onChange={(e) => setNuevoSectorHa(e.target.value)}
+                    placeholder="Ha (opc.)"
+                    className="w-full sm:w-24 p-2 bg-white border border-cyan-300 rounded-lg text-xs font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleCreateAndAssignSector()}
+                    disabled={!nuevoSectorNombre.trim()}
+                    className="px-3 py-2 bg-cyan-700 hover:bg-cyan-600 disabled:opacity-40 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1 cursor-pointer shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Agregar Sector</span>
+                  </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {/* 4. Material Vegetal y Conducción */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Variedad:</label>
                   <input
                     type="text"
+                    list="variedades-kiwi-list"
                     value={parcelaForm.variedad}
-                    onChange={(e) => setParcelaForm({ ...parcelaForm, variedad: e.target.value })}
+                    onChange={(e) => setParcelaForm((prev) => ({ ...prev, variedad: e.target.value }))}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    placeholder="Ej. Kiwi Hayward"
                     required
                   />
+                  <datalist id="variedades-kiwi-list">
+                    <option value="Kiwi Hayward" />
+                    <option value="Kiwi Amarillo (Jintao)" />
+                    <option value="Kiwi Amarillo (Soreli)" />
+                    <option value="Kiwi Amarillo (G3 / SunGold)" />
+                    <option value="Kiwi Rojo (Donghong)" />
+                    <option value="Polinizantes Tomuri / Chieftain" />
+                  </datalist>
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Portainjerto:</label>
                   <input
                     type="text"
                     value={parcelaForm.patronPortainjerto}
-                    onChange={(e) => setParcelaForm({ ...parcelaForm, patronPortainjerto: e.target.value })}
+                    onChange={(e) =>
+                      setParcelaForm((prev) => ({ ...prev, patronPortainjerto: e.target.value }))
+                    }
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    placeholder="Ej. Franco / Bounty 71"
                   />
                 </div>
                 <div>
@@ -2297,50 +2837,268 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   <input
                     type="text"
                     value={parcelaForm.polinizador}
-                    onChange={(e) => setParcelaForm({ ...parcelaForm, polinizador: e.target.value })}
+                    onChange={(e) =>
+                      setParcelaForm((prev) => ({ ...prev, polinizador: e.target.value }))
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    placeholder="Ej. Tomuri / Chieftain (1:8)"
+                  />
+                </div>
+              </div>
+
+              {/* 5. Conducción, Marco, Plantas y Rendimiento */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                <div className="sm:col-span-2">
+                  <label className="block font-bold text-stone-700 mb-1">Sistema de Conducción:</label>
+                  <input
+                    type="text"
+                    list="sistemas-conduccion-list"
+                    value={parcelaForm.sistemaConduccion}
+                    onChange={(e) =>
+                      setParcelaForm((prev) => ({ ...prev, sistemaConduccion: e.target.value }))
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    placeholder="Ej. Parrón Español"
+                  />
+                  <datalist id="sistemas-conduccion-list">
+                    {SISTEMAS_CONDUCCION.map((sis) => (
+                      <option key={sis} value={sis} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1 flex items-center justify-between">
+                    <span>Marco Plantación:</span>
+                    <button
+                      type="button"
+                      onClick={handleCalcularPlantasDesdeMarco}
+                      className="text-[10px] text-emerald-700 hover:underline font-bold cursor-pointer"
+                      title="Calcular plantas/ha desde el marco (ej. 4.5 x 4.0)"
+                    >
+                      Calc. pl/ha
+                    </button>
+                  </label>
+                  <input
+                    type="text"
+                    value={parcelaForm.marcoPlantacion}
+                    onChange={(e) =>
+                      setParcelaForm((prev) => ({ ...prev, marcoPlantacion: e.target.value }))
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    placeholder="4.5m x 4.0m"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Plantas / ha:</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={parcelaForm.plantasPorHaStr}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setParcelaForm((prev) => ({
+                        ...prev,
+                        plantasPorHaStr: raw,
+                        plantasPorHa: Math.round(parseDecimalInput(raw, prev.plantasPorHa)),
+                      }));
+                    }}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    placeholder="555"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Año de Plantación:</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={parcelaForm.anioPlantacionStr}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setParcelaForm((prev) => ({
+                        ...prev,
+                        anioPlantacionStr: raw,
+                        anioPlantacion: Math.round(parseDecimalInput(raw, prev.anioPlantacion)),
+                      }));
+                    }}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Meta Rendimiento (Ton/ha):</label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={parcelaForm.rendimientoStr}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setParcelaForm((prev) => ({
+                        ...prev,
+                        rendimientoStr: raw,
+                        rendimientoEstimadoTonHa: parseDecimalInput(raw, prev.rendimientoEstimadoTonHa),
+                      }));
+                    }}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                  />
+                </div>
+
+                <div className="p-2 bg-stone-50 border border-stone-200 rounded-lg flex flex-col justify-center">
+                  <span className="text-[10px] text-stone-500">Totales calculados del cuartel</span>
+                  <span className="font-mono font-bold text-stone-900">
+                    {Math.round(
+                      parseDecimalInput(parcelaForm.superficieHaStr, parcelaForm.superficieHa) *
+                        parseDecimalInput(parcelaForm.plantasPorHaStr, parcelaForm.plantasPorHa)
+                    ).toLocaleString('es-CL')}{' '}
+                    plantas ·{' '}
+                    {(
+                      parseDecimalInput(parcelaForm.superficieHaStr, parcelaForm.superficieHa) *
+                      parseDecimalInput(parcelaForm.rendimientoStr, parcelaForm.rendimientoEstimadoTonHa)
+                    ).toFixed(1)}{' '}
+                    ton est.
+                  </span>
+                </div>
+              </div>
+
+              {/* 6. Estado Operativo, Fenología y Carencia */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Estado Actual del Cuartel:</label>
+                  <input
+                    type="text"
+                    list="estados-operativos-list"
+                    value={parcelaForm.estadoActual}
+                    onChange={(e) =>
+                      setParcelaForm((prev) => ({ ...prev, estadoActual: e.target.value }))
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    placeholder="Ej. Normal"
+                  />
+                  <datalist id="estados-operativos-list">
+                    {ESTADOS_OPERATIVOS.map((est) => (
+                      <option key={est} value={est} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Estado Fenológico:</label>
+                  <input
+                    type="text"
+                    list="estados-fenologicos-list"
+                    value={parcelaForm.estadoFenologico}
+                    onChange={(e) =>
+                      setParcelaForm((prev) => ({ ...prev, estadoFenologico: e.target.value }))
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    placeholder="Ej. Brotación, Floración, Maduración..."
+                  />
+                  <datalist id="estados-fenologicos-list">
+                    {ESTADOS_FENOLOGICOS.map((ef) => (
+                      <option key={ef} value={ef} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+
+              {parcelaForm.estadoActual === 'En Carencia SAG' && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block font-bold text-rose-900 mb-1">Producto / LMR en Carencia:</label>
+                    <input
+                      type="text"
+                      value={parcelaForm.lmrActivo}
+                      onChange={(e) =>
+                        setParcelaForm((prev) => ({ ...prev, lmrActivo: e.target.value }))
+                      }
+                      className="w-full p-2 bg-white border border-rose-300 rounded-lg"
+                      placeholder="Nombre del producto aplicado"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-rose-900 mb-1">Días Restantes de Carencia:</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={parcelaForm.diasCarenciaStr}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        setParcelaForm((prev) => ({
+                          ...prev,
+                          diasCarenciaStr: raw,
+                          diasCarenciaRestantes: Math.round(parseDecimalInput(raw, 0)),
+                        }));
+                      }}
+                      className="w-full p-2 bg-white border border-rose-300 rounded-lg font-mono font-bold"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* 7. Color e Información Adicional */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1.5">Color Identificador en Mapa y Tarjeta:</label>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {COLORES_PRESET.map((hex) => (
+                      <button
+                        key={hex}
+                        type="button"
+                        onClick={() => setParcelaForm((prev) => ({ ...prev, colorHex: hex }))}
+                        style={{ backgroundColor: hex }}
+                        className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-transform ${
+                          parcelaForm.colorHex.toLowerCase() === hex.toLowerCase()
+                            ? 'border-stone-900 scale-110 shadow-sm'
+                            : 'border-white shadow-2xs'
+                        }`}
+                        title={hex}
+                      />
+                    ))}
+                    <input
+                      type="color"
+                      value={parcelaForm.colorHex}
+                      onChange={(e) =>
+                        setParcelaForm((prev) => ({ ...prev, colorHex: e.target.value }))
+                      }
+                      className="w-8 h-7 rounded cursor-pointer border border-stone-300"
+                    />
+                    <span className="font-mono text-[11px] text-stone-600">{parcelaForm.colorHex}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Notas / Observaciones del Cuartel (opcional):</label>
+                  <textarea
+                    rows={2}
+                    value={parcelaForm.notas}
+                    onChange={(e) => setParcelaForm((prev) => ({ ...prev, notas: e.target.value }))}
+                    placeholder="Tipo de suelo, pendiente, reemplazos, historial..."
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Sistema de Conducción:</label>
-                  <select
-                    value={parcelaForm.sistemaConduccion}
-                    onChange={(e) => setParcelaForm({ ...parcelaForm, sistemaConduccion: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
-                  >
-                    {SISTEMAS_CONDUCCION.map((sis) => (
-                      <option key={sis} value={sis}>{sis}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Color Identificador:</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={parcelaForm.colorHex}
-                      onChange={(e) => setParcelaForm({ ...parcelaForm, colorHex: e.target.value })}
-                      className="w-9 h-9 rounded cursor-pointer border border-stone-300"
-                    />
-                    <span className="font-mono text-xs">{parcelaForm.colorHex}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-100">
+              <div className="pt-3 flex justify-end gap-2 border-t border-stone-100">
                 <button
                   type="button"
-                  onClick={() => { setIsAddParcelaOpen(false); setIsEditParcelaOpen(false); }}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  onClick={() => {
+                    setIsAddParcelaOpen(false);
+                    setIsEditParcelaOpen(false);
+                    setEditingParcelaId(null);
+                    setCuartelModalError(null);
+                    setGpsFeedback(null);
+                  }}
+                  className="px-3.5 py-2 border border-stone-300 rounded-xl text-stone-700 hover:bg-stone-50 font-semibold cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer"
+                  className="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer shadow-xs"
                 >
                   {isEditParcelaOpen ? 'Guardar Cambios' : 'Crear Cuartel'}
                 </button>

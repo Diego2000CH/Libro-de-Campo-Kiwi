@@ -47,17 +47,17 @@ export interface Parcela {
   id: string;
   nombre: string;
   codigoCuartel: string;
-  sectorRiegoNumero: 1 | 2 | 3 | 4; // Los 4 sectores de riego del Fundo
+  sectorRiegoNumero: number; // Sector de riego principal asociado
   superficieHa: number;
-  variedad: string; // 'Hayward'
+  variedad: string; // 'Kiwi Hayward', 'Kiwi Amarillo', etc.
   patronPortainjerto: string; // 'Franco / Semilla Hayward' o 'Bounty'
   polinizador: string; // 'Tomuri / Chieftain (1:8)'
-  sistemaConduccion: 'Parrón Español' | 'Espaldera en T' | 'T-Bar Pergola';
+  sistemaConduccion: string; // 'Parrón Español', 'Espaldera en T', 'T-Bar Pergola', o personalizado
   marcoPlantacion: string; // '4.5m x 4.0m'
   plantasPorHa: number; // 555
   anioPlantacion: number;
   estadoFenologico: string; // 'Yema hinchada', 'Floración', 'Cuaja', 'Crecimiento fruto', 'Maduración', 'Post-cosecha'
-  estadoActual: 'Normal' | 'En Carencia SAG' | 'Listo para Cosecha' | 'En Riego';
+  estadoActual: string; // 'Normal', 'En Carencia SAG', 'Listo para Cosecha', 'En Riego', etc.
   lmrActivo?: string; // Nombre del producto en carencia
   diasCarenciaRestantes?: number;
   fechaUltimaAplicacion?: string;
@@ -67,6 +67,7 @@ export interface Parcela {
   lng?: number;
   sectoresRiego?: (number | string)[]; // Soporte para más de un sector de riego destinado a un solo cuartel
   coordenadasPoligono: { lat: number; lng: number }[];
+  notas?: string;
 }
 
 export interface SectorRiego {
