@@ -18,7 +18,7 @@ import {
   Trash2,
   Award,
   QrCode,
-  DollarSign,
+  Package,
   Printer,
   X,
   ShieldCheck,
@@ -116,13 +116,16 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
   const ultimoPacking = cosechas[0]?.packingDestino || '—';
   const ultimoCalibre = cosechas[0]?.calibrePredominante || '—';
 
-  // Métricas de Liquidaciones
+  // Métricas de Recepción Packing (físicas, sin precios)
   const totalKgRecibidosLiq = liquidaciones.reduce((acc, l) => acc + l.kilosRecibidosKg, 0);
   const totalKgExportablesLiq = liquidaciones.reduce((acc, l) => acc + l.kilosEmbaladosExportacionKg, 0);
   const pctExportableGlobal =
     totalKgRecibidosLiq > 0 ? ((totalKgExportablesLiq / totalKgRecibidosLiq) * 100).toFixed(1) : '0.0';
-  const totalRetornoUSD = liquidaciones.reduce((acc, l) => acc + l.retornoTotalUSD, 0);
-  const totalRetornoCLP = liquidaciones.reduce((acc, l) => acc + l.retornoTotalCLP, 0);
+  const totalCajasExportables = liquidaciones.reduce((acc, l) => acc + (l.cajasExportables || 0), 0);
+  const totalKgDescarte = liquidaciones.reduce(
+    (acc, l) => acc + (l.kilosDescarteKg ?? Math.max(0, l.kilosRecibidosKg - l.kilosEmbaladosExportacionKg)),
+    0
+  );
 
   // Auditoría de Trazabilidad para un lote específico (Brix + Carencia SAG + Riego + Liquidación)
   const trazabilidadLote = useMemo(() => {
@@ -292,10 +295,6 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
     const kgExp = Number(liqForm.kilosEmbaladosExportacionKg) || 0;
     const kgDesc = Math.max(0, kgRec - kgExp);
     const pctExp = kgRec > 0 ? Number(((kgExp / kgRec) * 100).toFixed(1)) : 0;
-    const usd = Number(liqForm.retornoTotalUSD) || 0;
-    const tc = Number(liqForm.tipoCambioCLP) || 950;
-    const clp = Math.round(usd * tc);
-    const usdKg = kgExp > 0 ? Number((usd / kgExp).toFixed(2)) : 0;
 
     onAddLiquidacion({
       id: `liq-${Date.now()}`,
@@ -311,10 +310,10 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
       porcentajeExportable: pctExp,
       cajasExportables: Number(liqForm.cajasExportables) || 0,
       distribucionCalibres: liqForm.distribucionCalibres.trim(),
-      retornoTotalUSD: usd,
-      tipoCambioCLP: tc,
-      retornoTotalCLP: clp,
-      precioPromedioUSDKg: usdKg,
+      retornoTotalUSD: 0,
+      tipoCambioCLP: 0,
+      retornoTotalCLP: 0,
+      precioPromedioUSDKg: 0,
       estado: liqForm.estado,
       observaciones: liqForm.observaciones.trim() || undefined,
     });
@@ -328,13 +327,13 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider mb-1">
             <Award className="w-3 h-3" />
-            Resolución SAG · Trazabilidad QR & Liquidaciones
+            Resolución SAG · Trazabilidad QR &amp; Packing
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
-            Cosecha, Madurez (°Brix), Trazabilidad QR & Packing
+            Cosecha, Madurez (°Brix), Trazabilidad QR &amp; Packing
           </h1>
           <p className="text-xs text-stone-500">
-            Control de sólidos solubles (mín. 6.2° Brix), pasaporte QR por guía con verificación automática de LMR y liquidación de exportadora.
+            Control de sólidos solubles (mín. 6.2° Brix), pasaporte QR por guía con verificación automática de LMR y recepción de fruta en packing.
           </p>
         </div>
 
@@ -365,7 +364,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                 activeTabSub === 'liquidaciones' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              Liquidaciones Packing ({liquidaciones.length})
+              Recepción Packing ({liquidaciones.length})
             </button>
           </div>
 
@@ -396,7 +395,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
               className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Registrar Liquidación</span>
+              <span>Registrar Recepción Packing</span>
             </button>
           )}
         </div>
@@ -669,60 +668,58 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
         </div>
       )}
 
-      {/* SUB-PESTAÑA 3: Liquidaciones de Packing / Exportadora */}
+      {/* SUB-PESTAÑA 3: Recepción y Embalaje de Packing */}
       {activeTabSub === 'liquidaciones' && (
         <div className="space-y-5">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Kilos Recibidos Packing</div>
-              <div className="text-2xl font-black text-stone-900 mt-1">{totalKgRecibidosLiq.toLocaleString('es-CL')} kg</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">{liquidaciones.length} liquidaciones</div>
+              <div className="text-2xl font-black text-stone-900 mt-1 font-mono tabular-nums">{totalKgRecibidosLiq.toLocaleString('es-CL')} kg</div>
+              <div className="text-[11px] text-stone-500 mt-0.5">{liquidaciones.length} recepciones</div>
             </div>
 
             <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Embalaje Exportación</div>
-              <div className="text-2xl font-black text-emerald-900 mt-1">{pctExportableGlobal}%</div>
+              <div className="text-2xl font-black text-emerald-900 mt-1 font-mono tabular-nums">{pctExportableGlobal}%</div>
               <div className="text-[11px] text-stone-500 mt-0.5">{totalKgExportablesLiq.toLocaleString('es-CL')} kg embalados</div>
             </div>
 
             <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
-              <div className="text-[10px] text-stone-400 font-bold uppercase">Retorno Neto USD</div>
-              <div className="text-2xl font-black text-emerald-800 mt-1">${totalRetornoUSD.toLocaleString('en-US', { minimumFractionDigits: 0 })}</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">
-                Prom: ${totalKgExportablesLiq > 0 ? (totalRetornoUSD / totalKgExportablesLiq).toFixed(2) : '0.00'} USD/kg
-              </div>
+              <div className="text-[10px] text-stone-400 font-bold uppercase">Cajas Embaladas</div>
+              <div className="text-2xl font-black text-emerald-800 mt-1 font-mono tabular-nums">{totalCajasExportables.toLocaleString('es-CL')}</div>
+              <div className="text-[11px] text-stone-500 mt-0.5">Cajas exportación acumuladas</div>
             </div>
 
             <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
-              <div className="text-[10px] text-stone-400 font-bold uppercase">Retorno Estimado CLP</div>
-              <div className="text-xl font-black text-stone-900 mt-1">${totalRetornoCLP.toLocaleString('es-CL')}</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">Conversión según tipo de cambio</div>
+              <div className="text-[10px] text-stone-400 font-bold uppercase">Fruta Descarte / Merma</div>
+              <div className="text-2xl font-black text-stone-900 mt-1 font-mono tabular-nums">{totalKgDescarte.toLocaleString('es-CL')} kg</div>
+              <div className="text-[11px] text-stone-500 mt-0.5">Diferencia recepción vs embalado</div>
             </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
             <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
               <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-emerald-700" />
-                Cartolas de Recepción y Liquidaciones Finales
+                <Package className="w-4 h-4 text-emerald-700" />
+                Cartolas de Recepción y Embalaje en Packing
               </h2>
             </div>
 
             {liquidaciones.length === 0 ? (
               <div className="p-8 text-center text-xs text-stone-500">
-                No hay liquidaciones de packing registradas aún. Registra la recepción y retorno final de tus guías de despacho.
+                No hay recepciones de packing registradas aún. Registra los kilos recibidos, exportables, cajas y calibres de tus guías de despacho.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px]">
                     <tr>
-                      <th className="px-4 py-3">Fecha Liq.</th>
+                      <th className="px-4 py-3">Fecha Recepción</th>
                       <th className="px-4 py-3">Guía / Cuartel</th>
                       <th className="px-4 py-3">Packing</th>
                       <th className="px-4 py-3">Recibido / Exportable</th>
-                      <th className="px-4 py-3">Cajas & Calibres</th>
-                      <th className="px-4 py-3">Retorno USD / CLP</th>
+                      <th className="px-4 py-3">Cajas &amp; Calibres</th>
+                      <th className="px-4 py-3">Descarte / Estado</th>
                       {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
                     </tr>
                   </thead>
@@ -745,11 +742,13 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                           <div className="font-bold">{l.cajasExportables} cajas</div>
                           <div className="text-[10px] text-stone-500">{l.distribucionCalibres || '—'}</div>
                         </td>
-                        <td className="px-4 py-3 font-mono">
-                          <div className="font-bold text-emerald-900">
-                            ${l.retornoTotalUSD.toLocaleString('en-US')} USD (${l.precioPromedioUSDKg}/kg)
+                        <td className="px-4 py-3">
+                          <div className="font-mono font-semibold text-stone-800">
+                            {(l.kilosDescarteKg ?? Math.max(0, l.kilosRecibidosKg - l.kilosEmbaladosExportacionKg)).toLocaleString('es-CL')} kg desc.
                           </div>
-                          <div className="text-[10px] text-stone-500">${l.retornoTotalCLP.toLocaleString('es-CL')} CLP</div>
+                          <div className="text-[10px] text-emerald-800 font-semibold">
+                            {l.estado === 'Liquidado' ? 'Embalado Final' : 'En Proceso'}
+                          </div>
                         </td>
                         {canEdit && onDeleteLiquidacion && (
                           <td className="px-4 py-3 text-right">
@@ -864,11 +863,11 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
 
               {trazabilidadLote.liquidacionAsociada && (
                 <div className="p-3.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-950">
-                  <div className="text-[10px] font-bold uppercase">Liquidación de Packing Vinculada</div>
+                  <div className="text-[10px] font-bold uppercase">Recepción de Packing Vinculada</div>
                   <div className="font-bold text-xs mt-1">
                     {trazabilidadLote.liquidacionAsociada.kilosEmbaladosExportacionKg.toLocaleString('es-CL')} kg exportables ({trazabilidadLote.liquidacionAsociada.porcentajeExportable}%) ·{' '}
                     {trazabilidadLote.liquidacionAsociada.cajasExportables} cajas ·{' '}
-                    Retorno: ${trazabilidadLote.liquidacionAsociada.retornoTotalUSD.toLocaleString('en-US')} USD
+                    Descarte: {(trazabilidadLote.liquidacionAsociada.kilosDescarteKg ?? 0).toLocaleString('es-CL')} kg
                   </div>
                 </div>
               )}
@@ -1042,7 +1041,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
-              <h3 className="font-bold text-sm">Registrar Recepción y Liquidación de Packing</h3>
+              <h3 className="font-bold text-sm">Registrar Recepción y Embalaje de Packing</h3>
               <button type="button" onClick={() => setIsNewLiquidacionOpen(false)} className="text-emerald-200 hover:text-white cursor-pointer">✕</button>
             </div>
             <form onSubmit={handleGuardarLiquidacion} className="p-5 space-y-3.5 text-xs">
@@ -1066,7 +1065,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                   <input type="text" value={liqForm.numeroGuiaDespacho} onChange={(e) => setLiqForm({ ...liqForm, numeroGuiaDespacho: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg font-mono" required />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Liquidación:</label>
+                  <label className="block font-bold text-stone-700 mb-1">Fecha Recepción:</label>
                   <input type="date" value={liqForm.fechaLiquidacion} onChange={(e) => setLiqForm({ ...liqForm, fechaLiquidacion: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg" required />
                 </div>
               </div>
@@ -1107,20 +1106,33 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                 <input type="text" value={liqForm.distribucionCalibres} onChange={(e) => setLiqForm({ ...liqForm, distribucionCalibres: e.target.value })} placeholder="Ej. C27: 25%, C30: 45%, C33: 20%, C36: 10%" className="w-full p-2 border border-stone-300 rounded-lg" />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Retorno Neto Total (USD):</label>
-                  <input type="number" step="0.01" min="0" value={liqForm.retornoTotalUSD} onChange={(e) => setLiqForm({ ...liqForm, retornoTotalUSD: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg font-mono font-bold" required />
+                  <label className="block font-bold text-stone-700 mb-1">Estado Recepción:</label>
+                  <select
+                    value={liqForm.estado}
+                    onChange={(e) => setLiqForm({ ...liqForm, estado: e.target.value as LiquidacionPacking['estado'] })}
+                    className="w-full p-2 border border-stone-300 rounded-lg"
+                  >
+                    <option value="Liquidado">Embalado Final</option>
+                    <option value="En Proceso">En Proceso</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Tipo de Cambio (CLP/USD):</label>
-                  <input type="number" min="1" value={liqForm.tipoCambioCLP} onChange={(e) => setLiqForm({ ...liqForm, tipoCambioCLP: parseFloat(e.target.value) || 950 })} className="w-full p-2 border border-stone-300 rounded-lg font-mono" />
+                  <label className="block font-bold text-stone-700 mb-1">Observaciones de Recepción:</label>
+                  <input
+                    type="text"
+                    value={liqForm.observaciones}
+                    onChange={(e) => setLiqForm({ ...liqForm, observaciones: e.target.value })}
+                    placeholder="Condición de fruta, firmeza en línea..."
+                    className="w-full p-2 border border-stone-300 rounded-lg"
+                  />
                 </div>
               </div>
 
               <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
                 <button type="button" onClick={() => setIsNewLiquidacionOpen(false)} className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer">Cancelar</button>
-                <button type="submit" className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs cursor-pointer">Guardar Liquidación</button>
+                <button type="submit" className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs cursor-pointer">Guardar Recepción</button>
               </div>
             </form>
           </div>

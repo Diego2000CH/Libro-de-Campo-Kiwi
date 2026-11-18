@@ -103,7 +103,6 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
   const totalEquipos = maquinarias.length;
   const operativos = maquinarias.filter((m) => m.estado === 'operativo').length;
   const enMantencion = maquinarias.filter((m) => m.estado === 'mantencion_proxima' || m.estado === 'en_taller').length;
-  const gastoTotalMantenciones = registrosMantencion.reduce((acc, r) => acc + (r.costoCLP || 0), 0);
 
   // Apertura de modal de edición
   const handleOpenEdit = (m: MaquinariaEquipo) => {
@@ -216,7 +215,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
       horometro: Number(mantencionForm.horometro),
       tipoMantencion: mantencionForm.tipoMantencion,
       tallerOMecanico: mantencionForm.tallerOMecanico,
-      costoCLP: Number(mantencionForm.costoCLP),
+      costoCLP: 0,
       repuestosUtilizados: mantencionForm.repuestosUtilizados,
       observaciones: mantencionForm.observaciones,
       fotoEvidenciaDataUrl: mantencionForm.fotoEvidenciaDataUrl || undefined
@@ -308,9 +307,9 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
-          <div className="text-[10px] text-stone-400 font-bold uppercase">Inversión Mantenciones</div>
-          <div className="text-2xl font-black text-blue-950 mt-1">${gastoTotalMantenciones.toLocaleString('es-CL')}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">{registrosMantencion.length} registros en historial</div>
+          <div className="text-[10px] text-stone-400 font-bold uppercase">Bitácora de Mantenciones</div>
+          <div className="text-2xl font-black text-blue-950 mt-1 font-mono tabular-nums">{registrosMantencion.length}</div>
+          <div className="text-[11px] text-stone-500 mt-0.5">Servicios preventivos y correctivos</div>
         </div>
       </div>
 
@@ -527,7 +526,6 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 <th className="px-4 py-3">Labor / Tipo Mantención</th>
                 <th className="px-4 py-3">Mecánico / Taller</th>
                 <th className="px-4 py-3">Repuestos / Insumos</th>
-                <th className="px-4 py-3">Costo (CLP)</th>
                 <th className="px-4 py-3">Foto</th>
                 {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
               </tr>
@@ -544,7 +542,6 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                   </td>
                   <td className="px-4 py-3 text-stone-600">{reg.tallerOMecanico}</td>
                   <td className="px-4 py-3 text-stone-500 text-[11px] max-w-xs truncate">{reg.repuestosUtilizados}</td>
-                  <td className="px-4 py-3 font-mono font-bold text-stone-900">${reg.costoCLP.toLocaleString('es-CL')}</td>
                   <td className="px-4 py-3">
                     {reg.fotoEvidenciaDataUrl ? (
                       <button
@@ -1010,27 +1007,16 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Taller o Mecánico Responsable:</label>
-                  <input
-                    type="text"
-                    value={mantencionForm.tallerOMecanico}
-                    onChange={(e) => setMantencionForm({ ...mantencionForm, tallerOMecanico: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
-                    placeholder="ej. Mecánico Central / Concesionario"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Costo Total del Servicio (CLP):</label>
-                  <input
-                    type="number"
-                    value={mantencionForm.costoCLP}
-                    onChange={(e) => setMantencionForm({ ...mantencionForm, costoCLP: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
-                  />
-                </div>
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Taller o Mecánico Responsable:</label>
+                <input
+                  type="text"
+                  value={mantencionForm.tallerOMecanico}
+                  onChange={(e) => setMantencionForm({ ...mantencionForm, tallerOMecanico: e.target.value })}
+                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  placeholder="ej. Mecánico Central / Concesionario"
+                  required
+                />
               </div>
 
               <div>

@@ -18,8 +18,7 @@ import {
   AlertTriangle,
   TrendingUp,
   X,
-  Sparkles,
-  DollarSign
+  Sparkles
 } from 'lucide-react';
 
 interface CargaObjetivoRaleoPanelProps {
@@ -133,7 +132,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
     cargaActualPorPlanta: 1050,
     rendimientoJornalPlantasDia: 42,
     cuadrillaPersonas: 10,
-    costoJornalCLP: 28000
+    costoJornalCLP: 0
   });
 
   // Estado del formulario modal (Crear / Editar Plan)
@@ -151,7 +150,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
     fechaTerminoPlanificada: todayISO(),
     rendimientoJornalPlantasDia: 42,
     cuadrillaPersonas: 10,
-    costoJornalCLP: 28000,
+    costoJornalCLP: 0,
     prioridadRaleo: '1° Flores laterales y mariposas' as PlanCargaRaleo['prioridadRaleo'],
     estado: 'Planificado' as PlanCargaRaleo['estado'],
     avanceRealPct: 0,
@@ -249,7 +248,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
       cargaActualPorPlanta: sim.cargaActualPorPlanta,
       rendimientoJornalPlantasDia: sim.rendimientoJornalPlantasDia,
       cuadrillaPersonas: sim.cuadrillaPersonas,
-      costoJornalCLP: sim.costoJornalCLP,
+      costoJornalCLP: 0,
       fechaInicioPlanificada: todayISO(),
       fechaTerminoPlanificada: fechaFin.toISOString().split('T')[0],
       observaciones: `Meta: ${sim.tonHaObjetivo} ton/ha a ${sim.pesoFrutoObjetivoGr}g/fruto (${simMetrics.frutosObjetivoM2} frutos/m²). Raleo estimado ${simMetrics.porcentajeRaleoRequerido}%.`
@@ -279,7 +278,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
       fechaTerminoPlanificada: plan.fechaTerminoPlanificada || todayISO(),
       rendimientoJornalPlantasDia: plan.rendimientoJornalPlantasDia || 40,
       cuadrillaPersonas: plan.cuadrillaPersonas || 8,
-      costoJornalCLP: plan.costoJornalCLP || 28000,
+      costoJornalCLP: 0,
       prioridadRaleo: plan.prioridadRaleo || '1° Flores laterales y mariposas',
       estado: plan.estado || 'Planificado',
       avanceRealPct: plan.avanceRealPct ?? 0,
@@ -315,10 +314,10 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
       fechaTerminoPlanificada: form.fechaTerminoPlanificada || todayISO(),
       rendimientoJornalPlantasDia: Number(form.rendimientoJornalPlantasDia) || 40,
       cuadrillaPersonas: Number(form.cuadrillaPersonas) || 1,
-      costoJornalCLP: Number(form.costoJornalCLP) || 0,
+      costoJornalCLP: 0,
       jornalesEstimadosTotales: formMetrics.jornalesEstimadosTotales,
       diasEstimadosFaena: formMetrics.diasEstimadosFaena,
-      costoEstimadoTotalCLP: formMetrics.costoEstimadoTotalCLP,
+      costoEstimadoTotalCLP: 0,
       prioridadRaleo: form.prioridadRaleo,
       estado: form.estado,
       avanceRealPct: Number(form.avanceRealPct) || 0,
@@ -342,16 +341,12 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
 
   const totalesPlanes = useMemo(() => {
     const totalJornales = filteredPlanes.reduce((acc, p) => acc + (p.jornalesEstimadosTotales || 0), 0);
-    const totalCosto = filteredPlanes.reduce((acc, p) => acc + (p.costoEstimadoTotalCLP || 0), 0);
     const avgObjetivoM2 =
       filteredPlanes.length > 0
         ? (filteredPlanes.reduce((acc, p) => acc + (p.frutosObjetivoM2 || 0), 0) / filteredPlanes.length).toFixed(1)
         : '0';
-    return { totalJornales, totalCosto, avgObjetivoM2 };
+    return { totalJornales, avgObjetivoM2 };
   }, [filteredPlanes]);
-
-  const formatCLP = (val: number) =>
-    new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(val);
 
   return (
     <div className="space-y-5">
@@ -519,7 +514,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="font-bold text-stone-700 block mb-1">Carga Actual / Planta:</label>
                   <input
@@ -547,17 +542,6 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                     min="1"
                     value={sim.cuadrillaPersonas}
                     onChange={(e) => setSim({ ...sim, cuadrillaPersonas: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 bg-white rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-stone-700 block mb-1">Valor Jornal ($ CLP):</label>
-                  <input
-                    type="number"
-                    step="1000"
-                    min="0"
-                    value={sim.costoJornalCLP}
-                    onChange={(e) => setSim({ ...sim, costoJornalCLP: Number(e.target.value) })}
                     className="w-full p-2 border border-stone-300 bg-white rounded-lg"
                   />
                 </div>
@@ -635,8 +619,8 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                   <div className="text-base font-black text-indigo-300 mt-0.5">{simMetrics.diasEstimadosFaena} d</div>
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 text-center">
-                  <div className="text-[10px] text-stone-400">Costo Estimado</div>
-                  <div className="text-xs font-black text-emerald-300 mt-1">{formatCLP(simMetrics.costoEstimadoTotalCLP)}</div>
+                  <div className="text-[10px] text-stone-400">Rendimiento Base</div>
+                  <div className="text-sm font-black text-emerald-300 mt-0.5 font-mono tabular-nums">{sim.rendimientoJornalPlantasDia} pl/j.</div>
                 </div>
               </div>
             </div>
@@ -664,7 +648,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
           </span>
           <span className="px-2.5 py-1 rounded-lg bg-stone-100 text-stone-800 font-bold flex items-center gap-1">
             <Users className="w-3.5 h-3.5 text-stone-500" />
-            {totalesPlanes.totalJornales} jornales · {formatCLP(totalesPlanes.totalCosto)}
+            {totalesPlanes.totalJornales} jornales estimados
           </span>
         </div>
 
@@ -774,9 +758,9 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                 </div>
 
                 <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-2.5 text-center">
-                  <div className="text-[10px] text-indigo-800 font-bold">Cuadrilla & Costo</div>
-                  <div className="text-base font-black text-indigo-950 mt-0.5">{plan.jornalesEstimadosTotales} jorn.</div>
-                  <div className="text-[9px] text-indigo-700">{plan.diasEstimadosFaena}d · {formatCLP(plan.costoEstimadoTotalCLP)}</div>
+                  <div className="text-[10px] text-indigo-800 font-bold">Cuadrilla &amp; Jornales</div>
+                  <div className="text-base font-black text-indigo-950 mt-0.5 font-mono tabular-nums">{plan.jornalesEstimadosTotales} jorn.</div>
+                  <div className="text-[9px] text-indigo-700">{plan.diasEstimadosFaena} días est. · {plan.cuadrillaPersonas} pers.</div>
                 </div>
               </div>
 
@@ -961,12 +945,12 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                   <div className="text-sm font-black text-rose-900">{formMetrics.excedentePorPlanta} ({formMetrics.porcentajeRaleoRequerido}%)</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-emerald-800 font-bold">Jornales / Costo</div>
-                  <div className="text-sm font-black text-emerald-950">{formMetrics.jornalesEstimadosTotales} j. · {formatCLP(formMetrics.costoEstimadoTotalCLP)}</div>
+                  <div className="text-[10px] text-emerald-800 font-bold">Jornales / Días</div>
+                  <div className="text-sm font-black text-emerald-950 font-mono tabular-nums">{formMetrics.jornalesEstimadosTotales} j. · {formMetrics.diasEstimadosFaena}d</div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
                   <label className="font-bold text-stone-700 block mb-1">Inicio Faena:</label>
                   <input
@@ -1002,17 +986,6 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                     min="1"
                     value={form.cuadrillaPersonas}
                     onChange={(e) => setForm({ ...form, cuadrillaPersonas: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-stone-700 block mb-1">$ Jornal CLP:</label>
-                  <input
-                    type="number"
-                    step="1000"
-                    min="0"
-                    value={form.costoJornalCLP}
-                    onChange={(e) => setForm({ ...form, costoJornalCLP: Number(e.target.value) })}
                     className="w-full p-2 border border-stone-300 rounded-lg"
                   />
                 </div>

@@ -30,7 +30,9 @@ import {
   RegistroEnvaseLimpio,
   CalibracionEquipo,
   TareaAgronomica,
-  ResumenTemporada
+  ResumenTemporada,
+  ItemAuditoriaBPA,
+  PlanillaAuditoriaBPA
 } from '../types/campo';
 import { getNivelAcceso } from './permissions';
 import { getTemporadaDefaults, normalizarCondicionHorasFrio } from './agroClimaCalculos';
@@ -202,6 +204,256 @@ export function getBlankHorasFrio(): CondicionHorasFrio {
   };
 }
 
+export const PREFORMED_BPA_TEMPLATE_ITEMS: Omit<ItemAuditoriaBPA, 'estado'>[] = [
+  // 01. Bodega de Fitosanitarios & Fertilizantes
+  {
+    id: 'bpa-01-1',
+    codigo: '01.1',
+    seccion: '01. Bodega de Fitosanitarios & Fertilizantes',
+    requisito: 'Bodega cerrada con llave, ventilación adecuada, señalética de peligro y bandeja antiderrame operativa.',
+    criterioCumplimiento: 'Acceso restringido solo a personal autorizado; piso impermeable y kit antiderrame con arena/aserrín.',
+    criticidad: 'Mayor',
+  },
+  {
+    id: 'bpa-01-2',
+    codigo: '01.2',
+    seccion: '01. Bodega de Fitosanitarios & Fertilizantes',
+    requisito: 'Productos almacenados en envases originales, etiqueta legible, autorizados por SAG y sin productos vencidos.',
+    criterioCumplimiento: 'Todo el stock vigente y segregado físicamente (herbicidas separados de fungicidas/fertilizantes).',
+    criticidad: 'Mayor',
+    autoCheckKey: 'auto_bodega',
+  },
+  {
+    id: 'bpa-01-3',
+    codigo: '01.3',
+    seccion: '01. Bodega de Fitosanitarios & Fertilizantes',
+    requisito: 'Carpeta de Hojas de Datos de Seguridad (HDS) visible y elementos exclusivos de pesaje/medición.',
+    criterioCumplimiento: 'HDS actualizadas disponibles en bodega + balanza y probetas calibradas de uso exclusivo químico.',
+    criticidad: 'Menor',
+  },
+  {
+    id: 'bpa-01-4',
+    codigo: '01.4',
+    seccion: '01. Bodega de Fitosanitarios & Fertilizantes',
+    requisito: 'Inventario actualizado de entradas, salidas, lotes y fechas de vencimiento en Cuaderno de Campo.',
+    criterioCumplimiento: 'Existencia física coincide con el stock registrado en Bodega Fitosanitarios.',
+    criticidad: 'Menor',
+  },
+  // 02. Aplicaciones Fitosanitarias, LMR & Equipos
+  {
+    id: 'bpa-02-1',
+    codigo: '02.1',
+    seccion: '02. Aplicaciones Fitosanitarias, LMR & Equipos',
+    requisito: 'Aplicadores cuentan con Carnet Oficial de Aplicador SAG vigente y capacitación documentada.',
+    criterioCumplimiento: 'Carnets vigentes sin fecha vencida registrados en Equipo & Usuarios.',
+    criticidad: 'Mayor',
+    autoCheckKey: 'auto_sag',
+  },
+  {
+    id: 'bpa-02-2',
+    codigo: '02.2',
+    seccion: '02. Aplicaciones Fitosanitarias, LMR & Equipos',
+    requisito: 'Equipos pulverizadores, nebulizadores e instrumentos (refractómetro, romana) con calibración vigente.',
+    criterioCumplimiento: 'Aforo de boquillas, manómetro y calibración al menos 1 vez por temporada con registro.',
+    criticidad: 'Mayor',
+    autoCheckKey: 'auto_calibracion',
+  },
+  {
+    id: 'bpa-02-3',
+    codigo: '02.3',
+    seccion: '02. Aplicaciones Fitosanitarias, LMR & Equipos',
+    requisito: 'Respeto estricto de días de Carencia (LMR) y tiempos de Reingreso (REI) con orden de aplicación firmada.',
+    criterioCumplimiento: 'Órdenes de trabajo con fecha, dosis, cuartel, viento/clima, aplicador y señalética de No Ingresar.',
+    criticidad: 'Mayor',
+  },
+  {
+    id: 'bpa-02-4',
+    codigo: '02.4',
+    seccion: '02. Aplicaciones Fitosanitarias, LMR & Equipos',
+    requisito: 'Análisis Multirresiduos (LMR) pre-cosecha conforme según tolerancias del mercado de destino.',
+    criterioCumplimiento: 'Informe de laboratorio acreditado bajo norma LMR sin detecciones no autorizadas.',
+    criticidad: 'Mayor',
+    autoCheckKey: 'auto_lmr',
+  },
+  // 03. Seguridad Laboral, Higiene & Prevención Psa
+  {
+    id: 'bpa-03-1',
+    codigo: '03.1',
+    seccion: '03. Seguridad Laboral, Higiene & Prevención Psa',
+    requisito: 'Entrega y uso correcto de EPP completo (traje impermeable, mascarilla doble filtro, antiparras, guantes nitrilo).',
+    criterioCumplimiento: 'Registro firmado de entrega de EPP y zona limpia separada para guardar ropa de trabajo.',
+    criticidad: 'Mayor',
+  },
+  {
+    id: 'bpa-03-2',
+    codigo: '03.2',
+    seccion: '03. Seguridad Laboral, Higiene & Prevención Psa',
+    requisito: 'Servicios higiénicos / baños en terreno limpios, con agua potable, jabón, toalla desechable y basurero.',
+    criterioCumplimiento: 'Disponibles a menos de 500 m del área de trabajo de cuadrillas de poda, raleo y cosecha.',
+    criticidad: 'Mayor',
+  },
+  {
+    id: 'bpa-03-3',
+    codigo: '03.3',
+    seccion: '03. Seguridad Laboral, Higiene & Prevención Psa',
+    requisito: 'Botiquín de primeros auxilios completo vigente, ducha de emergencia y lavaojos operativos.',
+    criterioCumplimiento: 'Insumos de botiquín sin vencer; números de emergencia (CITUC / Mutual / Ambulancia) publicados.',
+    criticidad: 'Mayor',
+  },
+  {
+    id: 'bpa-03-4',
+    codigo: '03.4',
+    seccion: '03. Seguridad Laboral, Higiene & Prevención Psa',
+    requisito: 'Protocolo activo de bioseguridad y desinfección de tijeras, serruchos y calzado entre cuarteles (Psa).',
+    criterioCumplimiento: 'Uso de amonio cuaternario o alcohol en poda/raleo y sellado inmediato de cortes gruesos.',
+    criticidad: 'Mayor',
+  },
+  // 04. Manejo de Envases, Residuos & Punto Limpio
+  {
+    id: 'bpa-04-1',
+    codigo: '04.1',
+    seccion: '04. Manejo de Envases, Residuos & Punto Limpio',
+    requisito: 'Triple lavado inmediato, perforación e inutilización de envases vacíos y entrega a Campo Limpio.',
+    criterioCumplimiento: 'Comprobantes de entrega en centro de acopio registrados en pestaña Triple Lavado.',
+    criticidad: 'Mayor',
+    autoCheckKey: 'auto_envases',
+  },
+  {
+    id: 'bpa-04-2',
+    codigo: '04.2',
+    seccion: '04. Manejo de Envases, Residuos & Punto Limpio',
+    requisito: 'Zona de mezcla y lavado de equipos ubicada lejos de pozos, canales de riego o cursos de agua (> 20 m).',
+    criterioCumplimiento: 'Barbecho o cama biológica operativa sin escurrimientos hacia acequias ni napas.',
+    criticidad: 'Mayor',
+  },
+  {
+    id: 'bpa-04-3',
+    codigo: '04.3',
+    seccion: '04. Manejo de Envases, Residuos & Punto Limpio',
+    requisito: 'Segregación ordenada de residuos domésticos, plásticos agrícolas, chatarra y aceites usados de maquinaria.',
+    criterioCumplimiento: 'Punto limpio señalizado y retiro autorizado de residuos peligrosos/aceites.',
+    criticidad: 'Menor',
+  },
+  // 05. Recurso Hídrico, Pozo DGA & Laboratorio
+  {
+    id: 'bpa-05-1',
+    codigo: '05.1',
+    seccion: '05. Recurso Hídrico, Pozo DGA & Laboratorio',
+    requisito: 'Análisis microbiológico y fisicoquímico de agua de riego vigente (< 12 meses) con parámetros conformes.',
+    criterioCumplimiento: 'Informe E. coli / coliformes y CE/pH ingresado en módulo Laboratorio.',
+    criticidad: 'Mayor',
+    autoCheckKey: 'auto_agua',
+  },
+  {
+    id: 'bpa-05-2',
+    codigo: '05.2',
+    seccion: '05. Recurso Hídrico, Pozo DGA & Laboratorio',
+    requisito: 'Extracción de pozo registrada con flujómetro totalizador, horómetro y caudales según exigencia DGA.',
+    criterioCumplimiento: 'Bitácora de Control Pozo DGA al día con lecturas reales.',
+    criticidad: 'Mayor',
+    autoCheckKey: 'auto_pozo',
+  },
+  {
+    id: 'bpa-05-3',
+    codigo: '05.3',
+    seccion: '05. Recurso Hídrico, Pozo DGA & Laboratorio',
+    requisito: 'Cabezal de riego / fertirriego limpio, sin filtraciones y equipado con válvula antirretorno.',
+    criterioCumplimiento: 'Evita devolución de fertilizantes hacia la captación del pozo profundo.',
+    criticidad: 'Mayor',
+  },
+  {
+    id: 'bpa-05-4',
+    codigo: '05.4',
+    seccion: '05. Recurso Hídrico, Pozo DGA & Laboratorio',
+    requisito: 'Justificación técnica de fertilización respaldada por análisis foliar o de suelo de la temporada.',
+    criterioCumplimiento: 'Recomendación agronómica coherente con análisis de Laboratorio y dosis por cuartel.',
+    criticidad: 'Recomendación',
+  },
+  // 06. Cosecha, Madurez & Trazabilidad
+  {
+    id: 'bpa-06-1',
+    codigo: '06.1',
+    seccion: '06. Cosecha, Madurez & Trazabilidad',
+    requisito: 'Muestreos oficiales de madurez (≥ 6.2° Brix, firmeza y materia seca) verificados antes de cosechar cada cuartel.',
+    criterioCumplimiento: 'Todos los despachos de bins respaldados por muestreo de madurez aprobado y sin carencia LMR activa.',
+    criticidad: 'Mayor',
+    autoCheckKey: 'auto_madurez',
+  },
+  {
+    id: 'bpa-06-2',
+    codigo: '06.2',
+    seccion: '06. Cosecha, Madurez & Trazabilidad',
+    requisito: 'Bins cosecheros, capachos y camiones inspeccionados, limpios, sin astillas, aceites ni contaminantes.',
+    criterioCumplimiento: 'Guías de despacho con número de lote, cuartel de origen, patente y código QR de trazabilidad.',
+    criticidad: 'Mayor',
+  },
+  {
+    id: 'bpa-06-3',
+    codigo: '06.3',
+    seccion: '06. Cosecha, Madurez & Trazabilidad',
+    requisito: 'Mapa del predio actualizado con cuarteles, pozos, bodegas, puntos limpios y zonas de riesgo sanitario.',
+    criterioCumplimiento: 'Trazabilidad espacial clara entre mapa predial, cuaderno de labores y etiquetas de despacho.',
+    criticidad: 'Menor',
+  },
+  {
+    id: 'bpa-06-4',
+    codigo: '06.4',
+    seccion: '06. Cosecha, Madurez & Trazabilidad',
+    requisito: 'Procedimiento de manejo de reclamos, retiro/recuperación de producto (Recall) y evaluación anual de riesgos BPA.',
+    criterioCumplimiento: 'Planilla de auditoría interna completada antes del inicio de cosecha.',
+    criticidad: 'Menor',
+  },
+];
+
+export function createBlankPlanillaBpa(activeUserName = ''): PlanillaAuditoriaBPA {
+  const hoy = new Date().toISOString().split('T')[0];
+  const yr = new Date().getFullYear();
+  const month = new Date().getMonth() + 1;
+  const temporada = month >= 5 ? `${yr}-${yr + 1}` : `${yr - 1}-${yr}`;
+
+  return {
+    id: `bpa-${Date.now()}`,
+    titulo: 'Planilla Oficial de Autoevaluación BPA / GlobalG.A.P. IFA v6',
+    temporada,
+    tipoAuditoria: 'Autoevaluación BPA',
+    fechaInicio: hoy,
+    fechaUltimaRevision: hoy,
+    auditorResponsable: activeUserName || '',
+    notasGenerales: '',
+    items: PREFORMED_BPA_TEMPLATE_ITEMS.map((item) => ({
+      ...item,
+      estado: 'pendiente',
+      observacion: '',
+      accionCorrectiva: '',
+      fechaLimiteAccion: '',
+      responsable: '',
+      fechaVerificacion: '',
+      evidenciaFotoDataUrl: undefined,
+    })),
+  };
+}
+
+export function normalizePlanillaBpa(raw?: PlanillaAuditoriaBPA | null): PlanillaAuditoriaBPA {
+  if (!raw || !Array.isArray(raw.items) || raw.items.length === 0) {
+    return createBlankPlanillaBpa();
+  }
+  return {
+    id: raw.id || `bpa-${Date.now()}`,
+    titulo: raw.titulo || 'Planilla Oficial de Autoevaluación BPA / GlobalG.A.P. IFA v6',
+    temporada: raw.temporada || `${new Date().getFullYear() - 1}-${new Date().getFullYear()}`,
+    tipoAuditoria: raw.tipoAuditoria || 'Autoevaluación BPA',
+    fechaInicio: raw.fechaInicio || new Date().toISOString().split('T')[0],
+    fechaUltimaRevision: raw.fechaUltimaRevision || new Date().toISOString().split('T')[0],
+    auditorResponsable: raw.auditorResponsable || '',
+    notasGenerales: raw.notasGenerales || '',
+    items: raw.items.map((it) => ({
+      ...it,
+      estado: it.estado || 'pendiente',
+      criticidad: it.criticidad || 'Mayor',
+    })),
+  };
+}
+
 export function getBlankRealOrchardData(
   preserveExplotacion?: ExplotacionAgricola,
   preserveUsuarios?: UsuarioPredio[]
@@ -242,6 +494,7 @@ export function getBlankRealOrchardData(
     registrosEnvases: [],
     calibracionesEquipo: [],
     auditoriaManual: {},
+    planillaBpa: createBlankPlanillaBpa(),
     tareasHuerto: [],
     resumenesTemporada: [],
     ultimaActualizacion: new Date().toISOString()
@@ -291,6 +544,7 @@ export function stripDemoRecords(data: AppStateData): AppStateData {
     registrosEnvases: Array.isArray(data.registrosEnvases) ? data.registrosEnvases : [],
     calibracionesEquipo: Array.isArray(data.calibracionesEquipo) ? data.calibracionesEquipo : [],
     auditoriaManual: data.auditoriaManual && typeof data.auditoriaManual === 'object' ? data.auditoriaManual : {},
+    planillaBpa: normalizePlanillaBpa(data.planillaBpa),
     tareasHuerto: Array.isArray(data.tareasHuerto) ? data.tareasHuerto : [],
     resumenesTemporada: Array.isArray(data.resumenesTemporada) ? data.resumenesTemporada : []
   };
@@ -333,6 +587,7 @@ export function getDemoSampleData(): AppStateData {
     registrosEnvases: [],
     calibracionesEquipo: [],
     auditoriaManual: {},
+    planillaBpa: createBlankPlanillaBpa(),
     tareasHuerto: [],
     resumenesTemporada: [],
     ultimaActualizacion: new Date().toISOString()
@@ -387,6 +642,7 @@ export function getStoredData(): AppStateData {
       registrosEnvases: stored.registrosEnvases || [],
       calibracionesEquipo: stored.calibracionesEquipo || [],
       auditoriaManual: stored.auditoriaManual || {},
+      planillaBpa: normalizePlanillaBpa(stored.planillaBpa),
       tareasHuerto: stored.tareasHuerto || [],
       resumenesTemporada: stored.resumenesTemporada || []
     };
@@ -534,6 +790,10 @@ export function getStoredCalibracionesEquipo(): CalibracionEquipo[] {
 
 export function getStoredAuditoriaManual(): Record<string, boolean> {
   return getStoredData().auditoriaManual || {};
+}
+
+export function getStoredPlanillaBpa(): PlanillaAuditoriaBPA {
+  return normalizePlanillaBpa(getStoredData().planillaBpa);
 }
 
 export function getStoredTareasHuerto(): TareaAgronomica[] {

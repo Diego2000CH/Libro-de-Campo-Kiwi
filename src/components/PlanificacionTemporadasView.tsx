@@ -136,10 +136,6 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
           )
         : 0;
 
-    const totalUSD = liquidacionesPacking.reduce((acc, l) => acc + (l.retornoTotalUSD || 0), 0);
-    const totalKgLiq = liquidacionesPacking.reduce((acc, l) => acc + (l.kilosEmbaladosExportacionKg || 0), 0);
-    const usdKg = totalKgLiq > 0 ? Number((totalUSD / totalKgLiq).toFixed(2)) : 0;
-
     return {
       id: 'actual-vivo',
       temporada: `${temporadaActualLabel} (En Vivo)`,
@@ -148,10 +144,10 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
       aguaConsumidaM3Ha: aguaM3Ha,
       porcentajeCuajaPromedio: cuajaProm,
       cosechaTonHa: tonHa,
-      retornoPromedioUSDKg: usdKg,
+      retornoPromedioUSDKg: 0,
       observaciones: 'Calculado automáticamente con los datos actuales del huerto',
     };
-  }, [parcelas, turnosRiego, registrosPozo, cosechasLote, evaluacionesCuaja, liquidacionesPacking, horasFrio, temporadaActualLabel]);
+  }, [parcelas, turnosRiego, registrosPozo, cosechasLote, evaluacionesCuaja, horasFrio, temporadaActualLabel]);
 
   const todasTemporadas = useMemo(() => {
     return [...resumenesTemporada, resumenVivoActual].sort((a, b) =>
@@ -199,7 +195,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
       aguaConsumidaM3Ha: Number(tempForm.aguaConsumidaM3Ha) || 0,
       porcentajeCuajaPromedio: Number(tempForm.porcentajeCuajaPromedio) || 0,
       cosechaTonHa: Number(tempForm.cosechaTonHa) || 0,
-      retornoPromedioUSDKg: Number(tempForm.retornoPromedioUSDKg) || 0,
+      retornoPromedioUSDKg: 0,
       observaciones: tempForm.observaciones.trim() || undefined,
     });
     setIsTemporadaModalOpen(false);
@@ -338,7 +334,6 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                     <th className="px-4 py-3">Riego (m³/ha)</th>
                     <th className="px-4 py-3">% Cuaja</th>
                     <th className="px-4 py-3">Cosecha (Ton/ha)</th>
-                    <th className="px-4 py-3">Retorno (USD/kg)</th>
                     {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
                   </tr>
                 </thead>
@@ -351,7 +346,6 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                       <td className="px-4 py-3">{t.aguaConsumidaM3Ha.toLocaleString('es-CL')} m³/ha</td>
                       <td className="px-4 py-3">{t.porcentajeCuajaPromedio}%</td>
                       <td className="px-4 py-3 font-bold text-emerald-900">{t.cosechaTonHa} t/ha</td>
-                      <td className="px-4 py-3 font-bold">${t.retornoPromedioUSDKg.toFixed(2)}</td>
                       {canEdit && (
                         <td className="px-4 py-3 text-right font-sans">
                           {t.id !== 'actual-vivo' ? (
@@ -655,8 +649,8 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                   <input type="number" step="0.1" value={tempForm.cosechaTonHa} onChange={(e) => setTempForm({ ...tempForm, cosechaTonHa: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Retorno (USD/kg):</label>
-                  <input type="number" step="0.01" value={tempForm.retornoPromedioUSDKg} onChange={(e) => setTempForm({ ...tempForm, retornoPromedioUSDKg: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 mb-1">Notas Campaña:</label>
+                  <input type="text" value={tempForm.observaciones} onChange={(e) => setTempForm({ ...tempForm, observaciones: e.target.value })} placeholder="Opcional" className="w-full p-2 border border-stone-300 rounded-lg" />
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">

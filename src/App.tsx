@@ -59,6 +59,9 @@ import {
   getStoredRegistrosEnvases,
   getStoredCalibracionesEquipo,
   getStoredAuditoriaManual,
+  getStoredPlanillaBpa,
+  createBlankPlanillaBpa,
+  normalizePlanillaBpa,
   getStoredTareasHuerto,
   getStoredResumenesTemporada,
   resetStorageToDefaults,
@@ -106,6 +109,7 @@ import {
   CalibracionEquipo,
   TareaAgronomica,
   ResumenTemporada,
+  PlanillaAuditoriaBPA,
   AppStateData
 } from './types/campo';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
@@ -160,6 +164,7 @@ export default function App() {
   const [registrosEnvases, setRegistrosEnvases] = useState<RegistroEnvaseLimpio[]>(getStoredRegistrosEnvases);
   const [calibracionesEquipo, setCalibracionesEquipo] = useState<CalibracionEquipo[]>(getStoredCalibracionesEquipo);
   const [auditoriaManual, setAuditoriaManual] = useState<Record<string, boolean>>(getStoredAuditoriaManual);
+  const [planillaBpa, setPlanillaBpa] = useState<PlanillaAuditoriaBPA>(getStoredPlanillaBpa);
   const [tareasHuerto, setTareasHuerto] = useState<TareaAgronomica[]>(getStoredTareasHuerto);
   const [resumenesTemporada, setResumenesTemporada] = useState<ResumenTemporada[]>(getStoredResumenesTemporada);
   const [pendingOfflineSync, setPendingOfflineSync] = useState<boolean>(false);
@@ -248,6 +253,7 @@ export default function App() {
     registrosEnvases,
     calibracionesEquipo,
     auditoriaManual,
+    planillaBpa,
     tareasHuerto,
     resumenesTemporada,
     ultimaActualizacion: new Date().toISOString(),
@@ -285,6 +291,7 @@ export default function App() {
     if (Array.isArray(d.registrosEnvases)) setRegistrosEnvases(d.registrosEnvases);
     if (Array.isArray(d.calibracionesEquipo)) setCalibracionesEquipo(d.calibracionesEquipo);
     if (d.auditoriaManual && typeof d.auditoriaManual === 'object') setAuditoriaManual(d.auditoriaManual);
+    if (d.planillaBpa && typeof d.planillaBpa === 'object') setPlanillaBpa(normalizePlanillaBpa(d.planillaBpa));
     if (Array.isArray(d.tareasHuerto)) setTareasHuerto(d.tareasHuerto);
     if (Array.isArray(d.resumenesTemporada)) setResumenesTemporada(d.resumenesTemporada);
   };
@@ -783,6 +790,7 @@ export default function App() {
     registrosEnvases,
     calibracionesEquipo,
     auditoriaManual,
+    planillaBpa,
     tareasHuerto,
     resumenesTemporada
   ]);
@@ -1103,6 +1111,7 @@ export default function App() {
     setRegistrosEnvases([]);
     setCalibracionesEquipo([]);
     setAuditoriaManual({});
+    setPlanillaBpa(createBlankPlanillaBpa());
     setTareasHuerto([]);
     setResumenesTemporada([]);
     setIsResetConfirmOpen(false);
@@ -1142,6 +1151,7 @@ export default function App() {
     setRegistrosEnvases([]);
     setCalibracionesEquipo([]);
     setAuditoriaManual({});
+    setPlanillaBpa(createBlankPlanillaBpa());
     setTareasHuerto([]);
     setResumenesTemporada([]);
     saveStoredSectoresRiego([]);
@@ -1435,6 +1445,7 @@ export default function App() {
         {activeTab === 'fenologia' && (
           <HorasFrioFenologiaView
             parcelas={parcelas}
+            onUpdateParcela={guardEdit((p) => setParcelas((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
             horasFrio={horasFrio}
             onUpdateHorasFrio={guardEdit(setHorasFrio)}
             registrosTermicos={registrosTermicos}
@@ -1450,6 +1461,7 @@ export default function App() {
             onAddFenologia={guardEdit((f) => setFenologia((prev) => [f, ...prev]))}
             onUpdateFenologia={guardEdit((f) => setFenologia((prev) => prev.map((item) => item.id === f.id ? f : item)))}
             onDeleteFenologia={guardEdit((id) => setFenologia((prev) => prev.filter((f) => f.id !== id)))}
+            onReplaceFenologia={guardEdit(setFenologia)}
             polinizacion={polinizacion}
             onAddPolinizacion={guardEdit((p) => setPolinizacion((prev) => [p, ...prev]))}
             onUpdatePolinizacion={guardEdit((p) => setPolinizacion((prev) => prev.map((item) => item.id === p.id ? p : item)))}
@@ -1569,6 +1581,9 @@ export default function App() {
             onToggleAuditoriaManual={guardEdit((key) =>
               setAuditoriaManual((prev) => ({ ...prev, [key]: !prev[key] }))
             )}
+            planillaBpa={planillaBpa}
+            onUpdatePlanillaBpa={guardEdit((nextPlanilla) => setPlanillaBpa(nextPlanilla))}
+            fundoNombre={explotacion.nombreFundo}
             activeUserName={activeUser?.nombre}
             canEdit={canEdit}
           />
@@ -1633,6 +1648,7 @@ export default function App() {
                     if (Array.isArray(parsed.registrosEnvases)) setRegistrosEnvases(parsed.registrosEnvases);
                     if (Array.isArray(parsed.calibracionesEquipo)) setCalibracionesEquipo(parsed.calibracionesEquipo);
                     if (parsed.auditoriaManual && typeof parsed.auditoriaManual === 'object') setAuditoriaManual(parsed.auditoriaManual);
+                    if (parsed.planillaBpa && typeof parsed.planillaBpa === 'object') setPlanillaBpa(normalizePlanillaBpa(parsed.planillaBpa));
                     if (Array.isArray(parsed.tareasHuerto)) setTareasHuerto(parsed.tareasHuerto);
                     if (Array.isArray(parsed.resumenesTemporada)) setResumenesTemporada(parsed.resumenesTemporada);
                   } catch (err) {

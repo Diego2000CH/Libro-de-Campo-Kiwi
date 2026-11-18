@@ -423,12 +423,47 @@ export interface CondicionHorasFrio {
 export interface SeguimientoFenologico {
   id: string;
   fecha: string;
+  fechaFin?: string;
   parcelaId: string;
   parcelaNombre: string;
   escalaBBCH: string;
+  nombreEtapa?: string;
+  estadoEtapa?: 'programado' | 'en_curso' | 'completado';
   estadoDescripcion: string;
   porcentajeAvance: number;
   observaciones: string;
+}
+
+export type EstadoPuntoAuditoriaBPA = 'pendiente' | 'cumple' | 'no_cumple' | 'na';
+
+export interface ItemAuditoriaBPA {
+  id: string;
+  codigo: string;
+  seccion: string;
+  requisito: string;
+  criterioCumplimiento?: string;
+  criticidad: 'Mayor' | 'Menor' | 'Recomendación';
+  estado: EstadoPuntoAuditoriaBPA;
+  observacion?: string;
+  accionCorrectiva?: string;
+  fechaLimiteAccion?: string;
+  responsable?: string;
+  fechaVerificacion?: string;
+  evidenciaFotoDataUrl?: string;
+  autoCheckKey?: string;
+  esPersonalizado?: boolean;
+}
+
+export interface PlanillaAuditoriaBPA {
+  id: string;
+  titulo: string;
+  temporada: string;
+  tipoAuditoria: 'Autoevaluación BPA' | 'GlobalG.A.P. IFA v6' | 'Fiscalización SAG' | 'Pre-Auditoría Exportadora';
+  fechaInicio: string;
+  fechaUltimaRevision: string;
+  auditorResponsable: string;
+  notasGenerales?: string;
+  items: ItemAuditoriaBPA[];
 }
 
 export interface RegistroPolinizacion {
@@ -798,6 +833,7 @@ export interface AppStateData {
   registrosEnvases?: RegistroEnvaseLimpio[];
   calibracionesEquipo?: CalibracionEquipo[];
   auditoriaManual?: Record<string, boolean>;
+  planillaBpa?: PlanillaAuditoriaBPA;
   tareasHuerto?: TareaAgronomica[];
   resumenesTemporada?: ResumenTemporada[];
   ultimaActualizacion?: string;

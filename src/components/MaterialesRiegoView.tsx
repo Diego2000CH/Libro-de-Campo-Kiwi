@@ -86,7 +86,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
     stockActual: 10,
     stockMinimo: 5,
     unidad: 'unidades',
-    costoUnitarioCLP: 15000,
+    costoUnitarioCLP: 0,
     fechaElaboracion: new Date().toISOString().split('T')[0],
     fechaVencimiento: '2030-12-31',
     destinosUso: ['kiwi'],
@@ -126,7 +126,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
   });
 
   const lowStockCount = materiales.filter((i) => i.stockActual <= i.stockMinimo).length;
-  const valorTotalMateriales = materiales.reduce((acc, i) => acc + (i.stockActual * i.costoUnitarioCLP), 0);
+  const stockOptimoCount = materiales.filter((i) => i.stockActual > i.stockMinimo).length;
 
   const handleOpenNew = () => {
     const defaultCat = (selectedCategoria !== 'todos' ? selectedCategoria : 'insumo_riego') as CategoriaMaterial;
@@ -138,7 +138,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
       stockActual: 10,
       stockMinimo: 5,
       unidad: defaultCat === 'insumo_riego' ? 'unidades' : defaultCat === 'alambre_estructura' ? 'rollos' : defaultCat === 'polin_madera' ? 'unidades' : defaultCat === 'malla_cobertor' ? 'rollos' : 'unidades',
-      costoUnitarioCLP: 18000,
+      costoUnitarioCLP: 0,
       fechaElaboracion: new Date().toISOString().split('T')[0],
       fechaVencimiento: '2030-12-31',
       destinosUso: ['kiwi'],
@@ -158,7 +158,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
       stockActual: item.stockActual,
       stockMinimo: item.stockMinimo,
       unidad: item.unidad,
-      costoUnitarioCLP: item.costoUnitarioCLP,
+      costoUnitarioCLP: 0,
       fechaElaboracion: item.fechaElaboracion || '2024-01-01',
       fechaVencimiento: item.fechaVencimiento || '2030-12-31',
       destinosUso: item.destinosUso && item.destinosUso.length > 0 ? item.destinosUso : ['kiwi'],
@@ -205,7 +205,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
       stockActual: Number(formMaterial.stockActual) || 0,
       stockMinimo: Number(formMaterial.stockMinimo) || 0,
       unidad: formMaterial.unidad,
-      costoUnitarioCLP: Number(formMaterial.costoUnitarioCLP) || 0,
+      costoUnitarioCLP: 0,
       fechaElaboracion: formMaterial.fechaElaboracion,
       fechaVencimiento: formMaterial.fechaVencimiento,
       destinosUso: formMaterial.destinosUso,
@@ -244,7 +244,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
       stockActual: Number(formMaterial.stockActual) || 0,
       stockMinimo: Number(formMaterial.stockMinimo) || 0,
       unidad: formMaterial.unidad,
-      costoUnitarioCLP: Number(formMaterial.costoUnitarioCLP) || 0,
+      costoUnitarioCLP: 0,
       fechaElaboracion: formMaterial.fechaElaboracion,
       fechaVencimiento: formMaterial.fechaVencimiento,
       destinosUso: formMaterial.destinosUso,
@@ -322,9 +322,9 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
-          <div className="text-[10px] text-stone-400 font-bold uppercase">Valorización de Stock</div>
-          <div className="text-2xl font-black text-blue-950 mt-1">${valorTotalMateriales.toLocaleString('es-CL')}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Inversión en infraestructura</div>
+          <div className="text-[10px] text-stone-400 font-bold uppercase">Stock en Nivel Óptimo</div>
+          <div className="text-2xl font-black text-blue-950 mt-1 font-mono tabular-nums">{stockOptimoCount}</div>
+          <div className="text-[11px] text-stone-500 mt-0.5">Artículos sobre umbral mínimo</div>
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
@@ -464,7 +464,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                   </div>
                 </div>
 
-                {/* Trazabilidad: Fechas & Costo */}
+                {/* Trazabilidad: Fechas */}
                 <div className="grid grid-cols-2 gap-1.5 text-[11px] text-stone-600 mt-2.5">
                   <div className="p-1.5 bg-stone-50 rounded-lg">
                     <span className="text-stone-400 block text-[10px] flex items-center gap-1">
@@ -473,8 +473,8 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                     <strong className="font-mono text-stone-800">{item.fechaElaboracion || 'N/A'}</strong>
                   </div>
                   <div className="p-1.5 bg-stone-50 rounded-lg">
-                    <span className="text-stone-400 block text-[10px]">Costo Unitario:</span>
-                    <strong className="font-mono text-stone-900">${(item.costoUnitarioCLP || 0).toLocaleString('es-CL')}</strong>
+                    <span className="text-stone-400 block text-[10px]">F. Vencimiento / Garantía:</span>
+                    <strong className="font-mono text-stone-900">{item.fechaVencimiento || 'N/A'}</strong>
                   </div>
                 </div>
 
@@ -692,7 +692,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 </div>
               </div>
 
-              {/* Stock, Unidad y Costo */}
+              {/* Stock y Unidad */}
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Inicial:</label>
@@ -733,26 +733,15 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Costo Unitario CLP:</label>
-                  <input
-                    type="number"
-                    value={formMaterial.costoUnitarioCLP}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, costoUnitarioCLP: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Ubicación en Pañol / Galpón:</label>
-                  <input
-                    type="text"
-                    value={formMaterial.ubicacionBodega}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, ubicacionBodega: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
-                    placeholder="ej. Rack Mallas, Caseta Riego, Estante 2"
-                  />
-                </div>
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Ubicación en Pañol / Galpón:</label>
+                <input
+                  type="text"
+                  value={formMaterial.ubicacionBodega}
+                  onChange={(e) => setFormMaterial({ ...formMaterial, ubicacionBodega: e.target.value })}
+                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  placeholder="ej. Rack Mallas, Caseta Riego, Estante 2"
+                />
               </div>
 
               <div>
@@ -898,7 +887,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 </div>
               </div>
 
-              {/* Stock, Unidad y Costo */}
+              {/* Stock y Unidad */}
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Actual:</label>
@@ -939,25 +928,14 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Costo Unitario CLP:</label>
-                  <input
-                    type="number"
-                    value={formMaterial.costoUnitarioCLP}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, costoUnitarioCLP: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Ubicación en Pañol:</label>
-                  <input
-                    type="text"
-                    value={formMaterial.ubicacionBodega}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, ubicacionBodega: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
-                  />
-                </div>
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Ubicación en Pañol:</label>
+                <input
+                  type="text"
+                  value={formMaterial.ubicacionBodega}
+                  onChange={(e) => setFormMaterial({ ...formMaterial, ubicacionBodega: e.target.value })}
+                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                />
               </div>
 
               <div>

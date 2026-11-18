@@ -113,7 +113,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
     stockActual: 10,
     stockMinimo: 5,
     unidad: 'Kg',
-    costoUnitarioCLP: 45000,
+    costoUnitarioCLP: 0,
     lote: `LT-${new Date().getFullYear()}`,
     tieneCarencia: true,
     periodoCarenciaDias: 7,
@@ -158,7 +158,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
   });
 
   const lowStockCount = fitosanitarios.filter((i) => (i.stockMinimo || 0) > 0 && i.stockActual <= (i.stockMinimo || 0)).length;
-  const valorTotalFito = fitosanitarios.reduce((acc, i) => acc + (i.stockActual * i.costoUnitarioCLP), 0);
+  const stockOptimoCount = fitosanitarios.filter((i) => (i.stockMinimo || 0) === 0 || i.stockActual > (i.stockMinimo || 0)).length;
 
   // Apertura modal nuevo
   const handleOpenNew = () => {
@@ -179,7 +179,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       stockActual: 10,
       stockMinimo: 5,
       unidad: defaultCat === 'fertilizante' ? 'Kg' : 'Kg',
-      costoUnitarioCLP: 35000,
+      costoUnitarioCLP: 0,
       lote: `LT-${new Date().getFullYear()}`,
       tieneCarencia: !isExempt,
       periodoCarenciaDias: isExempt ? 0 : 7,
@@ -214,7 +214,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       stockActual: item.stockActual,
       stockMinimo: item.stockMinimo,
       unidad: validUnidad,
-      costoUnitarioCLP: item.costoUnitarioCLP,
+      costoUnitarioCLP: 0,
       lote: item.lote || '',
       tieneCarencia: hasCarencia,
       periodoCarenciaDias: item.periodoCarenciaDias || 0,
@@ -260,7 +260,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       stockActual: Number(formFito.stockActual) || 0,
       stockMinimo: Number(formFito.stockMinimo) || 0,
       unidad: formFito.unidad,
-      costoUnitarioCLP: Number(formFito.costoUnitarioCLP) || 0,
+      costoUnitarioCLP: 0,
       lote: formFito.lote || `LT-${Date.now().toString().slice(-4)}`,
       tieneCarencia: formFito.tieneCarencia,
       periodoCarenciaDias: formFito.tieneCarencia ? (Number(formFito.periodoCarenciaDias) || 0) : 0,
@@ -298,7 +298,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       stockActual: Number(formFito.stockActual) || 0,
       stockMinimo: Number(formFito.stockMinimo) || 0,
       unidad: formFito.unidad,
-      costoUnitarioCLP: Number(formFito.costoUnitarioCLP) || 0,
+      costoUnitarioCLP: 0,
       lote: formFito.lote,
       tieneCarencia: formFito.tieneCarencia,
       periodoCarenciaDias: formFito.tieneCarencia ? (Number(formFito.periodoCarenciaDias) || 0) : 0,
@@ -378,9 +378,9 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
-          <div className="text-[10px] text-stone-400 font-bold uppercase">Valorización Bodega Químicos</div>
-          <div className="text-2xl font-black text-emerald-950 mt-1">${valorTotalFito.toLocaleString('es-CL')}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Costo total inventariado</div>
+          <div className="text-[10px] text-stone-400 font-bold uppercase">Stock en Nivel Óptimo</div>
+          <div className="text-2xl font-black text-emerald-950 mt-1 font-mono tabular-nums">{stockOptimoCount}</div>
+          <div className="text-[11px] text-stone-500 mt-0.5">Productos sobre umbral mínimo</div>
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
@@ -878,7 +878,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                 </div>
               </div>
 
-              {/* Stock, Unidad y Costo */}
+              {/* Stock y Unidad */}
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Inicial:</label>
@@ -1179,7 +1179,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                 </div>
               </div>
 
-              {/* Stock, Unidad y Costo */}
+              {/* Stock y Unidad */}
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Actual:</label>

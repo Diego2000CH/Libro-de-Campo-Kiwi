@@ -66,7 +66,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
     stockActual: 10,
     stockMinimo: 5,
     unidad: 'unidades',
-    costoUnitarioCLP: 15000,
+    costoUnitarioCLP: 0,
     lote: `LT-${new Date().getFullYear()}`,
     fechaVencimiento: '2028-12-31',
     periodoCarenciaDias: 0,
@@ -107,7 +107,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
   });
 
   const lowStockCount = inventario.filter((i) => i.stockActual <= i.stockMinimo).length;
-  const totalValorInventario = inventario.reduce((acc, i) => acc + (i.stockActual * i.costoUnitarioCLP), 0);
+  const stockOptimoCount = inventario.filter((i) => i.stockActual > i.stockMinimo).length;
 
   // Apertura de modal de edición
   const handleOpenEdit = (insumo: InsumoInventario) => {
@@ -129,7 +129,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
       stockActual: 10,
       stockMinimo: 5,
       unidad: defaultCat === 'fitosanitario' || defaultCat === 'fertilizante' ? 'kg' : defaultCat === 'alambre_estructura' ? 'rollos' : defaultCat === 'polin_madera' ? 'unidades' : defaultCat === 'malla_cobertor' ? 'rollos' : defaultCat === 'herramienta_equipo' ? 'unidades' : 'unidades',
-      costoUnitarioCLP: 25000,
+      costoUnitarioCLP: 0,
       lote: `LT-${new Date().getFullYear()}`,
       fechaVencimiento: '2028-12-31',
       periodoCarenciaDias: 0,
@@ -172,7 +172,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
       stockActual: Number(formData.stockActual) || 0,
       stockMinimo: Number(formData.stockMinimo) || 0,
       unidad: (formData.unidad as any) || 'unidades',
-      costoUnitarioCLP: Number(formData.costoUnitarioCLP) || 0,
+      costoUnitarioCLP: 0,
       lote: formData.lote || `LT-${Date.now().toString().slice(-4)}`,
       fechaVencimiento: formData.fechaVencimiento || '2028-12-31',
       periodoCarenciaDias: Number(formData.periodoCarenciaDias) || 0,
@@ -198,7 +198,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
       ...formData as InsumoInventario,
       stockActual: Number(formData.stockActual) || 0,
       stockMinimo: Number(formData.stockMinimo) || 0,
-      costoUnitarioCLP: Number(formData.costoUnitarioCLP) || 0,
+      costoUnitarioCLP: 0,
       periodoCarenciaDias: Number(formData.periodoCarenciaDias) || 0,
       tiempoReingresoHoras: Number(formData.tiempoReingresoHoras) || 0
     };
@@ -273,9 +273,9 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
-          <div className="text-[10px] text-stone-400 font-bold uppercase">Valorización de Stock</div>
-          <div className="text-2xl font-black text-emerald-950 mt-1">${totalValorInventario.toLocaleString('es-CL')}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Costo estimado total en bodega</div>
+          <div className="text-[10px] text-stone-400 font-bold uppercase">Stock en Nivel Óptimo</div>
+          <div className="text-2xl font-black text-emerald-950 mt-1 font-mono tabular-nums">{stockOptimoCount}</div>
+          <div className="text-[11px] text-stone-500 mt-0.5">Productos sobre stock mínimo</div>
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
@@ -429,8 +429,8 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                         <strong className="text-stone-800 capitalize">{(item.categoria || item.tipo).replace('_', ' ')}</strong>
                       </div>
                       <div className="p-1.5 bg-stone-50 rounded-lg">
-                        <span className="text-stone-400 block text-[10px]">Costo Unitario:</span>
-                        <strong className="text-stone-900 font-mono">${(item.costoUnitarioCLP || 0).toLocaleString('es-CL')}</strong>
+                        <span className="text-stone-400 block text-[10px]">Ubicación:</span>
+                        <strong className="text-stone-900 truncate block">{item.ubicacionBodega || 'Bodega General'}</strong>
                       </div>
                     </>
                   )}
@@ -632,16 +632,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Costo Unitario CLP:</label>
-                  <input
-                    type="number"
-                    value={formData.costoUnitarioCLP}
-                    onChange={(e) => setFormData({ ...formData, costoUnitarioCLP: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Ubicación Bodega:</label>
                   <input
@@ -823,16 +814,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Costo Unitario CLP:</label>
-                  <input
-                    type="number"
-                    value={formData.costoUnitarioCLP}
-                    onChange={(e) => setFormData({ ...formData, costoUnitarioCLP: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Ubicación Bodega:</label>
                   <input
