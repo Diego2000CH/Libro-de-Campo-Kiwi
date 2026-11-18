@@ -87,7 +87,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
       porcentajeMateriaSeca: Number(muestreoForm.porcentajeMateriaSeca),
       numeroMuestras: Number(muestreoForm.numeroMuestras),
       aptoParaCosechaSAG: aptoSAG,
-      muestreadoPor: activeUserName || 'Rodrigo Valenzuela (Ing. Agrónomo)',
+      muestreadoPor: activeUserName || 'Responsable de Campo',
       observaciones: muestreoForm.observaciones
     };
 

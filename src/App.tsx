@@ -51,7 +51,10 @@ import {
   getStoredEvaluacionesCuajaSemillas,
   resetStorageToDefaults,
   resetStorageToRealOrchard,
-  stripDemoRecords
+  stripDemoRecords,
+  getBlankClima,
+  cleanDemoSectoresRiego,
+  saveStoredSectoresRiego
 } from './utils/storage';
 import { 
   loadDataFromCloud, 
@@ -87,7 +90,6 @@ import {
   TurnoRiego,
   AppStateData
 } from './types/campo';
-import { initialClimaLaCabana } from './data/initialData';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import {
@@ -119,7 +121,7 @@ export default function App() {
   const [lugares, setLugares] = useState<LugarPredio[]>(getStoredLugares);
   const [usuarios, setUsuarios] = useState<UsuarioPredio[]>(getStoredUsuarios);
   const [activeUserId, setActiveUserId] = useState<string>(getStoredActiveUserId);
-  const [clima, setClima] = useState<ClimaCondiciones>(initialClimaLaCabana);
+  const [clima, setClima] = useState<ClimaCondiciones>(getBlankClima);
 
   const [muestreosMadurez, setMuestreosMadurez] = useState<MuestreoMadurez[]>(getStoredMuestreosMadurez);
   const [cosechasLote, setCosechasLote] = useState<RegistroCosechaLote[]>(getStoredCosechasLote);
@@ -462,12 +464,34 @@ export default function App() {
         const remoteState = pickNewestState(firestoreState, sqlState);
 
         if (remoteState && remoteState.explotacion) {
+          let cloudCleanNeeded = false;
+          try {
+            cloudCleanNeeded = localStorage.getItem('huerto_real_cloud_cleaned_v2') !== 'true';
+          } catch (e) {}
+
+          const cleanRemoteState = cloudCleanNeeded ? stripDemoRecords(remoteState) : remoteState;
+          if (cloudCleanNeeded) {
+            cleanDemoSectoresRiego();
+            try {
+              localStorage.setItem('huerto_real_cloud_cleaned_v2', 'true');
+            } catch (e) {}
+            void saveOrchardToFirestore(user.uid, cleanRemoteState).catch(() => {});
+            void fetch('/api/orchard/state', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ stateData: cleanRemoteState }),
+            }).catch(() => {});
+          }
+
           remoteHydratedRef.current = true;
-          const serialized = JSON.stringify(remoteState);
+          const serialized = JSON.stringify(cleanRemoteState);
           lastSyncedPayloadRef.current = serialized;
           skipNextRemoteSaveRef.current = true;
-          applyHydratedState(remoteState);
-          saveDataToLocalStorage(remoteState);
+          applyHydratedState(cleanRemoteState);
+          saveDataToLocalStorage(cleanRemoteState);
           setSyncState('synced');
           setLastSyncTime(
             new Date().toLocaleTimeString('es-CL', {
@@ -572,7 +596,7 @@ export default function App() {
         if (result.data && result.data.explotacion) {
           let cloudCleanNeeded = false;
           try {
-            cloudCleanNeeded = localStorage.getItem('huerto_real_cloud_cleaned_v1') !== 'true';
+            cloudCleanNeeded = localStorage.getItem('huerto_real_cloud_cleaned_v2') !== 'true';
           } catch (e) {}
 
           const d = cloudCleanNeeded ? stripDemoRecords(result.data) : result.data;
@@ -581,8 +605,9 @@ export default function App() {
           applyHydratedState(d);
 
           if (cloudCleanNeeded) {
+            cleanDemoSectoresRiego();
             try {
-              localStorage.setItem('huerto_real_cloud_cleaned_v1', 'true');
+              localStorage.setItem('huerto_real_cloud_cleaned_v2', 'true');
             } catch (e) {}
             void saveDataToCloud(d);
           }
@@ -1053,8 +1078,9 @@ export default function App() {
     setEvaluacionesCuajaSemillas([]);
     setRegistrosMantencion([]);
     setInventario([]); // Limpia la bodega para que no haya alertas de productos no ingresados
+    saveStoredSectoresRiego([]);
     try {
-      localStorage.setItem('huerto_real_cloud_cleaned_v1', 'true');
+      localStorage.setItem('huerto_real_cloud_cleaned_v2', 'true');
     } catch (e) {}
     void persistAllTargets(blank);
     setIsResetConfirmOpen(false);

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RegistroExtraccionPozo, SectorRiego } from '../types/campo';
-import { initialSectoresRiego } from '../data/initialData';
+import { getStoredSectoresRiego, saveStoredSectoresRiego } from '../utils/storage';
 import { 
   Droplet, 
   Plus, 
@@ -40,23 +40,23 @@ export const PozoView: React.FC<PozoViewProps> = ({
   const [registroToDelete, setRegistroToDelete] = useState<RegistroExtraccionPozo | null>(null);
 
   // Sectores de Riego dinámicos y 100% editables por el usuario
-  const [sectoresRiego, setSectoresRiego] = useState<SectorRiego[]>(() => {
-    try {
-      const saved = localStorage.getItem('fundo_sectores_riego');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.warn('Error leyendo sectores de riego:', e);
-    }
-    return initialSectoresRiego;
-  });
+  const [sectoresRiego, setSectoresRiego] = useState<SectorRiego[]>(getStoredSectoresRiego);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setSectoresRiego(getStoredSectoresRiego());
+    };
+    window.addEventListener('fundo_sectores_updated', handleUpdate);
+    return () => window.removeEventListener('fundo_sectores_updated', handleUpdate);
+  }, []);
 
   const [isSectoresModalOpen, setIsSectoresModalOpen] = useState(false);
   const [editingSector, setEditingSector] = useState<SectorRiego | null>(null);
   const [sectorForm, setSectorForm] = useState<SectorRiego>({
     id: 1,
     nombre: '',
-    ha: 5.0,
-    caudalDisenoLs: 20.0,
+    ha: 0,
+    caudalDisenoLs: 0,
     descripcion: ''
   });
 
@@ -64,38 +64,38 @@ export const PozoView: React.FC<PozoViewProps> = ({
   const totalM3 = registrosPozo.reduce((acc, r) => acc + (r.metrosCubicosExtraidos || 0), 0);
   const totalLitros = registrosPozo.reduce((acc, r) => acc + (r.litrosTotales || 0), 0);
   const totalHoras = registrosPozo.reduce((acc, r) => acc + (r.horasBombeo || r.horasHorometro || 0), 0);
-  const caudalPromedioGlobal = totalHoras > 0 ? (totalLitros / (totalHoras * 3600)).toFixed(1) : '20.5';
+  const caudalPromedioGlobal = totalHoras > 0 ? (totalLitros / (totalHoras * 3600)).toFixed(1) : '0.0';
 
   const ultimaLecturaM3 = registrosPozo.length > 0
     ? Math.max(...registrosPozo.map((r) => r.lecturaFinalM3 || 0))
-    : 42110;
+    : 0;
 
   const ultimoHorometro = registrosPozo.length > 0
     ? Math.max(...registrosPozo.map((r) => r.horometroFinalHoras || 0))
-    : 1845.0;
+    : 0;
 
   // Estado formulario
   const [formPozo, setFormPozo] = useState<Partial<RegistroExtraccionPozo>>({
     fecha: new Date().toISOString().split('T')[0],
-    hora: '07:30',
+    hora: '08:00',
     fechaHoraMuestreo: new Date().toISOString().replace('T', ' ').substring(0, 16),
     sectorRiegoNumero: 1,
-    sectorDestino: 'Sector 1 - Cuartel 1 (Parrón Español Norte)',
-    horometroInicialHoras: ultimoHorometro,
-    horometroFinalHoras: ultimoHorometro + 7.0,
-    horasHorometro: 7.0,
-    caudalInicialLs: 21.0,
-    caudalFinalLs: 20.2,
-    caudalPromedioLs: 20.6,
-    lecturaInicialM3: ultimaLecturaM3,
-    lecturaFinalM3: ultimaLecturaM3 + 520,
-    metrosCubicosExtraidos: 520,
-    litrosTotales: 520000,
-    horasBombeo: 7.0,
-    nivelEstaticoM: 28.2,
-    nivelDinamicoM: 34.0,
-    operadorBomba: 'Rodrigo Tapia San Martín',
-    observaciones: 'Muestreo reglamentario DGA. Presión de cabezal 3.8 bar, retrolavado de filtros de anilla efectuado.'
+    sectorDestino: '',
+    horometroInicialHoras: 0,
+    horometroFinalHoras: 0,
+    horasHorometro: 0,
+    caudalInicialLs: 0,
+    caudalFinalLs: 0,
+    caudalPromedioLs: 0,
+    lecturaInicialM3: 0,
+    lecturaFinalM3: 0,
+    metrosCubicosExtraidos: 0,
+    litrosTotales: 0,
+    horasBombeo: 0,
+    nivelEstaticoM: 0,
+    nivelDinamicoM: 0,
+    operadorBomba: '',
+    observaciones: ''
   });
 
   // Cálculos automáticos para el formulario
@@ -103,7 +103,7 @@ export const PozoView: React.FC<PozoViewProps> = ({
   const hrsHorometroForm = Math.max(0, Number(((formPozo.horometroFinalHoras || 0) - (formPozo.horometroInicialHoras || 0)).toFixed(2)));
   const caudalCalcLs = hrsHorometroForm > 0 
     ? Number(((m3Form * 1000) / (hrsHorometroForm * 3600)).toFixed(1))
-    : formPozo.caudalInicialLs || 20.5;
+    : formPozo.caudalInicialLs || 0;
 
   const handleOpenEdit = (registro: RegistroExtraccionPozo) => {
     setEditingRegistro(registro);
@@ -112,27 +112,28 @@ export const PozoView: React.FC<PozoViewProps> = ({
   };
 
   const handleOpenNew = () => {
+    const firstSector = sectoresRiego[0];
     setFormPozo({
       fecha: new Date().toISOString().split('T')[0],
       hora: new Date().toTimeString().substring(0, 5),
       fechaHoraMuestreo: new Date().toISOString().replace('T', ' ').substring(0, 16),
-      sectorRiegoNumero: 1,
-      sectorDestino: 'Sector 1 - Cuartel 1 (Parrón Español Norte)',
+      sectorRiegoNumero: firstSector ? Number(firstSector.id) || 1 : 1,
+      sectorDestino: firstSector ? firstSector.nombre : '',
       horometroInicialHoras: ultimoHorometro,
-      horometroFinalHoras: Number((ultimoHorometro + 6.5).toFixed(1)),
-      horasHorometro: 6.5,
-      caudalInicialLs: 21.2,
-      caudalFinalLs: 20.4,
-      caudalPromedioLs: 20.8,
+      horometroFinalHoras: ultimoHorometro,
+      horasHorometro: 0,
+      caudalInicialLs: 0,
+      caudalFinalLs: 0,
+      caudalPromedioLs: 0,
       lecturaInicialM3: ultimaLecturaM3,
-      lecturaFinalM3: ultimaLecturaM3 + 480,
-      metrosCubicosExtraidos: 480,
-      litrosTotales: 480000,
-      horasBombeo: 6.5,
-      nivelEstaticoM: 28.4,
-      nivelDinamicoM: 34.1,
-      operadorBomba: 'Rodrigo Tapia San Martín',
-      observaciones: 'Lectura oficial DGA pozo profundo. Presión de red 3.8 bar.'
+      lecturaFinalM3: ultimaLecturaM3,
+      metrosCubicosExtraidos: 0,
+      litrosTotales: 0,
+      horasBombeo: 0,
+      nivelEstaticoM: 0,
+      nivelDinamicoM: 0,
+      operadorBomba: '',
+      observaciones: ''
     });
     setIsNewModalOpen(true);
   };
@@ -144,7 +145,7 @@ export const PozoView: React.FC<PozoViewProps> = ({
     const hrsHorom = Math.max(0, Number(((formPozo.horometroFinalHoras || 0) - (formPozo.horometroInicialHoras || 0)).toFixed(2)));
     const caudalMedio = hrsHorom > 0 
       ? Number(((litros) / (hrsHorom * 3600)).toFixed(1))
-      : Number((((formPozo.caudalInicialLs || 20) + (formPozo.caudalFinalLs || 20)) / 2).toFixed(1));
+      : Number((((formPozo.caudalInicialLs || 0) + (formPozo.caudalFinalLs || 0)) / 2).toFixed(1));
 
     const nuevo: RegistroExtraccionPozo = {
       id: `pz-${Date.now()}`,
@@ -165,7 +166,7 @@ export const PozoView: React.FC<PozoViewProps> = ({
       horasBombeo: hrsHorom,
       nivelEstaticoM: Number(formPozo.nivelEstaticoM) || 0,
       nivelDinamicoM: Number(formPozo.nivelDinamicoM) || 0,
-      sectorDestino: formPozo.sectorDestino || `Sector ${formPozo.sectorRiegoNumero}`,
+      sectorDestino: formPozo.sectorDestino || `Sector ${formPozo.sectorRiegoNumero || 1}`,
       operadorBomba: formPozo.operadorBomba || 'Operador Bomba',
       observaciones: formPozo.observaciones || ''
     };
@@ -204,10 +205,10 @@ export const PozoView: React.FC<PozoViewProps> = ({
     const nextId = sectoresRiego.length > 0 ? Math.max(...sectoresRiego.map(s => Number(s.id) || 0)) + 1 : 1;
     setSectorForm({
       id: nextId,
-      nombre: `Sector ${nextId} - Cuartel ${nextId}`,
-      ha: 5.0,
-      caudalDisenoLs: 22.0,
-      descripcion: 'Goteo autocompensado'
+      nombre: `Sector ${nextId}`,
+      ha: 0,
+      caudalDisenoLs: 0,
+      descripcion: ''
     });
     setEditingSector(null);
   };
@@ -227,17 +228,17 @@ export const PozoView: React.FC<PozoViewProps> = ({
       updated = [...sectoresRiego, { ...sectorForm }];
     }
     setSectoresRiego(updated);
-    localStorage.setItem('fundo_sectores_riego', JSON.stringify(updated));
-    window.dispatchEvent(new Event('fundo_sectores_updated'));
+    saveStoredSectoresRiego(updated);
     setEditingSector(null);
   };
 
   const handleDeleteSector = (sectorId: number | string) => {
-    if (sectoresRiego.length <= 1) return;
     const updated = sectoresRiego.filter((s) => s.id !== sectorId);
     setSectoresRiego(updated);
-    localStorage.setItem('fundo_sectores_riego', JSON.stringify(updated));
-    window.dispatchEvent(new Event('fundo_sectores_updated'));
+    saveStoredSectoresRiego(updated);
+    if (editingSector?.id === sectorId) {
+      setEditingSector(null);
+    }
   };
 
   // Desglose por Sector de Riego (1 a N)
@@ -262,7 +263,7 @@ export const PozoView: React.FC<PozoViewProps> = ({
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-bold uppercase tracking-wider mb-1">
             <Gauge className="w-3 h-3 text-blue-700" />
-            Pozo Profundo 120m · Fiscalización DGA Exp. N° 4182
+            Pozo Profundo · Fiscalización DGA
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
             Control de Pozo Profundo & Fiscalización DGA
@@ -305,64 +306,81 @@ export const PozoView: React.FC<PozoViewProps> = ({
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Caudal Medio Operativo</div>
           <div className="text-2xl font-black text-emerald-800 mt-1">{caudalPromedioGlobal} L/s</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Autorizado DGA: hasta 28.0 L/s</div>
+          <div className="text-[11px] text-stone-500 mt-0.5">Promedio de bombeo registrado</div>
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Horómetro Acumulado</div>
           <div className="text-2xl font-black text-stone-900 mt-1 font-mono">{ultimoHorometro.toFixed(1)} hrs</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Bomba sumergible Franklin 30 HP</div>
+          <div className="text-[11px] text-stone-500 mt-0.5">Totalizador acumulado de bomba</div>
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Última Lectura Totalizador</div>
           <div className="text-2xl font-black text-stone-900 mt-1 font-mono">{ultimaLecturaM3.toLocaleString('es-CL')} m³</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Caudalímetro electromagnético calibrado</div>
+          <div className="text-[11px] text-stone-500 mt-0.5">Flujómetro / caudalímetro del predio</div>
         </div>
       </div>
 
-      {/* Control de los 4 Sectores de Riego */}
+      {/* Control por Sectores de Riego */}
       <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
           <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
             <Layers className="w-4 h-4 text-blue-700" />
-            Balance Hídrico por los 4 Sectores de Riego (17.8 Ha Totales)
+            Balance Hídrico por Sectores de Riego ({statsSectores.length} {statsSectores.length === 1 ? 'sector' : 'sectores'} · {statsSectores.reduce((a, s) => a + (s.ha || 0), 0).toFixed(1)} ha)
           </h2>
           <span className="text-[11px] font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
             Cuaderno SAG & GlobalGAP
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {statsSectores.map((sec) => (
-            <div key={sec.id} className="p-3.5 bg-blue-50/40 rounded-xl border border-blue-100 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-blue-950">Sector {sec.id}</span>
-                  <span className="text-[10px] font-mono font-bold text-stone-500 bg-white px-1.5 py-0.5 rounded border border-stone-200">
-                    {sec.ha} Ha
-                  </span>
+        {statsSectores.length === 0 ? (
+          <div className="p-6 bg-stone-50 rounded-xl border border-dashed border-stone-300 text-center space-y-2">
+            <p className="text-xs font-bold text-stone-700">No hay sectores de riego configurados todavía.</p>
+            <p className="text-[11px] text-stone-500">Agrega los sectores reales de tu huerto para visualizar el balance hídrico por sector.</p>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => setIsSectoresModalOpen(true)}
+                className="px-3 py-1.5 bg-blue-800 hover:bg-blue-700 text-white rounded-lg text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Configurar Sectores de Riego</span>
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {statsSectores.map((sec) => (
+              <div key={sec.id} className="p-3.5 bg-blue-50/40 rounded-xl border border-blue-100 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-blue-950">Sector {sec.id}</span>
+                    <span className="text-[10px] font-mono font-bold text-stone-500 bg-white px-1.5 py-0.5 rounded border border-stone-200">
+                      {sec.ha} Ha
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-stone-600 mt-0.5 line-clamp-1">{sec.nombre}</div>
                 </div>
-                <div className="text-[11px] text-stone-600 mt-0.5 line-clamp-1">{sec.nombre}</div>
-              </div>
 
-              <div className="mt-3 pt-2 border-t border-blue-100/80 space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-stone-500 text-[11px]">Volumen:</span>
-                  <span className="font-mono font-bold text-blue-900">{sec.m3Total.toLocaleString('es-CL')} m³</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-stone-500 text-[11px]">Lámina aplicada:</span>
-                  <span className="font-mono text-stone-800">{sec.m3PorHa} m³/ha</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-stone-500 text-[11px]">Horas bombeo:</span>
-                  <span className="font-mono text-stone-800">{sec.horasTotal.toFixed(1)} hrs</span>
+                <div className="mt-3 pt-2 border-t border-blue-100/80 space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-stone-500 text-[11px]">Volumen:</span>
+                    <span className="font-mono font-bold text-blue-900">{sec.m3Total.toLocaleString('es-CL')} m³</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-500 text-[11px]">Lámina aplicada:</span>
+                    <span className="font-mono text-stone-800">{sec.m3PorHa} m³/ha</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-500 text-[11px]">Horas bombeo:</span>
+                    <span className="font-mono text-stone-800">{sec.horasTotal.toFixed(1)} hrs</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Planilla Oficial DGA */}
@@ -380,94 +398,112 @@ export const PozoView: React.FC<PozoViewProps> = ({
           <span className="text-xs text-stone-400 font-medium">{registrosPozo.length} muestreos</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px]">
-              <tr>
-                <th className="px-3 py-3">Fecha & Hora Muestreo</th>
-                <th className="px-3 py-3">Sector Riego</th>
-                <th className="px-3 py-3">Horómetro (Ini / Fin)</th>
-                <th className="px-3 py-3">Horas Op.</th>
-                <th className="px-3 py-3">Caudal L/s (Ini / Fin)</th>
-                <th className="px-3 py-3">Caudal Med.</th>
-                <th className="px-3 py-3">Flujómetro (Ini / Fin)</th>
-                <th className="px-3 py-3">Volumen m³</th>
-                <th className="px-3 py-3">Niveles Piez.</th>
-                <th className="px-3 py-3">Operador</th>
-                {canEdit && <th className="px-3 py-3 text-right">Acciones</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100 text-stone-700">
-              {registrosPozo.map((r) => {
-                const horomIni = r.horometroInicialHoras || 0;
-                const horomFin = r.horometroFinalHoras || (horomIni + r.horasBombeo);
-                const qIni = r.caudalInicialLs || r.caudalPromedioLs;
-                const qFin = r.caudalFinalLs || r.caudalPromedioLs;
+        {registrosPozo.length === 0 ? (
+          <div className="p-8 text-center text-stone-400 space-y-2">
+            <Gauge className="w-10 h-10 mx-auto text-stone-300" />
+            <p className="font-bold text-sm text-stone-700">No hay lecturas ni muestreos de pozo registrados</p>
+            <p className="text-xs">Comienza registrando la primera lectura oficial de horómetro y flujómetro.</p>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={handleOpenNew}
+                className="mt-2 px-3 py-1.5 bg-blue-800 hover:bg-blue-700 text-white rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Anotar Muestreo / Lectura DGA</span>
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px]">
+                <tr>
+                  <th className="px-3 py-3">Fecha & Hora Muestreo</th>
+                  <th className="px-3 py-3">Sector Riego</th>
+                  <th className="px-3 py-3">Horómetro (Ini / Fin)</th>
+                  <th className="px-3 py-3">Horas Op.</th>
+                  <th className="px-3 py-3">Caudal L/s (Ini / Fin)</th>
+                  <th className="px-3 py-3">Caudal Med.</th>
+                  <th className="px-3 py-3">Flujómetro (Ini / Fin)</th>
+                  <th className="px-3 py-3">Volumen m³</th>
+                  <th className="px-3 py-3">Niveles Piez.</th>
+                  <th className="px-3 py-3">Operador</th>
+                  {canEdit && <th className="px-3 py-3 text-right">Acciones</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-100 text-stone-700">
+                {registrosPozo.map((r) => {
+                  const horomIni = r.horometroInicialHoras || 0;
+                  const horomFin = r.horometroFinalHoras || (horomIni + r.horasBombeo);
+                  const qIni = r.caudalInicialLs || r.caudalPromedioLs;
+                  const qFin = r.caudalFinalLs || r.caudalPromedioLs;
 
-                return (
-                  <tr key={r.id} className="hover:bg-blue-50/40 transition-colors">
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      <div className="font-mono font-medium text-stone-900">
-                        {r.fechaHoraMuestreo || `${r.fecha} ${r.hora}`}
-                      </div>
-                    </td>
-                    <td className="px-3 py-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-900 whitespace-nowrap">
-                        {r.sectorDestino || `Sector ${r.sectorRiegoNumero || 1}`}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 font-mono text-[11px] whitespace-nowrap">
-                      {horomIni.toFixed(1)} &rarr; <span className="font-bold text-stone-900">{horomFin.toFixed(1)} h</span>
-                    </td>
-                    <td className="px-3 py-3 font-mono font-bold text-blue-950 whitespace-nowrap">
-                      {(r.horasHorometro || r.horasBombeo).toFixed(1)} h
-                    </td>
-                    <td className="px-3 py-3 font-mono text-[11px] whitespace-nowrap">
-                      {qIni} &rarr; <span className="font-bold text-emerald-900">{qFin} L/s</span>
-                    </td>
-                    <td className="px-3 py-3 font-mono font-bold text-emerald-900 whitespace-nowrap">
-                      {r.caudalPromedioLs} L/s
-                    </td>
-                    <td className="px-3 py-3 font-mono text-[11px] whitespace-nowrap text-stone-600">
-                      {r.lecturaInicialM3.toLocaleString('es-CL')} &rarr; {r.lecturaFinalM3.toLocaleString('es-CL')}
-                    </td>
-                    <td className="px-3 py-3 font-mono font-bold text-blue-950 whitespace-nowrap">
-                      {r.metrosCubicosExtraidos.toLocaleString('es-CL')} m³
-                    </td>
-                    <td className="px-3 py-3 font-mono text-[11px] whitespace-nowrap text-stone-500">
-                      Est: {r.nivelEstaticoM || 28.2}m / Din: {r.nivelDinamicoM || 34.0}m
-                    </td>
-                    <td className="px-3 py-3 text-stone-600 whitespace-nowrap">
-                      {r.operadorBomba}
-                    </td>
-                    {canEdit && (
-                      <td className="px-3 py-3 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => handleOpenEdit(r)}
-                            className="px-2 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                            title="Editar lectura DGA"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                            <span>Editar</span>
-                          </button>
-                          <button
-                            onClick={() => setRegistroToDelete(r)}
-                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                            title="Eliminar lectura DGA"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>Eliminar</span>
-                          </button>
+                  return (
+                    <tr key={r.id} className="hover:bg-blue-50/40 transition-colors">
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <div className="font-mono font-medium text-stone-900">
+                          {r.fechaHoraMuestreo || `${r.fecha} ${r.hora}`}
                         </div>
                       </td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      <td className="px-3 py-3">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-900 whitespace-nowrap">
+                          {r.sectorDestino || `Sector ${r.sectorRiegoNumero || 1}`}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 font-mono text-[11px] whitespace-nowrap">
+                        {horomIni.toFixed(1)} &rarr; <span className="font-bold text-stone-900">{horomFin.toFixed(1)} h</span>
+                      </td>
+                      <td className="px-3 py-3 font-mono font-bold text-blue-950 whitespace-nowrap">
+                        {(r.horasHorometro || r.horasBombeo).toFixed(1)} h
+                      </td>
+                      <td className="px-3 py-3 font-mono text-[11px] whitespace-nowrap">
+                        {qIni} &rarr; <span className="font-bold text-emerald-900">{qFin} L/s</span>
+                      </td>
+                      <td className="px-3 py-3 font-mono font-bold text-emerald-900 whitespace-nowrap">
+                        {r.caudalPromedioLs} L/s
+                      </td>
+                      <td className="px-3 py-3 font-mono text-[11px] whitespace-nowrap text-stone-600">
+                        {r.lecturaInicialM3.toLocaleString('es-CL')} &rarr; {r.lecturaFinalM3.toLocaleString('es-CL')}
+                      </td>
+                      <td className="px-3 py-3 font-mono font-bold text-blue-950 whitespace-nowrap">
+                        {r.metrosCubicosExtraidos.toLocaleString('es-CL')} m³
+                      </td>
+                      <td className="px-3 py-3 font-mono text-[11px] whitespace-nowrap text-stone-500">
+                        Est: {r.nivelEstaticoM ? `${r.nivelEstaticoM}m` : '—'} / Din: {r.nivelDinamicoM ? `${r.nivelDinamicoM}m` : '—'}
+                      </td>
+                      <td className="px-3 py-3 text-stone-600 whitespace-nowrap">
+                        {r.operadorBomba}
+                      </td>
+                      {canEdit && (
+                        <td className="px-3 py-3 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => handleOpenEdit(r)}
+                              className="px-2 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                              title="Editar lectura DGA"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>Editar</span>
+                            </button>
+                            <button
+                              onClick={() => setRegistroToDelete(r)}
+                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                              title="Eliminar lectura DGA"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Eliminar</span>
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* MODAL: Nueva Lectura DGA */}
@@ -496,23 +532,34 @@ export const PozoView: React.FC<PozoViewProps> = ({
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Sector de Riego:</label>
-                  <select
-                    value={formPozo.sectorRiegoNumero}
-                    onChange={(e) => {
-                      const num = Number(e.target.value);
-                      const sec = sectoresRiego.find((s) => Number(s.id) === num);
-                      setFormPozo({
-                        ...formPozo,
-                        sectorRiegoNumero: num,
-                        sectorDestino: sec ? sec.nombre : `Sector ${num}`
-                      });
-                    }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-blue-900"
-                  >
-                    {sectoresRiego.map((s) => (
-                      <option key={s.id} value={s.id}>{s.nombre} ({s.ha || 0} ha)</option>
-                    ))}
-                  </select>
+                  {sectoresRiego.length > 0 ? (
+                    <select
+                      value={formPozo.sectorRiegoNumero}
+                      onChange={(e) => {
+                        const num = Number(e.target.value);
+                        const sec = sectoresRiego.find((s) => Number(s.id) === num);
+                        setFormPozo({
+                          ...formPozo,
+                          sectorRiegoNumero: num,
+                          sectorDestino: sec ? sec.nombre : `Sector ${num}`
+                        });
+                      }}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-blue-900"
+                    >
+                      {sectoresRiego.map((s) => (
+                        <option key={s.id} value={s.id}>{s.nombre} ({s.ha || 0} ha)</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={formPozo.sectorDestino || ''}
+                      onChange={(e) => setFormPozo({ ...formPozo, sectorDestino: e.target.value })}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-blue-900"
+                      placeholder="Ej. Sector 1 o Cuartel Norte"
+                      required
+                    />
+                  )}
                 </div>
               </div>
 
@@ -1040,30 +1087,34 @@ export const PozoView: React.FC<PozoViewProps> = ({
 
               {/* Lista de Sectores Existentes */}
               <div className="space-y-2">
-                {sectoresRiego.map((sec) => (
-                  <div key={sec.id} className="p-3 bg-white rounded-xl border border-stone-200 flex items-center justify-between gap-3 shadow-2xs hover:border-blue-300 transition-colors">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] font-bold bg-blue-100 text-blue-950 px-2 py-0.5 rounded">
-                          Sector {sec.id}
-                        </span>
-                        <strong className="text-stone-900 text-xs">{sec.nombre}</strong>
+                {sectoresRiego.length === 0 ? (
+                  <div className="p-4 text-center text-stone-500 bg-stone-50 rounded-xl border border-stone-200">
+                    No hay sectores configurados. Usa el formulario superior para crear tu primer sector.
+                  </div>
+                ) : (
+                  sectoresRiego.map((sec) => (
+                    <div key={sec.id} className="p-3 bg-white rounded-xl border border-stone-200 flex items-center justify-between gap-3 shadow-2xs hover:border-blue-300 transition-colors">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] font-bold bg-blue-100 text-blue-950 px-2 py-0.5 rounded">
+                            Sector {sec.id}
+                          </span>
+                          <strong className="text-stone-900 text-xs">{sec.nombre}</strong>
+                        </div>
+                        <div className="text-[11px] text-stone-500 mt-0.5">
+                          {sec.ha || 0} Hectáreas · Caudal diseño: {sec.caudalDisenoLs || 0} L/s {sec.descripcion ? `· ${sec.descripcion}` : ''}
+                        </div>
                       </div>
-                      <div className="text-[11px] text-stone-500 mt-0.5">
-                        {sec.ha || 0} Hectáreas · Caudal diseño: {sec.caudalDisenoLs || 20} L/s {sec.descripcion ? `· ${sec.descripcion}` : ''}
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleEditSector(sec)}
-                        className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                      >
-                        <Edit3 className="w-3 h-3" />
-                        <span>Editar</span>
-                      </button>
-                      {sectoresRiego.length > 1 && (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleEditSector(sec)}
+                          className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                          <span>Editar</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteSector(sec.id)}
@@ -1072,10 +1123,10 @@ export const PozoView: React.FC<PozoViewProps> = ({
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
 
               <div className="pt-3 border-t border-stone-200 flex justify-end">

@@ -777,7 +777,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                     className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center gap-1 cursor-pointer shadow-2xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>+ Diario</span>
+                    <span>Diario</span>
                   </button>
                   <button
                     type="button"
@@ -785,7 +785,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                     className="px-3 py-1.5 bg-blue-800 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center gap-1 cursor-pointer shadow-2xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>+ Semanal</span>
+                    <span>Semanal</span>
                   </button>
                   <button
                     type="button"
@@ -793,7 +793,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                     className="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white rounded-xl font-bold flex items-center gap-1 cursor-pointer shadow-2xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>+ Mensual</span>
+                    <span>Mensual</span>
                   </button>
                 </>
               )}

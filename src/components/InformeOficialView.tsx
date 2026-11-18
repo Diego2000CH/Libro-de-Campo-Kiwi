@@ -174,35 +174,35 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs p-3.5 bg-stone-50 rounded-xl border border-stone-200">
           <div>
             <span className="text-[10px] text-stone-400 uppercase font-bold block">Explotación / Predio:</span>
-            <strong className="text-stone-900 font-bold">{explotacion?.nombreFundo || 'Fundo La Cabaña'}</strong>
+            <strong className="text-stone-900 font-bold">{explotacion?.nombreFundo || 'Mi Huerto de Kiwis'}</strong>
           </div>
           <div>
             <span className="text-[10px] text-stone-400 uppercase font-bold block">RUT del Predio:</span>
-            <span className="font-mono font-medium">{explotacion?.rut || '76.892.410-K'}</span>
+            <span className="font-mono font-medium">{explotacion?.rut || '—'}</span>
           </div>
           <div>
             <span className="text-[10px] text-stone-400 uppercase font-bold block">Ubicación / Comuna:</span>
-            <span>{explotacion?.direccion || 'Camino Los Niches Km 8.4'}, {explotacion?.comuna || 'Curicó'} ({explotacion?.region || 'Maule'})</span>
+            <span>{explotacion?.direccion || '—'}{explotacion?.comuna ? `, ${explotacion.comuna}` : ''}{explotacion?.region ? ` (${explotacion.region})` : ''}</span>
           </div>
           <div>
             <span className="text-[10px] text-stone-400 uppercase font-bold block">Superficie Total:</span>
-            <strong className="text-stone-900">{explotacion?.superficieKiwisHa ?? 12.5} ha de Kiwis ({explotacion?.superficieTotalHa ?? 15.0} ha predio)</strong>
+            <strong className="text-stone-900">{explotacion?.superficieKiwisHa ?? 0} ha de Kiwis ({explotacion?.superficieTotalHa ?? 0} ha predio)</strong>
           </div>
           <div>
             <span className="text-[10px] text-stone-400 uppercase font-bold block">Representante Legal:</span>
-            <span>{explotacion?.representanteLegal || 'Rodrigo Valenzuela'} (RUT {explotacion?.rutRepresentante || '12.456.789-0'})</span>
+            <span>{explotacion?.representanteLegal || '—'}{explotacion?.rutRepresentante ? ` (RUT ${explotacion.rutRepresentante})` : ''}</span>
           </div>
           <div>
             <span className="text-[10px] text-stone-400 uppercase font-bold block">Asesor Agrónomo Responsable:</span>
-            <strong>{explotacion?.asesorAgronomo || 'Rodrigo Valenzuela'}</strong>
+            <strong>{explotacion?.asesorAgronomo || '—'}</strong>
           </div>
           <div>
             <span className="text-[10px] text-stone-400 uppercase font-bold block">Registro Colegio Agrónomos:</span>
-            <span className="font-mono">{explotacion?.registroColegioAgronomos || 'COL-AGR-4912'}</span>
+            <span className="font-mono">{explotacion?.registroColegioAgronomos || '—'}</span>
           </div>
           <div>
             <span className="text-[10px] text-stone-400 uppercase font-bold block">Certificaciones Vigentes:</span>
-            <span className="text-emerald-800 font-semibold">{(explotacion?.certificaciones || ['GlobalGAP IFA v6', 'Buenas Prácticas Agrícolas SAG']).join(', ')}</span>
+            <span className="text-emerald-800 font-semibold">{explotacion?.certificaciones?.length ? explotacion.certificaciones.join(', ') : '—'}</span>
           </div>
         </div>
 
@@ -290,14 +290,14 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
         <div className="pt-10 grid grid-cols-2 gap-10 text-center text-xs page-break-inside-avoid">
           <div className="space-y-1">
             <div className="border-b border-stone-400 w-56 mx-auto h-12" />
-            <div className="font-bold text-stone-900">{explotacion?.asesorAgronomo || 'Rodrigo Valenzuela'}</div>
-            <div className="text-[11px] text-stone-500">Ingeniero Agrónomo Asesor (Reg. SAG / Col. 4912)</div>
+            <div className="font-bold text-stone-900">{explotacion?.asesorAgronomo || 'Asesor Agrónomo'}</div>
+            <div className="text-[11px] text-stone-500">Ingeniero Agrónomo Asesor {explotacion?.registroColegioAgronomos ? `(Reg. ${explotacion.registroColegioAgronomos})` : ''}</div>
           </div>
 
           <div className="space-y-1">
             <div className="border-b border-stone-400 w-56 mx-auto h-12" />
-            <div className="font-bold text-stone-900">{explotacion?.representanteLegal || 'Rodrigo Valenzuela'}</div>
-            <div className="text-[11px] text-stone-500">Representante Legal · {explotacion?.nombreFundo || 'Fundo La Cabaña'}</div>
+            <div className="font-bold text-stone-900">{explotacion?.representanteLegal || 'Representante Legal'}</div>
+            <div className="text-[11px] text-stone-500">Representante Legal · {explotacion?.nombreFundo || 'Mi Huerto'}</div>
           </div>
         </div>
       </div>

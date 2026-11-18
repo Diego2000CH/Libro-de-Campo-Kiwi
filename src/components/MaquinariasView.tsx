@@ -76,11 +76,11 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
   const [mantencionForm, setMantencionForm] = useState({
     fecha: new Date().toISOString().split('T')[0],
     horometro: 0,
-    tipoMantencion: 'Cambio de Aceite 15W40 y Filtros',
-    tallerOMecanico: 'Taller Central Fundo La Cabaña',
-    costoCLP: 85000,
-    repuestosUtilizados: 'Filtro aceite John Deere, filtro petróleo, 12L aceite 15W40',
-    observaciones: 'Inspección de niveles, engrase crucetas y toma de fuerza OK'
+    tipoMantencion: '',
+    tallerOMecanico: '',
+    costoCLP: 0,
+    repuestosUtilizados: '',
+    observaciones: ''
   });
 
   // Filtrado
@@ -263,7 +263,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 horometroUltimaMantencion: 0,
                 frecuenciaMantencionHoras: 250,
                 estado: 'operativo',
-                operadorAsignado: 'Carlos Morales Vega',
+                operadorAsignado: '',
                 fechaUltimaMantencion: new Date().toISOString().split('T')[0],
                 fechaProximaMantencion: 'Al cumplir 250 hrs',
                 observaciones: ''

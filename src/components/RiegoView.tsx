@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TurnoRiego, SectorRiego, Parcela, ClimaCondiciones } from '../types/campo';
-import { initialSectoresRiego } from '../data/initialData';
+import { getStoredSectoresRiego, saveStoredSectoresRiego } from '../utils/storage';
 import { 
   Droplet, 
   Plus, 
@@ -47,33 +47,22 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
   const [turnoToDelete, setTurnoToDelete] = useState<TurnoRiego | null>(null);
 
   // Sectores de Riego dinámicos
-  const [sectoresRiego, setSectoresRiego] = useState<SectorRiego[]>(() => {
-    try {
-      const saved = localStorage.getItem('fundo_sectores_riego');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.warn('Error leyendo sectores de riego:', e);
-    }
-    return initialSectoresRiego;
-  });
+  const [sectoresRiego, setSectoresRiego] = useState<SectorRiego[]>(getStoredSectoresRiego);
 
   const [isSectoresModalOpen, setIsSectoresModalOpen] = useState(false);
   const [editingSector, setEditingSector] = useState<SectorRiego | null>(null);
   const [sectorForm, setSectorForm] = useState<SectorRiego>({
     id: 1,
     nombre: '',
-    ha: 5.0,
-    caudalDisenoLs: 20.0,
+    ha: 0,
+    caudalDisenoLs: 0,
     descripcion: ''
   });
 
   // Escuchar actualizaciones de sectores de riego
   useEffect(() => {
     const handleUpdate = () => {
-      try {
-        const saved = localStorage.getItem('fundo_sectores_riego');
-        if (saved) setSectoresRiego(JSON.parse(saved));
-      } catch (e) {}
+      setSectoresRiego(getStoredSectoresRiego());
     };
     window.addEventListener('fundo_sectores_updated', handleUpdate);
     return () => window.removeEventListener('fundo_sectores_updated', handleUpdate);
@@ -81,18 +70,17 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
 
   const saveSectores = (newSectores: SectorRiego[]) => {
     setSectoresRiego(newSectores);
-    localStorage.setItem('fundo_sectores_riego', JSON.stringify(newSectores));
-    window.dispatchEvent(new Event('fundo_sectores_updated'));
+    saveStoredSectoresRiego(newSectores);
   };
 
   // Totales de turnos de riego
   const totalHorasRegadas = turnosRiego.reduce((acc, t) => acc + (t.duracionHoras || 0), 0);
   const totalM3Riego = turnosRiego.reduce((acc, t) => acc + (t.volumenM3 || 0), 0);
   const totalLaminaMm = turnosRiego.reduce((acc, t) => acc + (t.laminaAguaMm || 0), 0);
-  const laminaPromedio = turnosRiego.length > 0 ? (totalLaminaMm / turnosRiego.length).toFixed(1) : '4.6';
+  const laminaPromedio = turnosRiego.length > 0 ? (totalLaminaMm / turnosRiego.length).toFixed(1) : '0.0';
 
   // Demanda hídrica diaria de referencia
-  const etoActual = clima?.evapotranspiracionEtoMmDia ?? 4.5;
+  const etoActual = clima?.evapotranspiracionEtoMmDia ?? 0;
   const kcEstimado = 1.05; // Kc Kiwi Hayward pleno crecimiento
   const demandaEtc = Number((etoActual * kcEstimado).toFixed(1));
 
@@ -100,20 +88,20 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
   const [formTurno, setFormTurno] = useState<Partial<TurnoRiego>>({
     fecha: new Date().toISOString().split('T')[0],
     horaInicio: '08:00',
-    horaTermino: '14:30',
+    horaTermino: '14:00',
     sectorRiegoId: 1,
-    sectorNombre: 'Sector 1 - Parrón Español Norte',
-    cuartelesInvolucrados: ['Cuartel 1 - Parrón Norte'],
-    duracionHoras: 6.5,
-    laminaAguaMm: 4.8,
-    volumenM3: 260,
+    sectorNombre: '',
+    cuartelesInvolucrados: [],
+    duracionHoras: 0,
+    laminaAguaMm: 0,
+    volumenM3: 0,
     conFertirriego: false,
     fertilizanteInyectado: '',
     dosisFertilizanteKg: 0,
-    presionCabezalBar: 3.8,
-    presionFinLineaBar: 1.8,
-    operadorRiego: 'Rodrigo Tapia San Martín',
-    observaciones: 'Turno de riego programado por goteo doble línea. Presión óptima.'
+    presionCabezalBar: 0,
+    presionFinLineaBar: 0,
+    operadorRiego: '',
+    observaciones: ''
   });
 
   // Abrir nuevo turno
@@ -124,29 +112,29 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
       .filter(p => (p.sectoresRiego && p.sectoresRiego.some(s => String(s) === String(secId))) || String(p.sectorRiegoNumero) === String(secId))
       .map(p => p.nombre);
 
-    const supHa = sec?.ha || 5.0;
-    const caudalLs = sec?.caudalDisenoLs || 20.0;
-    const duracion = 6.5;
-    const m3Calculado = Math.round((caudalLs * duracion * 3600) / 1000);
-    const laminaCalculada = Number(((m3Calculado / (supHa * 10))).toFixed(1));
+    const supHa = sec?.ha || 0;
+    const caudalLs = sec?.caudalDisenoLs || 0;
+    const duracion = 6.0;
+    const m3Calculado = caudalLs > 0 ? Math.round((caudalLs * duracion * 3600) / 1000) : 0;
+    const laminaCalculada = supHa > 0 ? Number((m3Calculado / (supHa * 10)).toFixed(1)) : 0;
 
     setFormTurno({
       fecha: new Date().toISOString().split('T')[0],
       horaInicio: '08:00',
-      horaTermino: '14:30',
+      horaTermino: '14:00',
       sectorRiegoId: secId,
-      sectorNombre: sec?.nombre || `Sector ${secId}`,
-      cuartelesInvolucrados: cuartelesDelSector.length > 0 ? cuartelesDelSector : [`Cuartel Sector ${secId}`],
+      sectorNombre: sec?.nombre || '',
+      cuartelesInvolucrados: cuartelesDelSector,
       duracionHoras: duracion,
-      laminaAguaMm: laminaCalculada || 4.8,
-      volumenM3: m3Calculado || 260,
+      laminaAguaMm: laminaCalculada,
+      volumenM3: m3Calculado,
       conFertirriego: false,
       fertilizanteInyectado: '',
       dosisFertilizanteKg: 0,
-      presionCabezalBar: 3.8,
-      presionFinLineaBar: 1.8,
-      operadorRiego: 'Rodrigo Tapia San Martín',
-      observaciones: 'Riego por goteo con presiones nominales verificadas en manómetro.'
+      presionCabezalBar: 0,
+      presionFinLineaBar: 0,
+      operadorRiego: '',
+      observaciones: ''
     });
     setIsNewTurnoOpen(true);
   };
@@ -286,14 +274,8 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
   };
 
   const handleDeleteSector = (id: number | string) => {
-    if (sectoresRiego.length <= 1) {
-      alert('Debe mantenerse al menos 1 sector de riego.');
-      return;
-    }
-    if (confirm('¿Eliminar este sector de riego?')) {
-      saveSectores(sectoresRiego.filter(s => s.id !== id));
-      if (editingSector?.id === id) setEditingSector(null);
-    }
+    saveSectores(sectoresRiego.filter(s => s.id !== id));
+    if (editingSector?.id === id) setEditingSector(null);
   };
 
   return (
@@ -385,63 +367,80 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {sectoresRiego.map((sec) => {
-            const cuarteles = parcelas.filter(p => 
-              (p.sectoresRiego && p.sectoresRiego.some(s => String(s) === String(sec.id))) || 
-              String(p.sectorRiegoNumero) === String(sec.id)
-            );
-            const turnosSector = turnosRiego.filter(t => String(t.sectorRiegoId) === String(sec.id));
-            const ultTurno = turnosSector[0];
+        {sectoresRiego.length === 0 ? (
+          <div className="p-6 bg-white rounded-2xl border border-dashed border-stone-300 text-center space-y-2">
+            <p className="text-xs font-bold text-stone-700">No hay sectores de riego configurados todavía.</p>
+            <p className="text-[11px] text-stone-500">Agrega tus sectores reales de riego para calcular láminas, caudales y asociar cuarteles.</p>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => setIsSectoresModalOpen(true)}
+                className="px-3 py-1.5 bg-cyan-800 hover:bg-cyan-700 text-white rounded-lg text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Configurar Sectores de Riego</span>
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {sectoresRiego.map((sec) => {
+              const cuarteles = parcelas.filter(p => 
+                (p.sectoresRiego && p.sectoresRiego.some(s => String(s) === String(sec.id))) || 
+                String(p.sectorRiegoNumero) === String(sec.id)
+              );
+              const turnosSector = turnosRiego.filter(t => String(t.sectorRiegoId) === String(sec.id));
+              const ultTurno = turnosSector[0];
 
-            return (
-              <div key={sec.id} className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs hover:shadow-xs transition-shadow space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded-md bg-cyan-100 text-cyan-900 font-extrabold text-[11px]">
-                    Sector {sec.id}
-                  </span>
-                  <span className="text-xs font-mono font-bold text-stone-700">
-                    {sec.ha || 5.0} ha
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="font-extrabold text-stone-900 text-sm leading-tight">
-                    {sec.nombre}
-                  </h3>
-                  <p className="text-[11px] text-stone-500 mt-1 line-clamp-2">
-                    {sec.descripcion || 'Sin descripción técnica'}
-                  </p>
-                </div>
-
-                <div className="p-2.5 bg-stone-50 rounded-xl space-y-1 text-xs">
-                  <div className="flex justify-between text-stone-600">
-                    <span>Caudal de diseño:</span>
-                    <strong className="text-stone-900 font-mono">{sec.caudalDisenoLs || 20} L/s</strong>
+              return (
+                <div key={sec.id} className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs hover:shadow-xs transition-shadow space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2 py-0.5 rounded-md bg-cyan-100 text-cyan-900 font-extrabold text-[11px]">
+                      Sector {sec.id}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-stone-700">
+                      {sec.ha || 0} ha
+                    </span>
                   </div>
-                  <div className="flex justify-between text-stone-600">
-                    <span>Cuarteles abastecidos:</span>
-                    <strong className="text-cyan-800">{cuarteles.length > 0 ? cuarteles.map(c => c.codigoCuartel).join(', ') : 'Ninguno'}</strong>
-                  </div>
-                  <div className="flex justify-between text-stone-600">
-                    <span>Último riego:</span>
-                    <strong className="text-stone-700">{ultTurno ? ultTurno.fecha : 'Sin registros'}</strong>
-                  </div>
-                </div>
 
-                {canEdit && (
-                  <button
-                    onClick={() => handleOpenNewTurno(sec.id)}
-                    className="w-full py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-200 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-cyan-700" />
-                    <span>Regar este Sector</span>
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  <div>
+                    <h3 className="font-extrabold text-stone-900 text-sm leading-tight">
+                      {sec.nombre}
+                    </h3>
+                    <p className="text-[11px] text-stone-500 mt-1 line-clamp-2">
+                      {sec.descripcion || 'Sin descripción técnica'}
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 bg-stone-50 rounded-xl space-y-1 text-xs">
+                    <div className="flex justify-between text-stone-600">
+                      <span>Caudal de diseño:</span>
+                      <strong className="text-stone-900 font-mono">{sec.caudalDisenoLs || 0} L/s</strong>
+                    </div>
+                    <div className="flex justify-between text-stone-600">
+                      <span>Cuarteles abastecidos:</span>
+                      <strong className="text-cyan-800">{cuarteles.length > 0 ? cuarteles.map(c => c.codigoCuartel).join(', ') : 'Ninguno'}</strong>
+                    </div>
+                    <div className="flex justify-between text-stone-600">
+                      <span>Último riego:</span>
+                      <strong className="text-stone-700">{ultTurno ? ultTurno.fecha : 'Sin registros'}</strong>
+                    </div>
+                  </div>
+
+                  {canEdit && (
+                    <button
+                      onClick={() => handleOpenNewTurno(sec.id)}
+                      className="w-full py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-200 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-cyan-700" />
+                      <span>Regar este Sector</span>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Bitácora de Turnos de Riego */}
@@ -579,18 +578,29 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Sector de Riego:</label>
-                  <select
-                    value={formTurno.sectorRiegoId}
-                    onChange={(e) => handleSectorChange(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
-                    required
-                  >
-                    {sectoresRiego.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.nombre} ({s.ha} ha)
-                      </option>
-                    ))}
-                  </select>
+                  {sectoresRiego.length > 0 ? (
+                    <select
+                      value={formTurno.sectorRiegoId}
+                      onChange={(e) => handleSectorChange(e.target.value)}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                      required
+                    >
+                      {sectoresRiego.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.nombre} ({s.ha} ha)
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={formTurno.sectorNombre || ''}
+                      onChange={(e) => setFormTurno({ ...formTurno, sectorNombre: e.target.value })}
+                      placeholder="Ej. Sector 1 o Cuartel Norte"
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                      required
+                    />
+                  )}
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Fecha:</label>

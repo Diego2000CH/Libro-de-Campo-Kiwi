@@ -52,7 +52,7 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
       tipoLabor: 'monitoreo',
       descripcion: `[${obsForm.plaga}] Severidad: ${obsForm.severidad}. ${obsForm.descripcion}`,
       objetivoPlagaEnfermedad: obsForm.plaga,
-      registradoPor: 'Ing. Agr. Rodrigo Valenzuela (Monitoreo Fitosanitario SAG)',
+      registradoPor: 'Monitoreo Fitosanitario',
       observaciones: 'Monitoreo preventivo protocolizado GlobalGAP'
     };
 
@@ -75,7 +75,7 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
       tipo: 'Hongo de Fruto y Flor',
       sintomas: 'Micelio grisáceo en restos florales y pudrición blanda acuosa en pedúnculo durante almacenaje en frío (cámara 0°C).',
       controlSugerido: 'Switch 62.5 WG o Luna Tranquility en caída de sépalos y precosecha respetando LMR.',
-      severidadPredio: 'En Carencia SAG (Cuartel 2)'
+      severidadPredio: 'Preventivo'
     },
     {
       id: 'brevipalpus',

@@ -116,7 +116,7 @@ export const AlertasStockModal: React.FC<AlertasStockModalProps> = ({
                       title={`Reponer +${item.stockMinimo || 10} ${item.unidad}`}
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      +{item.stockMinimo || 10} {item.unidad}
+                      <span>{item.stockMinimo || 10} {item.unidad}</span>
                     </button>
 
                     {onDeleteInsumo && (

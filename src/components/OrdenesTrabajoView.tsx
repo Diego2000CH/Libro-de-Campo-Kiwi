@@ -67,7 +67,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
   const [executingOrdenId, setExecutingOrdenId] = useState<string | null>(null);
   const [aplicadorSeleccionado, setAplicadorSeleccionado] = useState(
-    usuarios.find((u) => u.rol === 'aplicador_sag')?.nombre || activeUser?.nombre || 'Juan Tapia Gómez'
+    usuarios.find((u) => u.rol === 'aplicador_sag')?.nombre || activeUser?.nombre || ''
   );
   const [firmaDigital, setFirmaDigital] = useState('Aplicador Autorizado SAG');
 
@@ -81,12 +81,12 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
   // Estado del Formulario de NUEVA Orden
   const [destinoSeleccionado, setDestinoSeleccionado] = useState<DestinoProducto>('kiwi');
-  const [selectedCuartelIds, setSelectedCuartelIds] = useState<string[]>([parcelas[0]?.id || 'cuartel-1']);
-  const [nombreSectorNoKiwi, setNombreSectorNoKiwi] = useState<string>('Quinta Frutal - Frutales Mixtos');
-  const [superficieNoKiwiHa, setSuperficieNoKiwiHa] = useState<number>(1.5);
-  const [objetivoFitosanitario, setObjetivoFitosanitario] = useState<string>('Control preventivo Psa (Pseudomonas syringae) y Botrytis');
+  const [selectedCuartelIds, setSelectedCuartelIds] = useState<string[]>(parcelas[0]?.id ? [parcelas[0].id] : []);
+  const [nombreSectorNoKiwi, setNombreSectorNoKiwi] = useState<string>('');
+  const [superficieNoKiwiHa, setSuperficieNoKiwiHa] = useState<number>(1.0);
+  const [objetivoFitosanitario, setObjetivoFitosanitario] = useState<string>('');
   const [volumenCaldoLHa, setVolumenCaldoLHa] = useState<number>(1000);
-  const [observacionesTecnicas, setObservacionesTecnicas] = useState<string>('Aplicar con tractor frutero John Deere 5075E, boquillas de cono cerámicas ATR calibradas a 12 bar');
+  const [observacionesTecnicas, setObservacionesTecnicas] = useState<string>('');
 
   // Lista de Productos en la Mezcla (múltiples productos por aplicación)
   const [productosMezcla, setProductosMezcla] = useState<{
@@ -155,16 +155,16 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
   // Apertura modal nuevo con reseteo
   const handleOpenNewOrden = () => {
     setDestinoSeleccionado('kiwi');
-    setSelectedCuartelIds([parcelas[0]?.id || 'cuartel-1']);
-    setNombreSectorNoKiwi('Quinta Frutal - Frutales Mixtos');
-    setSuperficieNoKiwiHa(1.5);
-    setObjetivoFitosanitario('Control preventivo Psa (Pseudomonas syringae) y Botrytis');
+    setSelectedCuartelIds(parcelas[0]?.id ? [parcelas[0].id] : []);
+    setNombreSectorNoKiwi('');
+    setSuperficieNoKiwiHa(0);
+    setObjetivoFitosanitario('');
     setVolumenCaldoLHa(1000);
-    setObservacionesTecnicas('Aplicar con tractor frutero John Deere 5075E, boquillas cerámicas ATR calibradas a 12 bar');
+    setObservacionesTecnicas('');
     setProductosMezcla([
       {
         insumoId: productosFitoDisponibles[0]?.id || inventario[0]?.id || '',
-        dosisPorHa: 2.5
+        dosisPorHa: 0
       }
     ]);
     setIsNewOrdenOpen(true);
@@ -248,7 +248,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
       ],
       tiempoReingresoHoras: maxReingreso,
       carenciaDias: maxCarencia,
-      ingenieroAgronomoNombre: activeUser?.nombre || 'Ing. Agr. Rodrigo Valenzuela (Reg. 4912)',
+      ingenieroAgronomoNombre: activeUser?.nombre || 'Responsable Técnico',
       estado: 'en_proceso',
       descontadoInventario: true, // Se descuentan todos los productos al emitir la orden
       fechaDescuentoBodega: new Date().toISOString().split('T')[0],
@@ -626,7 +626,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                       <span className="text-stone-300">|</span>
                       <button
                         type="button"
-                        onClick={() => setSelectedCuartelIds([parcelas[0]?.id || 'cuartel-1'])}
+                        onClick={() => setSelectedCuartelIds(parcelas[0]?.id ? [parcelas[0].id] : [])}
                         className="text-[10px] font-bold text-stone-500 hover:text-stone-800 underline cursor-pointer"
                       >
                         Solo uno

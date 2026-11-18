@@ -11,7 +11,7 @@ import {
   MapMouseEvent,
 } from '@vis.gl/react-google-maps';
 import { Parcela, LugarPredio, TipoLugarPredio, SectorRiego } from '../types/campo';
-import { initialSectoresRiego } from '../data/initialData';
+import { getStoredSectoresRiego } from '../utils/storage';
 import { 
   Compass, 
   MapPin, 
@@ -792,22 +792,11 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   const [syncAreaWithPolygon, setSyncAreaWithPolygon] = useState<boolean>(true);
 
   // Sectores de riego disponibles
-  const [sectoresDisponibles, setSectoresDisponibles] = useState<SectorRiego[]>(() => {
-    try {
-      const saved = localStorage.getItem('fundo_sectores_riego');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.warn('Error leyendo sectores:', e);
-    }
-    return initialSectoresRiego;
-  });
+  const [sectoresDisponibles, setSectoresDisponibles] = useState<SectorRiego[]>(getStoredSectoresRiego);
 
   useEffect(() => {
     const handleSectoresUpdate = () => {
-      try {
-        const saved = localStorage.getItem('fundo_sectores_riego');
-        if (saved) setSectoresDisponibles(JSON.parse(saved));
-      } catch (e) {}
+      setSectoresDisponibles(getStoredSectoresRiego());
     };
     window.addEventListener('fundo_sectores_updated', handleSectoresUpdate);
     return () => window.removeEventListener('fundo_sectores_updated', handleSectoresUpdate);
@@ -1309,7 +1298,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               className="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <MapPin className="w-3.5 h-3.5" />
-              <span>+ Agregar Punto</span>
+              <span>Agregar Punto</span>
             </button>
 
             <button
@@ -1318,7 +1307,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>+ Cuartel Rápido</span>
+              <span>Cuartel Rápido</span>
             </button>
           </div>
         )}
@@ -1529,9 +1518,12 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   <p className="font-bold text-sm text-white">
                     {mapsKeyError || 'Mapa satelital temporalmente desconectado'}
                   </p>
-                  <p className="text-stone-400 max-w-md leading-relaxed">
-                    Verifica que <code className="text-emerald-300">GOOGLE_MAPS_API_KEY</code> (o{' '}
-                    <code className="text-emerald-300">VITE_GOOGLE_MAPS_API_KEY</code>) esté configurada o reintenta la conexión con el servidor.
+                  <p className="text-stone-300 max-w-lg leading-relaxed text-[11px]">
+                    {typeof window !== 'undefined' && window.location.hostname.includes('onrender.com')
+                      ? 'Estás viendo la app desplegada en Render. Ve a tu servicio en Render → Environment, agrega GOOGLE_MAPS_API_KEY (o VITE_GOOGLE_MAPS_API_KEY) con tu clave de Google Cloud Maps JavaScript API, guarda los cambios y reinicia el deploy.'
+                      : typeof window !== 'undefined' && window.location.hostname.includes('ais-pre-')
+                      ? 'En el enlace compartido (ais-pre), asegúrate de tener configurada GOOGLE_MAPS_API_KEY o VITE_GOOGLE_MAPS_API_KEY en Settings → Secrets y vuelve a publicar la app para que el servidor reciba la clave.'
+                      : 'Configura GOOGLE_MAPS_API_KEY o VITE_GOOGLE_MAPS_API_KEY en Settings → Secrets (o en el entorno del servidor) y luego presiona Reintentar Conexión Mapa.'}
                   </p>
                   {onRetryMapsKey && (
                     <button

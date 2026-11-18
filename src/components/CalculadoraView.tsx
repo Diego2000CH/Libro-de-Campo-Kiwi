@@ -351,7 +351,7 @@ export const CalculadoraView: React.FC<CalculadoraViewProps> = ({
                   onChange={(e) => setDistanciaHilerasM(parseFloat(e.target.value) || 0)}
                   className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono"
                 />
-                <span className="text-[10px] text-stone-400">Parrón La Cabaña: 4.5 m</span>
+                <span className="text-[10px] text-stone-400">Referencia parrón tradicional: 4.5 m</span>
               </div>
 
               <div>

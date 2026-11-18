@@ -16,6 +16,8 @@ import {
   MaquinariaEquipo,
   RegistroMantencionMaquinaria,
   TurnoRiego,
+  SectorRiego,
+  ClimaCondiciones,
   MuestreoBrotacion,
   ConteoBotonesFlorales,
   SincroniaFloral,
@@ -50,11 +52,73 @@ import {
   initialAplicacionesPolen,
   initialPlanesCargaRaleo,
   initialEvaluacionesCuajaSemillas,
-  initialRegistrosTermicos
+  initialRegistrosTermicos,
+  initialSectoresRiego
 } from '../data/initialData';
 import { loadDataFromLocalStorage, saveDataToLocalStorage } from '../services/cloudSync';
 
-const REAL_ORCHARD_CLEANED_KEY = 'huerto_real_vaciado_v1';
+const REAL_ORCHARD_CLEANED_KEY = 'huerto_real_vaciado_v2';
+const SECTORES_RIEGO_STORAGE_KEY = 'fundo_sectores_riego';
+
+export function getBlankClima(): ClimaCondiciones {
+  return {
+    temperaturaActual: 0,
+    tempMinima: 0,
+    tempMaxima: 0,
+    humedadRelativa: 0,
+    velocidadVientoKmH: 0,
+    direccionViento: 'Sin datos',
+    probabilidadLluvia: 0,
+    alertaHelada: false,
+    riesgoPsa: 'Bajo',
+    riesgoBotrytis: 'Bajo',
+    evapotranspiracionEtoMmDia: 0,
+    estadoCielo: 'Soleado',
+  };
+}
+
+export function getStoredSectoresRiego(): SectorRiego[] {
+  try {
+    const raw = localStorage.getItem(SECTORES_RIEGO_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    console.warn('Error leyendo sectores de riego:', e);
+    return [];
+  }
+}
+
+export function saveStoredSectoresRiego(sectores: SectorRiego[]): void {
+  try {
+    localStorage.setItem(SECTORES_RIEGO_STORAGE_KEY, JSON.stringify(sectores));
+    window.dispatchEvent(new Event('fundo_sectores_updated'));
+  } catch (e) {
+    console.warn('Error guardando sectores de riego:', e);
+  }
+}
+
+export function cleanDemoSectoresRiego(): void {
+  try {
+    const raw = localStorage.getItem(SECTORES_RIEGO_STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(SECTORES_RIEGO_STORAGE_KEY, '[]');
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return;
+
+    const demoSet = new Map(initialSectoresRiego.map((s) => [String(s.id), s.nombre]));
+    const onlyDemo = parsed.every(
+      (s: SectorRiego) => demoSet.has(String(s.id)) && demoSet.get(String(s.id)) === s.nombre
+    );
+    if (onlyDemo) {
+      saveStoredSectoresRiego([]);
+    }
+  } catch (e) {
+    console.warn('Error limpiando sectores demo:', e);
+  }
+}
 
 // IDs de los registros ficticios de demostración para poder purgarlos sin borrar datos reales del usuario
 export const DEMO_RECORD_IDS = new Set<string>([
@@ -166,7 +230,7 @@ export function getBlankRealOrchardData(
     planesCargaRaleo: [],
     evaluacionesCuajaSemillas: [],
     turnosRiego: [],
-    clima: initialClimaLaCabana,
+    clima: getBlankClima(),
     ultimaActualizacion: new Date().toISOString()
   };
 }
@@ -300,6 +364,7 @@ export function getStoredData(): AppStateData {
     } catch (e) {}
 
     if (!alreadyCleaned) {
+      cleanDemoSectoresRiego();
       const cleaned = stripDemoRecords(normalized);
       saveDataToLocalStorage(cleaned);
       try {
@@ -311,6 +376,7 @@ export function getStoredData(): AppStateData {
     return normalized;
   }
 
+  cleanDemoSectoresRiego();
   const blank = getBlankRealOrchardData();
   saveDataToLocalStorage(blank);
   try {
@@ -426,6 +492,7 @@ export function resetStorageToRealOrchard(
   preserveExplotacion?: ExplotacionAgricola,
   preserveUsuarios?: UsuarioPredio[]
 ): AppStateData {
+  saveStoredSectoresRiego([]);
   const blank = getBlankRealOrchardData(preserveExplotacion, preserveUsuarios);
   saveDataToLocalStorage(blank);
   try {
