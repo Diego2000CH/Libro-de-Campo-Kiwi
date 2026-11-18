@@ -253,6 +253,7 @@ export interface RegistroLabor {
     velocidadVientoKmH?: number;
   };
   observaciones?: string;
+  fotoEvidenciaDataUrl?: string;
 }
 
 export interface RegistroExtraccionPozo {
@@ -468,6 +469,7 @@ export interface RegistroMantencionMaquinaria {
   costoCLP: number;
   repuestosUtilizados: string;
   observaciones?: string;
+  fotoEvidenciaDataUrl?: string;
 }
 
 export interface MaquinariaEquipo {
@@ -639,6 +641,131 @@ export interface EvaluacionCuajaSemillas {
   observaciones?: string;
 }
 
+export interface LiquidacionPacking {
+  id: string;
+  cosechaLoteId?: string;
+  numeroGuiaDespacho: string;
+  fechaLiquidacion: string;
+  parcelaId: string;
+  parcelaNombre: string;
+  packingExportadora: string;
+  kilosRecibidosKg: number;
+  kilosEmbaladosExportacionKg: number;
+  kilosDescarteKg: number;
+  porcentajeExportable: number;
+  cajasExportables: number;
+  distribucionCalibres: string; // ej. "C27: 25%, C30: 42%, C33: 23%, C36: 10%"
+  retornoTotalUSD: number;
+  tipoCambioCLP: number;
+  retornoTotalCLP: number;
+  precioPromedioUSDKg: number;
+  estado: 'Pendiente' | 'Parcial' | 'Liquidado';
+  observaciones?: string;
+}
+
+export type TipoAnalisisLaboratorio = 'suelo' | 'agua' | 'foliar' | 'multirresiduos' | 'psa_patologia';
+
+export interface AnalisisLaboratorio {
+  id: string;
+  tipo: TipoAnalisisLaboratorio;
+  fechaMuestreo: string;
+  fechaResultado: string;
+  temporada: string;
+  parcelaId: string; // ID de cuartel o 'predio-pozo'
+  parcelaNombre: string;
+  laboratorio: string;
+  codigoInforme: string;
+  resultadoGlobal: 'Óptimo' | 'Atención / Corregir' | 'Crítico / Rechazo' | 'Negativo (Limpio)' | 'Positivo';
+  // Parámetros Suelo / Foliar / Agua
+  ph?: number;
+  ceDsM?: number;
+  materiaOrganicaPct?: number;
+  nitrogenoPpm?: number;
+  fosforoPpm?: number;
+  potasioPpm?: number;
+  boroPpm?: number;
+  zincPpm?: number;
+  // Parámetros Agua (GlobalGAP / BPA)
+  coliformesFecales?: string;
+  eColi?: string;
+  nitratosMgL?: number;
+  // Parámetros Multirresiduos (LMR)
+  moleculasDetectadas?: string;
+  bajoNormaLmr?: boolean;
+  mercadoObjetivo?: string;
+  // Patología / Psa
+  organoMuestreado?: string;
+  agenteDetectado?: string;
+  urlDocumento?: string;
+  fotoEvidenciaDataUrl?: string;
+  observaciones?: string;
+}
+
+export interface RegistroEnvaseLimpio {
+  id: string;
+  fecha: string;
+  productoNombre: string;
+  cantidadEnvases: number;
+  capacidadUnidad: string; // ej. '1 L', '5 L', '20 Kg'
+  tripleLavadoRealizado: boolean;
+  perforadoInutilizado: boolean;
+  centroAcopioDestino: string; // ej. 'Campo Limpio / Punto Acopio Comunal'
+  numeroComprobante?: string;
+  responsable: string;
+  observaciones?: string;
+}
+
+export interface CalibracionEquipo {
+  id: string;
+  fechaCalibracion: string;
+  fechaProximaCalibracion: string;
+  equipoNombre: string;
+  tipoEquipo: 'Pulverizador / Nebulizador' | 'Refractómetro' | 'Penetrómetro' | 'Romana / Báscula' | 'Medidor pH/CE' | 'Otro';
+  patronMetodo: string;
+  desviacionPct: number;
+  numeroCertificado?: string;
+  resultado: 'Aprobado / Calibrado' | 'Requiere Ajuste' | 'Fuera de Servicio';
+  responsable: string;
+  fotoEvidenciaDataUrl?: string;
+  observaciones?: string;
+}
+
+export type CategoriaTareaHuerto =
+  | 'Poda & Amarre'
+  | 'Riego & Pozo'
+  | 'Fitosanitario'
+  | 'Fertilización'
+  | 'Polinización & Raleo'
+  | 'Cosecha & Madurez'
+  | 'Maquinaria & Calibración'
+  | 'Auditoría & Laboratorio';
+
+export interface TareaAgronomica {
+  id: string;
+  titulo: string;
+  categoria: CategoriaTareaHuerto;
+  fechaLimite: string;
+  temporada: string;
+  parcelaId?: string;
+  parcelaNombre?: string;
+  responsable: string;
+  prioridad: 'Alta' | 'Media' | 'Baja';
+  estado: 'Pendiente' | 'En curso' | 'Completada';
+  observaciones?: string;
+}
+
+export interface ResumenTemporada {
+  id: string;
+  temporada: string; // ej. "2024-2025"
+  horasFrioTotales: number;
+  gradosDiaTotales: number;
+  aguaConsumidaM3Ha: number;
+  porcentajeCuajaPromedio: number;
+  cosechaTonHa: number;
+  retornoPromedioUSDKg: number;
+  observaciones?: string;
+}
+
 export interface AppStateData {
   explotacion: ExplotacionAgricola;
   parcelas: Parcela[];
@@ -665,7 +792,15 @@ export interface AppStateData {
   evaluacionesCuajaSemillas?: EvaluacionCuajaSemillas[];
   turnosRiego?: TurnoRiego[];
   clima?: ClimaCondiciones;
+  liquidacionesPacking?: LiquidacionPacking[];
+  analisisLaboratorio?: AnalisisLaboratorio[];
+  registrosEnvases?: RegistroEnvaseLimpio[];
+  calibracionesEquipo?: CalibracionEquipo[];
+  auditoriaManual?: Record<string, boolean>;
+  tareasHuerto?: TareaAgronomica[];
+  resumenesTemporada?: ResumenTemporada[];
   ultimaActualizacion?: string;
 }
+
 
 

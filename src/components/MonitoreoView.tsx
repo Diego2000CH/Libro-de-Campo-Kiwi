@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import { Parcela, RegistroLabor, TipoLabor } from '../types/campo';
-import { 
-  Bug, 
-  ShieldAlert, 
-  Plus, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Calendar, 
-  Eye, 
-  Search,
-  FileCheck2
+import {
+  Bug,
+  Plus,
+  Eye,
+  Camera,
+  X,
 } from 'lucide-react';
+import { compressImageToDataUrl } from '../utils/imageCompress';
 
 interface MonitoreoViewProps {
   labores: RegistroLabor[];
@@ -27,17 +24,31 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
   onSaveQuickObservation,
   canEdit = true
 }) => {
-  const [selectedPlaga, setSelectedPlaga] = useState<string>('todas');
   const [isQuickObsOpen, setIsQuickObsOpen] = useState(false);
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   const [obsForm, setObsForm] = useState({
     parcelaId: parcelas[0]?.id || '',
     plaga: 'Psa (Pseudomonas syringae pv. actinidiae)',
     severidad: 'Leve (Monitoreo Preventivo)',
-    descripcion: 'Inspección de 20 plantas por hilera en parrón. Sin exudados ni manchas angulares.'
+    descripcion: '',
+    fotoEvidenciaDataUrl: ''
   });
 
   const monitoreos = labores.filter((l) => l.tipoLabor === 'monitoreo');
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError(null);
+    try {
+      const dataUrl = await compressImageToDataUrl(file);
+      setObsForm((prev) => ({ ...prev, fotoEvidenciaDataUrl: dataUrl }));
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : 'No se pudo procesar la foto.');
+    }
+  };
 
   const handleGuardarObservacion = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,11 +64,13 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
       descripcion: `[${obsForm.plaga}] Severidad: ${obsForm.severidad}. ${obsForm.descripcion}`,
       objetivoPlagaEnfermedad: obsForm.plaga,
       registradoPor: 'Monitoreo Fitosanitario',
-      observaciones: 'Monitoreo preventivo protocolizado GlobalGAP'
+      observaciones: 'Monitoreo preventivo protocolizado GlobalGAP',
+      fotoEvidenciaDataUrl: obsForm.fotoEvidenciaDataUrl || undefined
     };
 
     onSaveQuickObservation(nuevaLabor);
     setIsQuickObsOpen(false);
+    setObsForm((prev) => ({ ...prev, descripcion: '', fotoEvidenciaDataUrl: '' }));
   };
 
   const plagasFrecuentes = [
@@ -67,7 +80,7 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
       tipo: 'Bacteria Cuarentenaria SAG',
       sintomas: 'Exudados bacterianos rojizos o blancos en madera, manchas angulares con halo clorótico en hojas y muerte de brotes.',
       controlSugerido: 'Cobre preventivo (Cuprocol / Mastercop), sellado con pintura poda + fungicida, desinfección de tijeras con alcohol 70% o amonio cuaternario.',
-      severidadPredio: 'Bajo Control'
+      severidadPredio: 'Protocolo Preventivo'
     },
     {
       id: 'botrytis',
@@ -83,7 +96,7 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
       tipo: 'Ácaro Cuarentenario (Mercado USA)',
       sintomas: 'Pardeamiento de hojas y cáliz de fruta, presencia de huevos rojizos en peciolos.',
       controlSugerido: 'Envidor 240 SC o acaricidas registrados SAG con verificación de LMR.',
-      severidadPredio: 'Nivel Cero Detectado'
+      severidadPredio: 'Monitoreo Activo'
     },
     {
       id: 'escama',
@@ -91,7 +104,7 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
       tipo: 'Insecto Hemíptero',
       sintomas: 'Escudos redondeados grisáceos adheridos a cargadores y frutos con aureola rojiza.',
       controlSugerido: 'Aceite mineral en receso invernal + fosforados o piriproxifeno.',
-      severidadPredio: 'Control Invernal OK'
+      severidadPredio: 'Control Invernal'
     }
   ];
 
@@ -102,18 +115,19 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-900 text-[10px] font-bold uppercase tracking-wider mb-1">
             <Bug className="w-3 h-3 text-rose-700" />
-            Sanidad Vegetal & Control Fitosanitario
+            Sanidad Vegetal & Evidencia Fotográfica
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
             Monitoreo de Psa, Botrytis & Plagas
           </h1>
           <p className="text-xs text-stone-500">
-            Detección temprana de síntomas de bacteriosis Psa, falsa arañita y hongos para cumplimiento de protocolos SAG.
+            Detección temprana con respaldo fotográfico de síntomas de bacteriosis Psa, falsa arañita y hongos para cumplimiento SAG.
           </p>
         </div>
 
         {canEdit && (
           <button
+            type="button"
             onClick={() => setIsQuickObsOpen(true)}
             className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center"
           >
@@ -145,6 +159,7 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
             {canEdit && (
               <div className="pt-2 border-t border-stone-100 flex justify-end">
                 <button
+                  type="button"
                   onClick={() => onOpenNewLaborWithDefaults(undefined, 'fitosanitario')}
                   className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-1 cursor-pointer"
                 >
@@ -166,20 +181,37 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
           <span className="text-xs text-stone-400">{monitoreos.length} inspecciones</span>
         </div>
 
-        <div className="divide-y divide-stone-100 text-xs">
-          {monitoreos.map((m) => (
-            <div key={m.id} className="p-4 hover:bg-stone-50 transition-colors space-y-1">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-stone-500 font-bold">{m.fecha}</span>
-                  <span className="font-bold text-stone-900">{m.parcelaNombre}</span>
+        {monitoreos.length === 0 ? (
+          <div className="p-8 text-center text-xs text-stone-500">
+            No hay inspecciones sanitarias registradas aún.
+          </div>
+        ) : (
+          <div className="divide-y divide-stone-100 text-xs">
+            {monitoreos.map((m) => (
+              <div key={m.id} className="p-4 hover:bg-stone-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-stone-500 font-bold">{m.fecha}</span>
+                    <span className="font-bold text-stone-900">{m.parcelaNombre}</span>
+                    <span className="text-stone-400 text-[11px]">· {m.registradoPor}</span>
+                  </div>
+                  <p className="text-stone-700">{m.descripcion}</p>
                 </div>
-                <span className="text-stone-500 text-[11px]">{m.registradoPor}</span>
+
+                {m.fotoEvidenciaDataUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setPreviewPhoto(m.fotoEvidenciaDataUrl!)}
+                    className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg text-[11px] font-bold flex items-center gap-1.5 self-start sm:self-center shrink-0 cursor-pointer"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Ver Foto</span>
+                  </button>
+                )}
               </div>
-              <p className="text-stone-700">{m.descripcion}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Modal Nueva Observación */}
@@ -188,7 +220,7 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md border border-stone-200 overflow-hidden">
             <div className="bg-rose-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Registrar Inspección Fitosanitaria de Plagas</h3>
-              <button onClick={() => setIsQuickObsOpen(false)} className="text-rose-200 hover:text-white">✕</button>
+              <button type="button" onClick={() => setIsQuickObsOpen(false)} className="text-rose-200 hover:text-white cursor-pointer">✕</button>
             </div>
             <form onSubmit={handleGuardarObservacion} className="p-5 space-y-3.5 text-xs">
               <div>
@@ -199,6 +231,7 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
                   className="w-full p-2 bg-white border border-stone-300 rounded-lg"
                   required
                 >
+                  <option value="">Selecciona cuartel...</option>
                   {parcelas.map((p) => (
                     <option key={p.id} value={p.id}>{p.nombre}</option>
                   ))}
@@ -240,28 +273,62 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
                 <textarea
                   value={obsForm.descripcion}
                   onChange={(e) => setObsForm({ ...obsForm, descripcion: e.target.value })}
+                  placeholder="Describe plantas muestreadas, síntomas o ubicación en la hilera..."
                   rows={3}
                   className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
                   required
                 />
               </div>
 
+              <div>
+                <label className="block font-bold text-stone-700 mb-1 flex items-center gap-1.5">
+                  <Camera className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Evidencia Fotográfica en Terreno (opcional):</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handlePhotoUpload}
+                  className="w-full text-[11px] text-stone-600"
+                />
+                {photoError && <p className="text-rose-600 text-[10px] mt-1">{photoError}</p>}
+                {obsForm.fotoEvidenciaDataUrl && (
+                  <img src={obsForm.fotoEvidenciaDataUrl} alt="Evidencia campo" className="mt-1.5 h-20 rounded-lg border border-stone-200 object-cover" />
+                )}
+              </div>
+
               <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
                 <button
                   type="button"
                   onClick={() => setIsQuickObsOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50"
+                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-lg shadow-xs"
+                  className="px-4 py-1.5 bg-rose-900 hover:bg-rose-800 text-white font-bold rounded-lg shadow-xs cursor-pointer"
                 >
-                  Registrar Inspección
+                  Guardar Inspección
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Zoom Foto */}
+      {previewPhoto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreviewPhoto(null)}>
+          <div className="max-w-xl w-full bg-white rounded-2xl p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-stone-700">Foto de Inspección Fitosanitaria</span>
+              <button type="button" onClick={() => setPreviewPhoto(null)} className="text-stone-500 hover:text-stone-900 cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <img src={previewPhoto} alt="Inspección" className="w-full max-h-[75vh] object-contain rounded-xl" />
           </div>
         </div>
       )}

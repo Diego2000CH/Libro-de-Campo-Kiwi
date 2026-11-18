@@ -24,7 +24,13 @@ import {
   AplicacionPolenAsistido,
   PlanCargaRaleo,
   EvaluacionCuajaSemillas,
-  RegistroTermicoHuerto
+  RegistroTermicoHuerto,
+  LiquidacionPacking,
+  AnalisisLaboratorio,
+  RegistroEnvaseLimpio,
+  CalibracionEquipo,
+  TareaAgronomica,
+  ResumenTemporada
 } from '../types/campo';
 import { getNivelAcceso } from './permissions';
 import { getTemporadaDefaults, normalizarCondicionHorasFrio } from './agroClimaCalculos';
@@ -231,6 +237,13 @@ export function getBlankRealOrchardData(
     evaluacionesCuajaSemillas: [],
     turnosRiego: [],
     clima: getBlankClima(),
+    liquidacionesPacking: [],
+    analisisLaboratorio: [],
+    registrosEnvases: [],
+    calibracionesEquipo: [],
+    auditoriaManual: {},
+    tareasHuerto: [],
+    resumenesTemporada: [],
     ultimaActualizacion: new Date().toISOString()
   };
 }
@@ -272,7 +285,14 @@ export function stripDemoRecords(data: AppStateData): AppStateData {
     aplicacionesPolen: filterOutDemo(data.aplicacionesPolen),
     planesCargaRaleo: filterOutDemo(data.planesCargaRaleo),
     evaluacionesCuajaSemillas: filterOutDemo(data.evaluacionesCuajaSemillas),
-    turnosRiego: filterOutDemo(data.turnosRiego)
+    turnosRiego: filterOutDemo(data.turnosRiego),
+    liquidacionesPacking: Array.isArray(data.liquidacionesPacking) ? data.liquidacionesPacking : [],
+    analisisLaboratorio: Array.isArray(data.analisisLaboratorio) ? data.analisisLaboratorio : [],
+    registrosEnvases: Array.isArray(data.registrosEnvases) ? data.registrosEnvases : [],
+    calibracionesEquipo: Array.isArray(data.calibracionesEquipo) ? data.calibracionesEquipo : [],
+    auditoriaManual: data.auditoriaManual && typeof data.auditoriaManual === 'object' ? data.auditoriaManual : {},
+    tareasHuerto: Array.isArray(data.tareasHuerto) ? data.tareasHuerto : [],
+    resumenesTemporada: Array.isArray(data.resumenesTemporada) ? data.resumenesTemporada : []
   };
 }
 
@@ -308,6 +328,13 @@ export function getDemoSampleData(): AppStateData {
     evaluacionesCuajaSemillas: initialEvaluacionesCuajaSemillas,
     turnosRiego: initialTurnosRiego,
     clima: initialClimaLaCabana,
+    liquidacionesPacking: [],
+    analisisLaboratorio: [],
+    registrosEnvases: [],
+    calibracionesEquipo: [],
+    auditoriaManual: {},
+    tareasHuerto: [],
+    resumenesTemporada: [],
     ultimaActualizacion: new Date().toISOString()
   };
 }
@@ -354,7 +381,14 @@ export function getStoredData(): AppStateData {
       aplicacionesPolen: stored.aplicacionesPolen || [],
       planesCargaRaleo: stored.planesCargaRaleo || [],
       evaluacionesCuajaSemillas: stored.evaluacionesCuajaSemillas || [],
-      turnosRiego: stored.turnosRiego || []
+      turnosRiego: stored.turnosRiego || [],
+      liquidacionesPacking: stored.liquidacionesPacking || [],
+      analisisLaboratorio: stored.analisisLaboratorio || [],
+      registrosEnvases: stored.registrosEnvases || [],
+      calibracionesEquipo: stored.calibracionesEquipo || [],
+      auditoriaManual: stored.auditoriaManual || {},
+      tareasHuerto: stored.tareasHuerto || [],
+      resumenesTemporada: stored.resumenesTemporada || []
     };
 
     // Purga automática de datos ficticios la primera vez (conserva 100% los datos reales del usuario)
@@ -480,6 +514,34 @@ export function getStoredPlanesCargaRaleo(): PlanCargaRaleo[] {
 
 export function getStoredEvaluacionesCuajaSemillas(): EvaluacionCuajaSemillas[] {
   return getStoredData().evaluacionesCuajaSemillas || [];
+}
+
+export function getStoredLiquidacionesPacking(): LiquidacionPacking[] {
+  return getStoredData().liquidacionesPacking || [];
+}
+
+export function getStoredAnalisisLaboratorio(): AnalisisLaboratorio[] {
+  return getStoredData().analisisLaboratorio || [];
+}
+
+export function getStoredRegistrosEnvases(): RegistroEnvaseLimpio[] {
+  return getStoredData().registrosEnvases || [];
+}
+
+export function getStoredCalibracionesEquipo(): CalibracionEquipo[] {
+  return getStoredData().calibracionesEquipo || [];
+}
+
+export function getStoredAuditoriaManual(): Record<string, boolean> {
+  return getStoredData().auditoriaManual || {};
+}
+
+export function getStoredTareasHuerto(): TareaAgronomica[] {
+  return getStoredData().tareasHuerto || [];
+}
+
+export function getStoredResumenesTemporada(): ResumenTemporada[] {
+  return getStoredData().resumenesTemporada || [];
 }
 
 export function resetStorageToDefaults(): AppStateData {

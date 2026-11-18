@@ -31,9 +31,14 @@ import {
   FileCheck2,
   Trash2,
   Edit2,
-  Flame
+  Flame,
+  FlaskConical,
+  ShieldCheck,
+  QrCode,
+  CalendarClock
 } from 'lucide-react';
 import { ActiveTab } from './Navbar';
+import { AlertaProactivaHuerto } from '../utils/alertasHuerto';
 import {
   calcularGradosDiaPeriodo,
   estimarEtapaKiwiPorFrioYGradosDia,
@@ -58,6 +63,7 @@ interface DashboardViewProps {
   onDeleteLabor: (id: string) => void;
   canEdit?: boolean;
   isAdmin?: boolean;
+  alertasProactivas?: AlertaProactivaHuerto[];
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -77,7 +83,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onEditLabor,
   onDeleteLabor,
   canEdit = true,
-  isAdmin = true
+  isAdmin = true,
+  alertasProactivas = []
 }) => {
   const totalHectareas = parcelas.reduce((acc, p) => acc + p.superficieHa, 0);
   const lowStockItems = inventario.filter((i) => (i.stockMinimo || 0) > 0 && (i.stockActual || 0) <= (i.stockMinimo || 0));
@@ -421,6 +428,77 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Centro de Trazabilidad, Cumplimiento & Alertas Proactivas */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
+              <AlertTriangle className={`w-4 h-4 ${alertasProactivas.length > 0 ? 'text-amber-600' : 'text-emerald-600'}`} />
+              Alertas Proactivas del Predio ({alertasProactivas.length})
+            </h2>
+            <button
+              type="button"
+              onClick={() => onNavigateTab('planificacion')}
+              className="text-xs font-bold text-emerald-800 hover:underline cursor-pointer"
+            >
+              Ver todas →
+            </button>
+          </div>
+          {alertasProactivas.length === 0 ? (
+            <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+              <span>Sin vencimientos críticos de bodega, carnets SAG, calibraciones ni tareas atrasadas.</span>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {alertasProactivas.slice(0, 4).map((al) => (
+                <button
+                  key={al.id}
+                  type="button"
+                  onClick={() => onNavigateTab(al.tabDestino)}
+                  className="w-full text-left p-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between gap-2 text-xs cursor-pointer transition-colors"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          al.severidad === 'critica' ? 'bg-rose-600' : al.severidad === 'advertencia' ? 'bg-amber-500' : 'bg-sky-500'
+                        }`}
+                      />
+                      <span className="font-bold text-stone-900 truncate">{al.titulo}</span>
+                    </div>
+                    <p className="text-[11px] text-stone-500 truncate pl-3.5">{al.detalle}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-stone-400 shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-2.5">
+          <h2 className="font-bold text-sm text-stone-900">Trazabilidad & Control Integral</h2>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <button type="button" onClick={() => onNavigateTab('cosecha')} className="p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold text-left cursor-pointer space-y-1">
+              <QrCode className="w-4 h-4 text-emerald-700" />
+              <div>Lotes QR & Packing</div>
+            </button>
+            <button type="button" onClick={() => onNavigateTab('laboratorio')} className="p-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-950 font-bold text-left cursor-pointer space-y-1">
+              <FlaskConical className="w-4 h-4 text-indigo-700" />
+              <div>Laboratorio LMR</div>
+            </button>
+            <button type="button" onClick={() => onNavigateTab('auditoria')} className="p-2.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-950 font-bold text-left cursor-pointer space-y-1">
+              <ShieldCheck className="w-4 h-4 text-teal-700" />
+              <div>Auditoría BPA/SAG</div>
+            </button>
+            <button type="button" onClick={() => onNavigateTab('planificacion')} className="p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-950 font-bold text-left cursor-pointer space-y-1">
+              <CalendarClock className="w-4 h-4 text-amber-700" />
+              <div>Multi-Temporada</div>
+            </button>
           </div>
         </div>
       </div>

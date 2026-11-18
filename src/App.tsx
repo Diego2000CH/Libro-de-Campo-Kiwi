@@ -22,7 +22,12 @@ import { ModalLabor } from './components/ModalLabor';
 import { ModalExplotacion } from './components/ModalExplotacion';
 import { AlertasStockModal } from './components/AlertasStockModal';
 import { PolinizacionFloracionView } from './components/PolinizacionFloracionView';
+import { LaboratorioView } from './components/LaboratorioView';
+import { CumplimientoAuditoriaView } from './components/CumplimientoAuditoriaView';
+import { PlanificacionTemporadasView } from './components/PlanificacionTemporadasView';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { generarAlertasProactivasHuerto } from './utils/alertasHuerto';
 
 import { 
   getStoredExplotacion, 
@@ -49,6 +54,13 @@ import {
   getStoredAplicacionesPolen,
   getStoredPlanesCargaRaleo,
   getStoredEvaluacionesCuajaSemillas,
+  getStoredLiquidacionesPacking,
+  getStoredAnalisisLaboratorio,
+  getStoredRegistrosEnvases,
+  getStoredCalibracionesEquipo,
+  getStoredAuditoriaManual,
+  getStoredTareasHuerto,
+  getStoredResumenesTemporada,
   resetStorageToDefaults,
   resetStorageToRealOrchard,
   stripDemoRecords,
@@ -88,6 +100,12 @@ import {
   PlanCargaRaleo,
   EvaluacionCuajaSemillas,
   TurnoRiego,
+  LiquidacionPacking,
+  AnalisisLaboratorio,
+  RegistroEnvaseLimpio,
+  CalibracionEquipo,
+  TareaAgronomica,
+  ResumenTemporada,
   AppStateData
 } from './types/campo';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
@@ -137,6 +155,14 @@ export default function App() {
   const [aplicacionesPolen, setAplicacionesPolen] = useState<AplicacionPolenAsistido[]>(getStoredAplicacionesPolen);
   const [planesCargaRaleo, setPlanesCargaRaleo] = useState<PlanCargaRaleo[]>(getStoredPlanesCargaRaleo);
   const [evaluacionesCuajaSemillas, setEvaluacionesCuajaSemillas] = useState<EvaluacionCuajaSemillas[]>(getStoredEvaluacionesCuajaSemillas);
+  const [liquidacionesPacking, setLiquidacionesPacking] = useState<LiquidacionPacking[]>(getStoredLiquidacionesPacking);
+  const [analisisLaboratorio, setAnalisisLaboratorio] = useState<AnalisisLaboratorio[]>(getStoredAnalisisLaboratorio);
+  const [registrosEnvases, setRegistrosEnvases] = useState<RegistroEnvaseLimpio[]>(getStoredRegistrosEnvases);
+  const [calibracionesEquipo, setCalibracionesEquipo] = useState<CalibracionEquipo[]>(getStoredCalibracionesEquipo);
+  const [auditoriaManual, setAuditoriaManual] = useState<Record<string, boolean>>(getStoredAuditoriaManual);
+  const [tareasHuerto, setTareasHuerto] = useState<TareaAgronomica[]>(getStoredTareasHuerto);
+  const [resumenesTemporada, setResumenesTemporada] = useState<ResumenTemporada[]>(getStoredResumenesTemporada);
+  const [pendingOfflineSync, setPendingOfflineSync] = useState<boolean>(false);
 
   // Estado de Sesión / Autenticación de Usuario
   const [currentUser, setCurrentUser] = useState<UsuarioPredio | null>(() => {
@@ -217,6 +243,13 @@ export default function App() {
     evaluacionesCuajaSemillas,
     turnosRiego,
     clima,
+    liquidacionesPacking,
+    analisisLaboratorio,
+    registrosEnvases,
+    calibracionesEquipo,
+    auditoriaManual,
+    tareasHuerto,
+    resumenesTemporada,
     ultimaActualizacion: new Date().toISOString(),
   });
 
@@ -247,6 +280,13 @@ export default function App() {
     if (Array.isArray(d.evaluacionesCuajaSemillas)) setEvaluacionesCuajaSemillas(d.evaluacionesCuajaSemillas);
     if (Array.isArray(d.turnosRiego)) setTurnosRiego(d.turnosRiego);
     if (d.clima) setClima(d.clima);
+    if (Array.isArray(d.liquidacionesPacking)) setLiquidacionesPacking(d.liquidacionesPacking);
+    if (Array.isArray(d.analisisLaboratorio)) setAnalisisLaboratorio(d.analisisLaboratorio);
+    if (Array.isArray(d.registrosEnvases)) setRegistrosEnvases(d.registrosEnvases);
+    if (Array.isArray(d.calibracionesEquipo)) setCalibracionesEquipo(d.calibracionesEquipo);
+    if (d.auditoriaManual && typeof d.auditoriaManual === 'object') setAuditoriaManual(d.auditoriaManual);
+    if (Array.isArray(d.tareasHuerto)) setTareasHuerto(d.tareasHuerto);
+    if (Array.isArray(d.resumenesTemporada)) setResumenesTemporada(d.resumenesTemporada);
   };
 
   const mapFirebaseUserToPredio = (user: FirebaseUser): UsuarioPredio => {
@@ -362,13 +402,16 @@ export default function App() {
     }
   }, [activeTab, mapsApiKey]);
 
-  // Monitoreo de red del navegador (Offline / Online)
+  // Monitoreo de red del navegador (Offline / Online) con auto-sincronización al volver la señal
   useEffect(() => {
     const onOffline = () => setSyncState('offline');
     const onOnline = () => {
       setSyncState((prev) => (prev === 'offline' ? 'idle' : prev));
       if (!mapsApiKey) {
         void fetchMapsClientConfig(4);
+      }
+      if (pendingOfflineSync) {
+        void handleForceSync();
       }
     };
     window.addEventListener('offline', onOffline);
@@ -377,7 +420,7 @@ export default function App() {
       window.removeEventListener('offline', onOffline);
       window.removeEventListener('online', onOnline);
     };
-  }, [mapsApiKey]);
+  }, [mapsApiKey, pendingOfflineSync]);
 
   const parseTimestampMs = (iso?: string): number => {
     if (!iso) return 0;
@@ -638,6 +681,7 @@ export default function App() {
     saveDataToLocalStorage(fullData);
 
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      setPendingOfflineSync(true);
       return 'offline';
     }
 
@@ -733,7 +777,14 @@ export default function App() {
     planesCargaRaleo,
     evaluacionesCuajaSemillas,
     turnosRiego,
-    clima
+    clima,
+    liquidacionesPacking,
+    analisisLaboratorio,
+    registrosEnvases,
+    calibracionesEquipo,
+    auditoriaManual,
+    tareasHuerto,
+    resumenesTemporada
   ]);
 
   // Forzar sincronización manual
@@ -743,6 +794,7 @@ export default function App() {
     const status = await persistAllTargets(fullData);
     setSyncState(status);
     if (status === 'synced') {
+      setPendingOfflineSync(false);
       setLastSyncTime(new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     }
   };
@@ -1046,6 +1098,13 @@ export default function App() {
     setPlanesCargaRaleo(defaults.planesCargaRaleo || []);
     setEvaluacionesCuajaSemillas(defaults.evaluacionesCuajaSemillas || []);
     setTurnosRiego(defaults.turnosRiego || []);
+    setLiquidacionesPacking([]);
+    setAnalisisLaboratorio([]);
+    setRegistrosEnvases([]);
+    setCalibracionesEquipo([]);
+    setAuditoriaManual({});
+    setTareasHuerto([]);
+    setResumenesTemporada([]);
     setIsResetConfirmOpen(false);
   };
 
@@ -1078,6 +1137,13 @@ export default function App() {
     setEvaluacionesCuajaSemillas([]);
     setRegistrosMantencion([]);
     setInventario([]); // Limpia la bodega para que no haya alertas de productos no ingresados
+    setLiquidacionesPacking([]);
+    setAnalisisLaboratorio([]);
+    setRegistrosEnvases([]);
+    setCalibracionesEquipo([]);
+    setAuditoriaManual({});
+    setTareasHuerto([]);
+    setResumenesTemporada([]);
     saveStoredSectoresRiego([]);
     try {
       localStorage.setItem('huerto_real_cloud_cleaned_v2', 'true');
@@ -1146,6 +1212,20 @@ export default function App() {
     </div>
   ) : null;
 
+  const alertasProactivas = React.useMemo(
+    () =>
+      generarAlertasProactivasHuerto({
+        inventario,
+        usuarios,
+        maquinarias,
+        calibracionesEquipo,
+        analisisLaboratorio,
+        parcelas,
+        tareasHuerto,
+      }),
+    [inventario, usuarios, maquinarias, calibracionesEquipo, analisisLaboratorio, parcelas, tareasHuerto]
+  );
+
   // Si no hay usuario logueado en la sesión, renderizar pantalla de Login obligatoria
   if (!currentUser) {
     return (
@@ -1157,6 +1237,7 @@ export default function App() {
           onGoogleLoginSuccess={handleGoogleLoginSuccess}
           fundoNombre={explotacion.nombreFundo}
         />
+        <OfflineIndicator hasPendingSync={pendingOfflineSync} onRetrySync={handleForceSync} />
       </>
     );
   }
@@ -1182,6 +1263,7 @@ export default function App() {
         lastSyncTime={lastSyncTime}
         onForceSync={handleForceSync}
         onOpenResetModal={guardAdmin(() => setIsResetConfirmOpen(true))}
+        alertasProactivasCount={alertasProactivas.length}
       />
 
       {permissionErrorToast && (
@@ -1223,6 +1305,7 @@ export default function App() {
             onOpenAlertsModal={() => setIsAlertsModalOpen(true)}
             onEditLabor={handleEditLabor}
             onDeleteLabor={handleDeleteLabor}
+            alertasProactivas={alertasProactivas}
           />
         )}
 
@@ -1251,6 +1334,7 @@ export default function App() {
 
         {activeTab === 'cosecha' && (
           <CosechaMadurezView
+            fundoNombre={explotacion.nombreFundo}
             parcelas={parcelas}
             muestreos={muestreosMadurez}
             onAddMuestreo={guardEdit((m) => setMuestreosMadurez((prev) => [m, ...prev]))}
@@ -1258,6 +1342,11 @@ export default function App() {
             cosechas={cosechasLote}
             onAddCosecha={guardEdit((c) => setCosechasLote((prev) => [c, ...prev]))}
             onDeleteCosecha={guardEdit((id) => setCosechasLote((prev) => prev.filter((c) => c.id !== id)))}
+            liquidaciones={liquidacionesPacking}
+            onAddLiquidacion={guardEdit((l) => setLiquidacionesPacking((prev) => [l, ...prev]))}
+            onDeleteLiquidacion={guardEdit((id) => setLiquidacionesPacking((prev) => prev.filter((l) => l.id !== id)))}
+            labores={labores}
+            ordenesTrabajo={ordenesTrabajo}
             activeUserName={activeUser?.nombre}
             canEdit={canEdit}
           />
@@ -1451,6 +1540,63 @@ export default function App() {
           />
         )}
 
+        {activeTab === 'laboratorio' && (
+          <LaboratorioView
+            analisis={analisisLaboratorio}
+            parcelas={parcelas}
+            onAddAnalisis={guardEdit((a) => setAnalisisLaboratorio((prev) => [a, ...prev]))}
+            onDeleteAnalisis={guardEdit((id) => setAnalisisLaboratorio((prev) => prev.filter((a) => a.id !== id)))}
+            canEdit={canEdit}
+          />
+        )}
+
+        {activeTab === 'auditoria' && (
+          <CumplimientoAuditoriaView
+            usuarios={usuarios}
+            inventario={inventario}
+            analisisLaboratorio={analisisLaboratorio}
+            registrosPozo={registrosPozo}
+            cosechasLote={cosechasLote}
+            muestreosMadurez={muestreosMadurez}
+            parcelas={parcelas}
+            registrosEnvases={registrosEnvases}
+            onAddEnvase={guardEdit((r) => setRegistrosEnvases((prev) => [r, ...prev]))}
+            onDeleteEnvase={guardEdit((id) => setRegistrosEnvases((prev) => prev.filter((e) => e.id !== id)))}
+            calibracionesEquipo={calibracionesEquipo}
+            onAddCalibracion={guardEdit((c) => setCalibracionesEquipo((prev) => [c, ...prev]))}
+            onDeleteCalibracion={guardEdit((id) => setCalibracionesEquipo((prev) => prev.filter((c) => c.id !== id)))}
+            auditoriaManual={auditoriaManual}
+            onToggleAuditoriaManual={guardEdit((key) =>
+              setAuditoriaManual((prev) => ({ ...prev, [key]: !prev[key] }))
+            )}
+            activeUserName={activeUser?.nombre}
+            canEdit={canEdit}
+          />
+        )}
+
+        {activeTab === 'planificacion' && (
+          <PlanificacionTemporadasView
+            parcelas={parcelas}
+            usuarios={usuarios}
+            horasFrio={normalizarCondicionHorasFrio(horasFrio, registrosTermicos)}
+            turnosRiego={turnosRiego}
+            registrosPozo={registrosPozo}
+            cosechasLote={cosechasLote}
+            liquidacionesPacking={liquidacionesPacking}
+            evaluacionesCuaja={evaluacionesCuajaSemillas}
+            tareasHuerto={tareasHuerto}
+            onAddTarea={guardEdit((t) => setTareasHuerto((prev) => [t, ...prev]))}
+            onUpdateTarea={guardEdit((t) => setTareasHuerto((prev) => prev.map((item) => (item.id === t.id ? t : item))))}
+            onDeleteTarea={guardEdit((id) => setTareasHuerto((prev) => prev.filter((t) => t.id !== id)))}
+            resumenesTemporada={resumenesTemporada}
+            onAddResumenTemporada={guardEdit((r) => setResumenesTemporada((prev) => [r, ...prev]))}
+            onDeleteResumenTemporada={guardEdit((id) => setResumenesTemporada((prev) => prev.filter((r) => r.id !== id)))}
+            alertasProactivas={alertasProactivas}
+            onNavigateTab={setActiveTab}
+            canEdit={canEdit}
+          />
+        )}
+
         {activeTab === 'informe' && (
           <InformeOficialView
             explotacion={explotacion}
@@ -1482,6 +1628,13 @@ export default function App() {
                     if (parsed.horasFrio) setHorasFrio(normalizarCondicionHorasFrio(parsed.horasFrio, importedRegs));
                     if (parsed.fenologia) setFenologia(parsed.fenologia);
                     if (parsed.polinizacion) setPolinizacion(parsed.polinizacion);
+                    if (Array.isArray(parsed.liquidacionesPacking)) setLiquidacionesPacking(parsed.liquidacionesPacking);
+                    if (Array.isArray(parsed.analisisLaboratorio)) setAnalisisLaboratorio(parsed.analisisLaboratorio);
+                    if (Array.isArray(parsed.registrosEnvases)) setRegistrosEnvases(parsed.registrosEnvases);
+                    if (Array.isArray(parsed.calibracionesEquipo)) setCalibracionesEquipo(parsed.calibracionesEquipo);
+                    if (parsed.auditoriaManual && typeof parsed.auditoriaManual === 'object') setAuditoriaManual(parsed.auditoriaManual);
+                    if (Array.isArray(parsed.tareasHuerto)) setTareasHuerto(parsed.tareasHuerto);
+                    if (Array.isArray(parsed.resumenesTemporada)) setResumenesTemporada(parsed.resumenesTemporada);
                   } catch (err) {
                     console.error('Error importando', err);
                   }
@@ -1727,6 +1880,8 @@ export default function App() {
           </div>
         </div>
       )}
+
+      <OfflineIndicator hasPendingSync={pendingOfflineSync} onRetrySync={handleForceSync} />
     </div>
   );
 }

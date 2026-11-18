@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="100%" stop-color="#022c22" />
+    </linearGradient>
+    <radialGradient id="kiwiPulpa" cx="50%" cy="52%" r="46%">
+      <stop offset="0%" stop-color="#ecfccb" />
+      <stop offset="55%" stop-color="#84cc16" />
+      <stop offset="100%" stop-color="#4d7c0f" />
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="url(#bg)" />
+  <circle cx="256" cy="272" r="148" fill="#78350f" />
+  <circle cx="256" cy="272" r="134" fill="url(#kiwiPulpa)" />
+  <ellipse cx="256" cy="272" rx="44" ry="52" fill="#f7fee7" opacity="0.92" />
+  <g fill="#1c1917">
+    <circle cx="256" cy="202" r="6" />
+    <circle cx="294" cy="214" r="6" />
+    <circle cx="318" cy="246" r="6" />
+    <circle cx="322" cy="286" r="6" />
+    <circle cx="302" cy="322" r="6" />
+    <circle cx="268" cy="342" r="6" />
+    <circle cx="230" cy="338" r="6" />
+    <circle cx="198" cy="314" r="6" />
+    <circle cx="188" cy="274" r="6" />
+    <circle cx="198" cy="234" r="6" />
+    <circle cx="224" cy="208" r="6" />
+  </g>
+  <path d="M262 128 C295 82, 355 82, 366 118 C345 148, 294 152, 262 128 Z" fill="#34d399" />
+  <path d="M256 138 C252 110, 262 94, 274 86" stroke="#a7f3d0" stroke-width="10" stroke-linecap="round" fill="none" />
+</svg>

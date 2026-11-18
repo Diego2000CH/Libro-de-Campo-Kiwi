@@ -16,8 +16,11 @@ import {
   History,
   TrendingUp,
   Search,
-  Filter
+  Filter,
+  Camera,
+  X
 } from 'lucide-react';
+import { compressImageToDataUrl } from '../utils/imageCompress';
 
 interface MaquinariasViewProps {
   maquinarias: MaquinariaEquipo[];
@@ -50,6 +53,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
   const [isHorometroModalOpen, setIsHorometroModalOpen] = useState(false);
   const [isMantencionModalOpen, setIsMantencionModalOpen] = useState(false);
   const [maquinariaToDelete, setMaquinariaToDelete] = useState<MaquinariaEquipo | null>(null);
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
   // Formulario de Maquinaria (Crear / Editar)
   const [maquinariaForm, setMaquinariaForm] = useState<Partial<MaquinariaEquipo>>({
@@ -80,7 +84,8 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
     tallerOMecanico: '',
     costoCLP: 0,
     repuestosUtilizados: '',
-    observaciones: ''
+    observaciones: '',
+    fotoEvidenciaDataUrl: ''
   });
 
   // Filtrado
@@ -120,11 +125,12 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
     setMantencionForm({
       fecha: new Date().toISOString().split('T')[0],
       horometro: m.horometroActual,
-      tipoMantencion: 'Mantención preventiva ' + m.frecuenciaMantencionHoras + ' hrs',
-      tallerOMecanico: 'Mecánico de Planta / Taller Central',
-      costoCLP: 120000,
-      repuestosUtilizados: 'Aceite motor, filtros, engrase',
-      observaciones: 'Mantención realizada según pauta del fabricante'
+      tipoMantencion: `Mantención preventiva ${m.frecuenciaMantencionHoras} hrs`,
+      tallerOMecanico: '',
+      costoCLP: 0,
+      repuestosUtilizados: '',
+      observaciones: '',
+      fotoEvidenciaDataUrl: ''
     });
     setIsMantencionModalOpen(true);
   };
@@ -212,7 +218,8 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
       tallerOMecanico: mantencionForm.tallerOMecanico,
       costoCLP: Number(mantencionForm.costoCLP),
       repuestosUtilizados: mantencionForm.repuestosUtilizados,
-      observaciones: mantencionForm.observaciones
+      observaciones: mantencionForm.observaciones,
+      fotoEvidenciaDataUrl: mantencionForm.fotoEvidenciaDataUrl || undefined
     };
 
     // Al registrar mantención, se actualiza la maquinaria:
@@ -521,6 +528,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 <th className="px-4 py-3">Mecánico / Taller</th>
                 <th className="px-4 py-3">Repuestos / Insumos</th>
                 <th className="px-4 py-3">Costo (CLP)</th>
+                <th className="px-4 py-3">Foto</th>
                 {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
               </tr>
             </thead>
@@ -537,6 +545,19 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                   <td className="px-4 py-3 text-stone-600">{reg.tallerOMecanico}</td>
                   <td className="px-4 py-3 text-stone-500 text-[11px] max-w-xs truncate">{reg.repuestosUtilizados}</td>
                   <td className="px-4 py-3 font-mono font-bold text-stone-900">${reg.costoCLP.toLocaleString('es-CL')}</td>
+                  <td className="px-4 py-3">
+                    {reg.fotoEvidenciaDataUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewPhoto(reg.fotoEvidenciaDataUrl!)}
+                        className="px-2 py-1 bg-stone-100 hover:bg-stone-200 rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                      >
+                        <Camera className="w-3 h-3 text-amber-800" /> Ver
+                      </button>
+                    ) : (
+                      <span className="text-stone-300 text-[10px]">—</span>
+                    )}
+                  </td>
                   {canEdit && (
                     <td className="px-4 py-3 text-right">
                       <button
@@ -1034,6 +1055,30 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 />
               </div>
 
+              <div>
+                <label className="block font-bold text-stone-700 mb-1 flex items-center gap-1.5">
+                  <Camera className="w-3.5 h-3.5 text-amber-800" />
+                  <span>Foto Boleta / Repuesto / Evidencia (opcional):</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const url = await compressImageToDataUrl(file);
+                      setMantencionForm((prev) => ({ ...prev, fotoEvidenciaDataUrl: url }));
+                    } catch {}
+                  }}
+                  className="w-full text-[11px] text-stone-600"
+                />
+                {mantencionForm.fotoEvidenciaDataUrl && (
+                  <img src={mantencionForm.fotoEvidenciaDataUrl} alt="Evidencia mantención" className="mt-1.5 h-16 rounded-lg border border-stone-200 object-cover" />
+                )}
+              </div>
+
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] text-emerald-900 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>
@@ -1097,6 +1142,20 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {previewPhoto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreviewPhoto(null)}>
+          <div className="max-w-xl w-full bg-white rounded-2xl p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-stone-700">Foto Evidencia de Mantención</span>
+              <button type="button" onClick={() => setPreviewPhoto(null)} className="text-stone-500 hover:text-stone-900 cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <img src={previewPhoto} alt="Mantención" className="w-full max-h-[75vh] object-contain rounded-xl" />
           </div>
         </div>
       )}

@@ -29,10 +29,13 @@ import {
   Scissors,
   CircleDot,
   KeyRound,
-  Lock
+  Lock,
+  ShieldCheck,
+  CalendarClock
 } from 'lucide-react';
 import { UsuarioPredio } from '../types/campo';
 import { SyncStatusBadge } from './SyncStatusBadge';
+import { PWAInstallButton } from './PWAInstallButton';
 import { getNivelAcceso, getNivelAccesoMeta, getRolLabel } from '../utils/permissions';
 
 export type ActiveTab = 
@@ -56,6 +59,9 @@ export type ActiveTab =
   | 'clima' 
   | 'monitoreo' 
   | 'calculadora' 
+  | 'laboratorio'
+  | 'auditoria'
+  | 'planificacion'
   | 'informe'
   | 'usuarios';
 
@@ -77,6 +83,7 @@ interface NavbarProps {
   lastSyncTime: string | null;
   onForceSync: () => Promise<void>;
   onOpenResetModal?: () => void;
+  alertasProactivasCount?: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -96,7 +103,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   syncState,
   lastSyncTime,
   onForceSync,
-  onOpenResetModal
+  onOpenResetModal,
+  alertasProactivasCount = 0
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -124,6 +132,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'clima', label: 'Clima', icon: CloudSun },
     { id: 'monitoreo', label: 'Plagas & Psa', icon: Bug },
     { id: 'calculadora', label: 'Calculadora', icon: Calculator },
+    { id: 'laboratorio', label: 'Laboratorio', icon: FlaskConical },
+    { id: 'auditoria', label: 'Auditoría & BPA', icon: ShieldCheck },
+    { id: 'planificacion', label: 'Temporadas & Tareas', icon: CalendarClock, badgeCount: alertasProactivasCount },
     { id: 'informe', label: 'Informe SAG', icon: FileText },
     { id: 'usuarios', label: isAdmin ? 'Equipo & Claves' : 'Mi Cuenta', icon: Users }
   ];
@@ -151,8 +162,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Estado de sincronización en vivo y sesión de usuario */}
+          {/* Estado de sincronización en vivo, PWA Install y sesión de usuario */}
           <div className="flex items-center gap-2 sm:gap-3">
+            <PWAInstallButton />
             <SyncStatusBadge
               syncState={syncState}
               lastSyncTime={lastSyncTime}
