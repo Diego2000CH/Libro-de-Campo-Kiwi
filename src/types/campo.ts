@@ -57,6 +57,7 @@ export interface Parcela {
   plantasPorHa: number; // 555
   anioPlantacion: number;
   estadoFenologico: string; // 'Yema hinchada', 'Floración', 'Cuaja', 'Crecimiento fruto', 'Maduración', 'Post-cosecha'
+  fechaEstadoFenologico?: string; // Fecha ISO del último cambio de estado fenológico del cuartel
   estadoActual: string; // 'Normal', 'En Carencia SAG', 'Listo para Cosecha', 'En Riego', etc.
   lmrActivo?: string; // Nombre del producto en carencia
   diasCarenciaRestantes?: number;

@@ -8,7 +8,8 @@ import {
   ClimaCondiciones,
   UsuarioPredio,
   TipoLabor,
-  CondicionHorasFrio
+  CondicionHorasFrio,
+  SeguimientoFenologico
 } from '../types/campo';
 import { 
   Compass, 
@@ -44,6 +45,7 @@ import {
   estimarEtapaKiwiPorFrioYGradosDia,
   normalizarCondicionHorasFrio,
 } from '../utils/agroClimaCalculos';
+import { obtenerEtapaFenologicaActiva } from '../utils/fenologiaHelper';
 
 interface DashboardViewProps {
   explotacion: ExplotacionAgricola;
@@ -64,6 +66,7 @@ interface DashboardViewProps {
   canEdit?: boolean;
   isAdmin?: boolean;
   alertasProactivas?: AlertaProactivaHuerto[];
+  fenologia?: SeguimientoFenologico[];
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -84,7 +87,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onDeleteLabor,
   canEdit = true,
   isAdmin = true,
-  alertasProactivas = []
+  alertasProactivas = [],
+  fenologia = []
 }) => {
   const totalHectareas = parcelas.reduce((acc, p) => acc + p.superficieHa, 0);
   const lowStockItems = inventario.filter((i) => (i.stockMinimo || 0) > 0 && (i.stockActual || 0) <= (i.stockMinimo || 0));
@@ -97,6 +101,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const gdMeta = hfNorm.metaVariedadGD ?? 1850;
   const gdPct = gdMeta > 0 ? Math.min(100, (gdAcumulados / gdMeta) * 100) : 0;
   const etapaKiwi = estimarEtapaKiwiPorFrioYGradosDia(hfAcumuladas, hfMeta, gdAcumulados, gdMeta);
+  const etapaRegistrada = obtenerEtapaFenologicaActiva(fenologia);
   const gddHoy = calcularGradosDiaPeriodo(
     clima?.tempMinima ?? 7.8,
     clima?.tempMaxima ?? 26.2,
@@ -234,10 +239,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="bg-amber-600 h-1.5 rounded-full transition-all" style={{ width: `${gdPct.toFixed(1)}%` }} />
             </div>
           </div>
-          <div className="text-[10px] text-stone-600 mt-1.5 flex items-center justify-between gap-1 truncate">
-            <span className="font-bold text-emerald-800 truncate">{etapaKiwi.etapaActual.bbch} · {etapaKiwi.etapaActual.nombre}</span>
-            <ChevronRight className="w-3 h-3 text-stone-400 shrink-0" />
+          <div className="text-[10px] text-stone-600 mt-1.5 flex items-center justify-between gap-1">
+            <span className="font-bold text-emerald-800 truncate">
+              {etapaRegistrada
+                ? `${etapaRegistrada.escalaBBCH} · ${etapaRegistrada.nombreEtapa}`
+                : `${etapaKiwi.etapaActual.bbch} · ${etapaKiwi.etapaActual.nombre}`}
+            </span>
+            <span className="text-emerald-700 font-bold shrink-0 flex items-center gap-0.5">
+              Editar
+              <ChevronRight className="w-3 h-3" />
+            </span>
           </div>
+          {etapaRegistrada?.fecha && (
+            <div className="text-[10px] text-stone-400 font-mono tabular-nums mt-0.5 truncate">
+              {etapaRegistrada.fecha}
+              {etapaRegistrada.fechaFin ? ` → ${etapaRegistrada.fechaFin}` : ''}
+            </div>
+          )}
         </div>
 
         {/* Métrica 4: Alertas de Bodega */}
@@ -409,9 +427,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     onClick={() => onNavigateTab('parcelas')}
                     className="p-2.5 rounded-xl border border-stone-200 hover:border-emerald-500 bg-stone-50 flex items-center justify-between cursor-pointer transition-colors"
                   >
-                    <div className="space-y-0.5">
-                      <div className="font-bold text-stone-900">{p.nombre}</div>
+                    <div className="space-y-0.5 min-w-0 pr-2">
+                      <div className="font-bold text-stone-900 truncate">{p.nombre}</div>
                       <div className="text-[11px] text-stone-500">{p.superficieHa} ha · {p.sistemaConduccion}</div>
+                      {p.estadoFenologico && (
+                        <div className="text-[10px] text-emerald-800 font-medium truncate">
+                          {p.estadoFenologico}
+                          {p.fechaEstadoFenologico ? ` (${p.fechaEstadoFenologico})` : ''}
+                        </div>
+                      )}
                     </div>
                     <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
                       p.estadoActual === 'Listo para Cosecha' 

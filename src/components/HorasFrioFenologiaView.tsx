@@ -18,6 +18,12 @@ import {
   normalizarCondicionHorasFrio,
   sumarRegistrosTermicos,
 } from '../utils/agroClimaCalculos';
+import {
+  BBCH_SUGERENCIAS,
+  buildPreformedFenologiaKiwi,
+  obtenerEtapaFenologicaActiva,
+  resolveEstadoEtapa,
+} from '../utils/fenologiaHelper';
 import { GraficosTermicosHuerto } from './GraficosTermicosHuerto';
 import {
   Calendar,
@@ -58,141 +64,6 @@ interface HorasFrioFenologiaViewProps {
   canEdit?: boolean;
 }
 
-const BBCH_SUGERENCIAS: { code: string; nombre: string; descripcion: string }[] = [
-  { code: 'BBCH 00', nombre: 'Yema dormida (Receso invernal)', descripcion: 'Dormancia invernal, acumulación de horas frío (<7.2°C), poda y amarre.' },
-  { code: 'BBCH 01', nombre: 'Hinchazón de yema', descripcion: 'Inicio de movimiento de savia, yemas hinchadas y algodonosas.' },
-  { code: 'BBCH 10', nombre: 'Brotación y primeras hojas', descripcion: 'Apertura de brotes y despliegue de primeras hojas verdes.' },
-  { code: 'BBCH 51', nombre: 'Inflorescencias visibles', descripcion: 'Aparición de yemas florales mixtas en brotes fructíferos.' },
-  { code: 'BBCH 55', nombre: 'Botones florales desarrollados', descripcion: 'Botones florales visibles listos para conteo y raleo de laterales.' },
-  { code: 'BBCH 61', nombre: 'Inicio de floración (10%)', descripcion: 'Primeras flores abiertas (10%), ingreso de colmenas al parrón.' },
-  { code: 'BBCH 65', nombre: 'Plena floración (50%-100%)', descripcion: 'Máxima floración simultánea macho/hembra y polinización activa.' },
-  { code: 'BBCH 69', nombre: 'Cuaja y caída de pétalos', descripcion: 'Fin de floración, fruto cuajado visible y definición de raleo.' },
-  { code: 'BBCH 75', nombre: 'Crecimiento rápido de fruto', descripcion: 'Expansión celular del fruto, ajuste hídrico y raleo correctivo.' },
-  { code: 'BBCH 81', nombre: 'Inicio de maduración', descripcion: 'Inicio de acumulación de sólidos solubles (°Brix) y materia seca.' },
-  { code: 'BBCH 89', nombre: 'Madurez plena de cosecha (≥6.2° Brix)', descripcion: 'Fruta apta para cosecha según normativa SAG y firmeza objetivo.' },
-  { code: 'BBCH 91', nombre: 'Post-cosecha y senescencia foliar', descripcion: 'Fertilización de reservas post-cosecha y sello preventivo Psa.' },
-];
-
-const buildPreformedFenologiaKiwi = (
-  parcelaId: string,
-  parcelaNombre: string
-): SeguimientoFenologico[] => {
-  const hoy = new Date();
-  const hoyISO = hoy.toISOString().split('T')[0];
-  const month = hoy.getMonth() + 1;
-  const startYear = month >= 6 ? hoy.getFullYear() : hoy.getFullYear() - 1;
-  const endYear = startYear + 1;
-
-  const etapas: {
-    code: string;
-    nombre: string;
-    fecha: string;
-    fechaFin: string;
-    descripcion: string;
-  }[] = [
-    {
-      code: 'BBCH 00',
-      nombre: 'Yema dormida (Receso invernal)',
-      fecha: `${startYear}-06-01`,
-      fechaFin: `${startYear}-08-15`,
-      descripcion: 'Acumulación de horas frío (<7.2°C), poda invernal y amarre de cargadores.',
-    },
-    {
-      code: 'BBCH 01',
-      nombre: 'Hinchazón de yema',
-      fecha: `${startYear}-08-16`,
-      fechaFin: `${startYear}-09-05`,
-      descripcion: 'Inicio de movimiento de savia (lloro), hinchazón de yemas y aplicaciones preventivas.',
-    },
-    {
-      code: 'BBCH 10',
-      nombre: 'Brotación y primeras hojas',
-      fecha: `${startYear}-09-06`,
-      fechaFin: `${startYear}-09-25`,
-      descripcion: 'Despliegue de primeras hojas y brotes; inicio de registro de Grados Día (>10°C).',
-    },
-    {
-      code: 'BBCH 55',
-      nombre: 'Botones florales',
-      fecha: `${startYear}-09-26`,
-      fechaFin: `${startYear}-10-28`,
-      descripcion: 'Aparición de botones florales; conteo de carga inicial y raleo de botones dobles/laterales.',
-    },
-    {
-      code: 'BBCH 61',
-      nombre: 'Inicio de floración (10%)',
-      fecha: `${startYear}-10-29`,
-      fechaFin: `${startYear}-11-10`,
-      descripcion: 'Apertura de primeras flores femeninas y machos polinizadores; ingreso de colmenas.',
-    },
-    {
-      code: 'BBCH 65',
-      nombre: 'Plena floración',
-      fecha: `${startYear}-11-11`,
-      fechaFin: `${startYear}-11-22`,
-      descripcion: 'Máxima floración simultánea, evaluación de actividad de abejas y polinización asistida.',
-    },
-    {
-      code: 'BBCH 69',
-      nombre: 'Cuaja y caída de pétalos',
-      fecha: `${startYear}-11-23`,
-      fechaFin: `${startYear}-12-10`,
-      descripcion: 'Evaluación de porcentaje de cuaja, semillas por fruto y planificación final de raleo.',
-    },
-    {
-      code: 'BBCH 75',
-      nombre: 'Crecimiento de fruto',
-      fecha: `${startYear}-12-11`,
-      fechaFin: `${endYear}-03-15`,
-      descripcion: 'División y expansión celular, ajuste de riego por ETo y control de calibre objetivo.',
-    },
-    {
-      code: 'BBCH 89',
-      nombre: 'Madurez y cosecha (≥6.2° Brix)',
-      fecha: `${endYear}-03-16`,
-      fechaFin: `${endYear}-05-10`,
-      descripcion: 'Muestreo semanal de °Brix, firmeza y materia seca; cosecha y despacho a packing con QR.',
-    },
-    {
-      code: 'BBCH 91',
-      nombre: 'Post-cosecha y receso',
-      fecha: `${endYear}-05-11`,
-      fechaFin: `${endYear}-06-15`,
-      descripcion: 'Fertilización de reservas y aplicación otoñal de cobre para prevención de Psa.',
-    },
-  ];
-
-  const stamp = Date.now();
-  return etapas.map((etapa, idx) => {
-    let estadoEtapa: 'programado' | 'en_curso' | 'completado' = 'programado';
-    let porcentajeAvance = 0;
-
-    if (hoyISO > etapa.fechaFin) {
-      estadoEtapa = 'completado';
-      porcentajeAvance = 100;
-    } else if (hoyISO >= etapa.fecha && hoyISO <= etapa.fechaFin) {
-      estadoEtapa = 'en_curso';
-      const totalDias = Math.max(1, calcularDiasEntreFechas(etapa.fecha, etapa.fechaFin));
-      const diasTrans = Math.max(1, calcularDiasEntreFechas(etapa.fecha, hoyISO));
-      porcentajeAvance = Math.min(95, Math.max(10, Math.round((diasTrans / totalDias) * 100)));
-    }
-
-    return {
-      id: `fen-tpl-${stamp}-${idx}`,
-      fecha: etapa.fecha,
-      fechaFin: etapa.fechaFin,
-      parcelaId,
-      parcelaNombre,
-      escalaBBCH: etapa.code,
-      nombreEtapa: etapa.nombre,
-      estadoDescripcion: etapa.descripcion,
-      estadoEtapa,
-      porcentajeAvance,
-      observaciones: '',
-    };
-  });
-};
-
 export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
   parcelas,
   onUpdateParcela,
@@ -227,6 +98,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
   const [confirmResetFenMode, setConfirmResetFenMode] = useState<'none' | 'clear' | 'template'>('none');
   const [editingCuartelEstadoId, setEditingCuartelEstadoId] = useState<string | null>(null);
   const [cuartelEstadoDraft, setCuartelEstadoDraft] = useState<string>('');
+  const [cuartelFechaDraft, setCuartelFechaDraft] = useState<string>('');
   const [isNewPolinizacionOpen, setIsNewPolinizacionOpen] = useState(false);
   const [editingPolId, setEditingPolId] = useState<string | null>(null);
   const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
@@ -262,8 +134,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
   );
 
   const ultimoBBCH = useMemo(() => {
-    if (!fenologia.length) return null;
-    return [...fenologia].sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+    return obtenerEtapaFenologicaActiva(fenologia);
   }, [fenologia]);
 
   // Formulario Resumen y Ventanas (Horas Frío + Grados Día)
@@ -606,9 +477,19 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
   };
 
   // Fenología BBCH handlers
-  const handleOpenNewFen = () => {
+  const handleOpenNewFen = (preset?: { escalaBBCH?: string; nombreEtapa?: string; estadoDescripcion?: string }) => {
     setEditingFenId(null);
-    setFenForm(getDefaultFenForm());
+    const base = getDefaultFenForm();
+    if (preset) {
+      setFenForm({
+        ...base,
+        escalaBBCH: preset.escalaBBCH || base.escalaBBCH,
+        nombreEtapa: preset.nombreEtapa || base.nombreEtapa,
+        estadoDescripcion: preset.estadoDescripcion || base.estadoDescripcion,
+      });
+    } else {
+      setFenForm(base);
+    }
     setIsNewFenologiaOpen(true);
   };
 
@@ -712,6 +593,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
     onUpdateParcela({
       ...p,
       estadoFenologico: cuartelEstadoDraft.trim() || 'Normal',
+      fechaEstadoFenologico: cuartelFechaDraft || todayISO(),
     });
     setEditingCuartelEstadoId(null);
   };
@@ -827,7 +709,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                   : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              Escala BBCH ({fenologia.length})
+              Estados Fenológicos ({fenologia.length})
             </button>
             <button
               type="button"
@@ -947,24 +829,35 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
               </div>
 
               {/* Estimación Integrada del Estado Fenológico del Huerto */}
-              <div className="p-3.5 bg-white/5 border border-white/10 rounded-xl text-xs space-y-1.5">
+              <div className="p-3.5 bg-white/5 border border-white/10 rounded-xl text-xs space-y-2">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <span className="font-bold text-emerald-300 flex items-center gap-1.5">
                     <Sprout className="w-3.5 h-3.5 shrink-0" />
-                    Estado Estimado: {estimacionKiwi.etapaActual.nombre}
+                    {ultimoBBCH
+                      ? `Estado Actual: ${ultimoBBCH.nombreEtapa || ultimoBBCH.estadoDescripcion}`
+                      : `Estado Estimado: ${estimacionKiwi.etapaActual.nombre}`}
                   </span>
                   <span className="px-2 py-0.5 rounded bg-emerald-800/80 text-emerald-100 font-mono text-[10px] font-bold">
-                    {estimacionKiwi.etapaActual.bbch}
+                    {ultimoBBCH ? ultimoBBCH.escalaBBCH : estimacionKiwi.etapaActual.bbch}
                   </span>
                 </div>
                 <p className="text-stone-200 text-[11px] leading-relaxed">
-                  {estimacionKiwi.diagnosticoIntegrado}
+                  {ultimoBBCH ? ultimoBBCH.estadoDescripcion : estimacionKiwi.diagnosticoIntegrado}
                 </p>
-                {ultimoBBCH && (
-                  <div className="text-[10px] text-amber-200/90 pt-1 border-t border-white/10">
-                    Último registro en terreno: <strong>{ultimoBBCH.escalaBBCH}</strong> en {ultimoBBCH.parcelaNombre} ({ultimoBBCH.fecha})
-                  </div>
-                )}
+                <div className="flex items-center justify-between gap-2 flex-wrap pt-1.5 border-t border-white/10">
+                  <span className="text-[10px] text-amber-200/90 font-mono">
+                    {ultimoBBCH
+                      ? `${ultimoBBCH.parcelaNombre} · ${ultimoBBCH.fecha}${ultimoBBCH.fechaFin ? ` → ${ultimoBBCH.fechaFin}` : ''}`
+                      : `Estimado térmico: ${estimacionKiwi.etapaActual.bbch}`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSubTab('fenologia')}
+                    className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold rounded-lg text-[11px] cursor-pointer transition-colors"
+                  >
+                    {canEdit ? 'Editar Estados & Fechas →' : 'Ver Estados Fenológicos →'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1239,31 +1132,64 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
               {ETAPAS_GDD_KIWI.map((etapa) => {
                 const isCurrent = etapa.id === estimacionKiwi.etapaActual.id;
                 const completed = (safeHF.totalAcumuladoGD ?? 0) >= etapa.gddMax;
+                const recordedMatch = fenologia.find(
+                  (f) =>
+                    f.escalaBBCH.toLowerCase() === etapa.bbch.toLowerCase() ||
+                    (f.nombreEtapa || '').toLowerCase() === etapa.nombre.toLowerCase()
+                );
                 return (
                   <div
                     key={etapa.id}
-                    className={`p-3 rounded-xl border transition-all space-y-1 ${
+                    className={`p-3 rounded-xl border transition-all flex flex-col justify-between gap-2 ${
                       isCurrent
                         ? 'bg-emerald-50 border-emerald-400 ring-1 ring-emerald-300'
                         : completed
-                        ? 'bg-stone-50 border-stone-200 opacity-85'
+                        ? 'bg-stone-50 border-stone-200 opacity-90'
                         : 'bg-white border-stone-200'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-stone-100 text-stone-700">
-                        {etapa.bbch}
-                      </span>
-                      <span className="font-mono text-[10px] font-bold text-amber-700">
-                        {etapa.gddMin}–{etapa.gddMax} °D
-                      </span>
-                    </div>
-                    <div className="font-bold text-stone-900 text-xs pt-0.5">{etapa.nombre}</div>
-                    <p className="text-[10px] text-stone-500 leading-snug">{etapa.descripcion}</p>
-                    {isCurrent && (
-                      <div className="text-[10px] font-black text-emerald-800 pt-0.5">
-                        ● Etapa estimada actual
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-stone-100 text-stone-700">
+                          {etapa.bbch}
+                        </span>
+                        <span className="font-mono text-[10px] font-bold text-amber-700">
+                          {etapa.gddMin}–{etapa.gddMax} °D
+                        </span>
                       </div>
+                      <div className="font-bold text-stone-900 text-xs pt-0.5">{etapa.nombre}</div>
+                      <p className="text-[10px] text-stone-500 leading-snug">{etapa.descripcion}</p>
+                      {recordedMatch && (
+                        <div className="text-[10px] font-mono text-emerald-800 bg-emerald-100/70 px-1.5 py-0.5 rounded">
+                          {recordedMatch.fecha}
+                          {recordedMatch.fechaFin ? ` → ${recordedMatch.fechaFin}` : ''}
+                        </div>
+                      )}
+                      {isCurrent && (
+                        <div className="text-[10px] font-black text-emerald-800 pt-0.5">
+                          ● Etapa estimada actual
+                        </div>
+                      )}
+                    </div>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (recordedMatch) {
+                            handleOpenEditFen(recordedMatch);
+                          } else {
+                            handleOpenNewFen({
+                              escalaBBCH: etapa.bbch,
+                              nombreEtapa: etapa.nombre,
+                              estadoDescripcion: etapa.descripcion,
+                            });
+                          }
+                        }}
+                        className="w-full py-1 px-2 bg-white hover:bg-emerald-50 border border-stone-200 hover:border-emerald-300 rounded-lg text-[10px] font-bold text-emerald-900 flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        <span>{recordedMatch ? 'Editar Fechas / Estado' : 'Registrar Fechas'}</span>
+                      </button>
                     )}
                   </div>
                 );
@@ -1342,7 +1268,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                   )}
                   <button
                     type="button"
-                    onClick={handleOpenNewFen}
+                    onClick={() => handleOpenNewFen()}
                     className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
                   >
                     <Plus className="w-4 h-4" />
@@ -1464,6 +1390,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                             onClick={() => {
                               setEditingCuartelEstadoId(p.id);
                               setCuartelEstadoDraft(p.estadoFenologico || '');
+                              setCuartelFechaDraft(p.fechaEstadoFenologico || todayISO());
                             }}
                             className="px-2 py-1 bg-white hover:bg-emerald-50 border border-stone-300 text-stone-700 hover:text-emerald-900 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer"
                           >
@@ -1482,6 +1409,15 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                             placeholder="Ej. BBCH 65 · Plena floración"
                             className="w-full p-1.5 bg-white border border-emerald-400 rounded-lg text-xs font-semibold"
                           />
+                          <div className="flex items-center gap-2">
+                            <label className="text-[10px] font-bold text-stone-600 shrink-0">Fecha:</label>
+                            <input
+                              type="date"
+                              value={cuartelFechaDraft}
+                              onChange={(e) => setCuartelFechaDraft(e.target.value)}
+                              className="flex-1 p-1 bg-white border border-stone-300 rounded-lg text-xs font-mono"
+                            />
+                          </div>
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               type="button"
@@ -1501,8 +1437,13 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                           </div>
                         </div>
                       ) : (
-                        <div className="text-[11px] font-semibold text-emerald-900 bg-white px-2.5 py-1.5 rounded-lg border border-stone-200">
-                          {p.estadoFenologico || 'Sin estado asignado'}
+                        <div className="text-[11px] font-semibold text-emerald-900 bg-white px-2.5 py-1.5 rounded-lg border border-stone-200 flex items-center justify-between gap-2">
+                          <span className="truncate">{p.estadoFenologico || 'Sin estado asignado'}</span>
+                          {p.fechaEstadoFenologico && (
+                            <span className="font-mono tabular-nums text-[10px] text-stone-500 shrink-0">
+                              {p.fechaEstadoFenologico}
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1537,7 +1478,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={handleOpenNewFen}
+                    onClick={() => handleOpenNewFen()}
                     className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl font-bold inline-flex items-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
@@ -1550,13 +1491,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {fenologiaFiltradaOrdenada.map((f) => {
                 const delKey = `fen-${f.id}`;
-                const est: 'programado' | 'en_curso' | 'completado' =
-                  f.estadoEtapa ||
-                  ((f.porcentajeAvance ?? 0) >= 100
-                    ? 'completado'
-                    : (f.porcentajeAvance ?? 0) > 0
-                    ? 'en_curso'
-                    : 'programado');
+                const est = resolveEstadoEtapa(f);
                 const estadoLabel =
                   est === 'completado' ? 'Completado' : est === 'en_curso' ? 'En curso' : 'Programado';
                 const estadoStyle =
@@ -1601,10 +1536,11 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                           <button
                             type="button"
                             onClick={() => handleOpenEditFen(f)}
-                            className="p-1.5 text-stone-500 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 cursor-pointer"
+                            className="px-2 py-1 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
                             title="Editar etapa y fechas"
                           >
-                            <Pencil className="w-3.5 h-3.5" />
+                            <Pencil className="w-3 h-3" />
+                            <span>Editar</span>
                           </button>
                           {confirmDeleteKey === delKey ? (
                             <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">

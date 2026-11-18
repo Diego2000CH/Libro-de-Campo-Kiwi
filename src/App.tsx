@@ -1316,6 +1316,7 @@ export default function App() {
             onEditLabor={handleEditLabor}
             onDeleteLabor={handleDeleteLabor}
             alertasProactivas={alertasProactivas}
+            fenologia={fenologia}
           />
         )}
 
@@ -1509,6 +1510,10 @@ export default function App() {
             onAddEvaluacionCuajaSemillas={guardEdit((e) => setEvaluacionesCuajaSemillas((prev) => [e, ...prev]))}
             onUpdateEvaluacionCuajaSemillas={guardEdit((e) => setEvaluacionesCuajaSemillas((prev) => prev.map((item) => (item.id === e.id ? e : item))))}
             onDeleteEvaluacionCuajaSemillas={guardEdit((id) => setEvaluacionesCuajaSemillas((prev) => prev.filter((e) => e.id !== id)))}
+            onUpdateParcela={guardEdit((p) => setParcelas((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
+            fenologia={fenologia}
+            onAddFenologia={guardEdit((f) => setFenologia((prev) => [f, ...prev]))}
+            onUpdateFenologia={guardEdit((f) => setFenologia((prev) => prev.map((item) => (item.id === f.id ? f : item))))}
             activeUserName={activeUser?.nombre}
             canEdit={canEdit}
           />
@@ -1608,6 +1613,12 @@ export default function App() {
             onDeleteResumenTemporada={guardEdit((id) => setResumenesTemporada((prev) => prev.filter((r) => r.id !== id)))}
             alertasProactivas={alertasProactivas}
             onNavigateTab={setActiveTab}
+            fenologia={fenologia}
+            onAddFenologia={guardEdit((f) => setFenologia((prev) => [f, ...prev]))}
+            onUpdateFenologia={guardEdit((f) => setFenologia((prev) => prev.map((item) => (item.id === f.id ? f : item))))}
+            onDeleteFenologia={guardEdit((id) => setFenologia((prev) => prev.filter((f) => f.id !== id)))}
+            onReplaceFenologia={guardEdit(setFenologia)}
+            onUpdateParcela={guardEdit((p) => setParcelas((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
             canEdit={canEdit}
           />
         )}
@@ -1618,6 +1629,7 @@ export default function App() {
             parcelas={parcelas}
             labores={labores}
             horasFrio={normalizarCondicionHorasFrio(horasFrio, registrosTermicos)}
+            fenologia={fenologia}
             isAdmin={isAdmin}
             onImportJSON={guardAdmin((e) => {
               const file = e.target.files?.[0];

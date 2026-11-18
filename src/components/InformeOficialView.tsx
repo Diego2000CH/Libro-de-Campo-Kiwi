@@ -1,5 +1,5 @@
 import React from 'react';
-import { CondicionHorasFrio, ExplotacionAgricola, Parcela, RegistroLabor } from '../types/campo';
+import { CondicionHorasFrio, ExplotacionAgricola, Parcela, RegistroLabor, SeguimientoFenologico } from '../types/campo';
 import { 
   FileText, 
   Printer, 
@@ -11,12 +11,14 @@ import {
 } from 'lucide-react';
 import { exportDataAsJSON, getStoredData } from '../utils/storage';
 import { estimarEtapaKiwiPorFrioYGradosDia, normalizarCondicionHorasFrio } from '../utils/agroClimaCalculos';
+import { obtenerEtapaFenologicaActiva } from '../utils/fenologiaHelper';
 
 interface InformeOficialViewProps {
   explotacion: ExplotacionAgricola;
   parcelas: Parcela[];
   labores: RegistroLabor[];
   horasFrio?: CondicionHorasFrio;
+  fenologia?: SeguimientoFenologico[];
   onImportJSON: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isAdmin?: boolean;
 }
@@ -26,6 +28,7 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
   parcelas,
   labores,
   horasFrio,
+  fenologia = [],
   onImportJSON,
   isAdmin = true
 }) => {
@@ -36,6 +39,7 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
     hfNorm.totalAcumuladoGD ?? 0,
     hfNorm.metaVariedadGD ?? 1850
   );
+  const etapaRegistrada = obtenerEtapaFenologicaActiva(fenologia);
   const handlePrint = () => {
     window.print();
   };
@@ -226,9 +230,19 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
           </div>
           <div>
             <span className="text-[10px] text-stone-500 uppercase font-bold block">
-              Estado Fenológico Estimado ({etapaActual.etapaActual.bbch}):
+              {etapaRegistrada
+                ? `Estado Fenológico (${etapaRegistrada.escalaBBCH}):`
+                : `Estado Fenológico Estimado (${etapaActual.etapaActual.bbch}):`}
             </span>
-            <strong className="text-emerald-900">{etapaActual.etapaActual.nombre}</strong>
+            <strong className="text-emerald-900 block">
+              {etapaRegistrada ? etapaRegistrada.nombreEtapa : etapaActual.etapaActual.nombre}
+            </strong>
+            {etapaRegistrada?.fecha && (
+              <span className="text-[10px] font-mono tabular-nums text-stone-600">
+                {etapaRegistrada.fecha}
+                {etapaRegistrada.fechaFin ? ` a ${etapaRegistrada.fechaFin}` : ''}
+              </span>
+            )}
           </div>
         </div>
 

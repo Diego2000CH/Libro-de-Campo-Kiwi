@@ -12,6 +12,7 @@ import {
 } from '@vis.gl/react-google-maps';
 import { Parcela, LugarPredio, TipoLugarPredio, SectorRiego } from '../types/campo';
 import { getStoredSectoresRiego, saveStoredSectoresRiego } from '../utils/storage';
+import { BBCH_SUGERENCIAS } from '../utils/fenologiaHelper';
 import { 
   Compass, 
   MapPin, 
@@ -32,7 +33,8 @@ import {
   Droplet,
   Search,
   ClipboardList,
-  CheckCircle2
+  CheckCircle2,
+  Calendar
 } from 'lucide-react';
 
 interface ParcelasViewProps {
@@ -82,17 +84,7 @@ const ESTADOS_OPERATIVOS = [
   'Receso Invernal'
 ] as const;
 
-const ESTADOS_FENOLOGICOS = [
-  'Receso invernal (Dormancia)',
-  'Yema hinchada (BBCH 51)',
-  'Brotación y hojas desplegadas (BBCH 15)',
-  'Aparición de botones florales (BBCH 55)',
-  'Floración y polinización (BBCH 65)',
-  'Cuaja y caída de pétalos (BBCH 71)',
-  'Crecimiento activo del fruto (BBCH 75)',
-  'Maduración y acumulación azúcares (BBCH 85)',
-  'Post-cosecha y caída de hojas (BBCH 91)'
-];
+const ESTADOS_FENOLOGICOS = BBCH_SUGERENCIAS.map((b) => `${b.code} · ${b.nombre}`);
 
 const COLORES_PRESET = [
   '#059669', // Emerald
@@ -851,6 +843,9 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   const [cuartelSavedBanner, setCuartelSavedBanner] = useState<string | null>(null);
   const [nuevoSectorNombre, setNuevoSectorNombre] = useState('');
   const [nuevoSectorHa, setNuevoSectorHa] = useState('');
+  const [quickFenParcelaId, setQuickFenParcelaId] = useState<string | null>(null);
+  const [quickFenEstado, setQuickFenEstado] = useState('');
+  const [quickFenFecha, setQuickFenFecha] = useState('');
 
   // Cuartel actualmente seleccionado en el mapa/tarjetas
   const selectedParcela = parcelas.find((p) => p.id === selectedParcelaId) || parcelas[0] || null;
@@ -876,6 +871,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
     anioPlantacion: number;
     anioPlantacionStr: string;
     estadoFenologico: string;
+    fechaEstadoFenologico: string;
     estadoActual: string;
     lmrActivo: string;
     diasCarenciaRestantes: number;
@@ -905,7 +901,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
     plantasPorHaStr: '555',
     anioPlantacion: new Date().getFullYear(),
     anioPlantacionStr: String(new Date().getFullYear()),
-    estadoFenologico: 'Maduración y acumulación azúcares (BBCH 85)',
+    estadoFenologico: ESTADOS_FENOLOGICOS[9] || 'BBCH 81 · Inicio de maduración',
+    fechaEstadoFenologico: new Date().toISOString().split('T')[0],
     estadoActual: 'Normal',
     lmrActivo: '',
     diasCarenciaRestantes: 0,
@@ -1087,7 +1084,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
         plantasPorHaStr: '555',
         anioPlantacion: new Date().getFullYear(),
         anioPlantacionStr: String(new Date().getFullYear()),
-        estadoFenologico: 'Maduración y acumulación azúcares (BBCH 85)',
+        estadoFenologico: ESTADOS_FENOLOGICOS[9] || 'BBCH 81 · Inicio de maduración',
+        fechaEstadoFenologico: new Date().toISOString().split('T')[0],
         estadoActual: 'Normal',
         lmrActivo: '',
         diasCarenciaRestantes: 0,
@@ -1158,7 +1156,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
       plantasPorHaStr: '555',
       anioPlantacion: new Date().getFullYear(),
       anioPlantacionStr: String(new Date().getFullYear()),
-      estadoFenologico: 'Maduración y acumulación azúcares (BBCH 85)',
+      estadoFenologico: ESTADOS_FENOLOGICOS[9] || 'BBCH 81 · Inicio de maduración',
+      fechaEstadoFenologico: new Date().toISOString().split('T')[0],
       estadoActual: 'Normal',
       lmrActivo: '',
       diasCarenciaRestantes: 0,
@@ -1215,7 +1214,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
       plantasPorHaStr: String(plHa),
       anioPlantacion: anio,
       anioPlantacionStr: String(anio),
-      estadoFenologico: cuartel.estadoFenologico || ESTADOS_FENOLOGICOS[7],
+      estadoFenologico: cuartel.estadoFenologico || ESTADOS_FENOLOGICOS[7] || '',
+      fechaEstadoFenologico: cuartel.fechaEstadoFenologico || new Date().toISOString().split('T')[0],
       estadoActual: cuartel.estadoActual || 'Normal',
       lmrActivo: cuartel.lmrActivo || '',
       diasCarenciaRestantes: diasCar,
@@ -1322,6 +1322,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
       plantasPorHa: plantasHaVal,
       anioPlantacion: anioVal,
       estadoFenologico: parcelaForm.estadoFenologico.trim() || 'Normal',
+      fechaEstadoFenologico: parcelaForm.fechaEstadoFenologico.trim() || undefined,
       estadoActual: parcelaForm.estadoActual.trim() || 'Normal',
       lmrActivo: parcelaForm.estadoActual === 'En Carencia SAG' ? parcelaForm.lmrActivo.trim() : '',
       diasCarenciaRestantes: diasCarenciaVal,
@@ -2193,14 +2194,91 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                             {sectoresText}
                           </strong>
                         </div>
-                        {p.estadoFenologico && (
-                          <div className="flex justify-between gap-2 text-stone-600">
-                            <span className="shrink-0">Fenología:</span>
-                            <strong className="text-stone-700 text-right truncate max-w-[165px]" title={p.estadoFenologico}>
-                              {p.estadoFenologico}
-                            </strong>
-                          </div>
-                        )}
+                        <div className="pt-1 border-t border-stone-200/60">
+                          {quickFenParcelaId === p.id ? (
+                            <div
+                              onClick={(e) => e.stopPropagation()}
+                              className="space-y-1.5 bg-white p-2 rounded-lg border border-emerald-300"
+                            >
+                              <div className="text-[10px] font-bold text-emerald-900">
+                                Editar Estado Fenológico & Fecha:
+                              </div>
+                              <input
+                                type="text"
+                                list="estados-fenologicos-list"
+                                value={quickFenEstado}
+                                onChange={(e) => setQuickFenEstado(e.target.value)}
+                                placeholder="Ej. BBCH 65 · Plena floración"
+                                className="w-full p-1.5 bg-stone-50 border border-stone-300 rounded text-[11px] font-medium"
+                              />
+                              <div className="flex items-center gap-1.5">
+                                <input
+                                  type="date"
+                                  value={quickFenFecha}
+                                  onChange={(e) => setQuickFenFecha(e.target.value)}
+                                  className="flex-1 p-1 bg-stone-50 border border-stone-300 rounded text-[11px] font-mono"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    onUpdateParcela({
+                                      ...p,
+                                      estadoFenologico: quickFenEstado.trim() || p.estadoFenologico || 'Sin definir',
+                                      fechaEstadoFenologico: quickFenFecha.trim() || undefined,
+                                    });
+                                    setQuickFenParcelaId(null);
+                                  }}
+                                  className="px-2 py-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded text-[10px] font-bold cursor-pointer"
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setQuickFenParcelaId(null)}
+                                  className="px-1.5 py-1 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded text-[10px] font-bold cursor-pointer"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-start justify-between gap-2 text-stone-600">
+                              <span className="shrink-0">Fenología:</span>
+                              <div className="text-right min-w-0 flex-1">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <strong
+                                    className="text-stone-800 truncate max-w-[140px]"
+                                    title={p.estadoFenologico || 'Sin definir'}
+                                  >
+                                    {p.estadoFenologico || 'Sin definir'}
+                                  </strong>
+                                  {canEdit && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setQuickFenParcelaId(p.id);
+                                        setQuickFenEstado(p.estadoFenologico || ESTADOS_FENOLOGICOS[0] || '');
+                                        setQuickFenFecha(
+                                          p.fechaEstadoFenologico || new Date().toISOString().split('T')[0]
+                                        );
+                                      }}
+                                      className="text-[10px] font-bold text-emerald-700 hover:text-emerald-900 hover:underline shrink-0 cursor-pointer"
+                                      title="Cambiar estado fenológico y fecha"
+                                    >
+                                      Editar
+                                    </button>
+                                  )}
+                                </div>
+                                {p.fechaEstadoFenologico && (
+                                  <div className="text-[10px] font-mono tabular-nums text-emerald-800">
+                                    Fecha: {p.fechaEstadoFenologico}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         {p.estadoActual === 'En Carencia SAG' && (p.lmrActivo || p.diasCarenciaRestantes) && (
                           <div className="flex justify-between gap-2 text-rose-700 font-bold text-[11px]">
                             <span>Carencia LMR:</span>
@@ -2965,7 +3043,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               </div>
 
               {/* 6. Estado Operativo, Fenología y Carencia */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Estado Actual del Cuartel:</label>
                   <input
@@ -2995,13 +3073,23 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                       setParcelaForm((prev) => ({ ...prev, estadoFenologico: e.target.value }))
                     }
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg"
-                    placeholder="Ej. Brotación, Floración, Maduración..."
+                    placeholder="Ej. BBCH 65 · Plena floración"
                   />
-                  <datalist id="estados-fenologicos-list">
-                    {ESTADOS_FENOLOGICOS.map((ef) => (
-                      <option key={ef} value={ef} />
-                    ))}
-                  </datalist>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1 flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-emerald-700" />
+                    <span>Fecha Estado Fenológico:</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={parcelaForm.fechaEstadoFenologico}
+                    onChange={(e) =>
+                      setParcelaForm((prev) => ({ ...prev, fechaEstadoFenologico: e.target.value }))
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                  />
                 </div>
               </div>
 
@@ -3175,6 +3263,12 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
           </div>
         </div>
       )}
+
+      <datalist id="estados-fenologicos-list">
+        {ESTADOS_FENOLOGICOS.map((ef) => (
+          <option key={ef} value={ef} />
+        ))}
+      </datalist>
     </div>
   );
 };

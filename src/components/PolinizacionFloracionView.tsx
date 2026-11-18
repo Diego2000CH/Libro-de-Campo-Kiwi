@@ -6,8 +6,10 @@ import {
   SincroniaFloral, 
   AplicacionPolenAsistido,
   PlanCargaRaleo,
-  EvaluacionCuajaSemillas
+  EvaluacionCuajaSemillas,
+  SeguimientoFenologico
 } from '../types/campo';
+import { BBCH_SUGERENCIAS } from '../utils/fenologiaHelper';
 import { CargaObjetivoRaleoPanel } from './CargaObjetivoRaleoPanel';
 import { CuajaSemillasPanel } from './CuajaSemillasPanel';
 import { 
@@ -29,6 +31,7 @@ import {
   CheckCircle2,
   Scissors,
   CircleDot,
+  Check,
   X
 } from 'lucide-react';
 
@@ -59,6 +62,10 @@ interface PolinizacionFloracionViewProps {
   onAddEvaluacionCuajaSemillas: (e: EvaluacionCuajaSemillas) => void;
   onUpdateEvaluacionCuajaSemillas: (e: EvaluacionCuajaSemillas) => void;
   onDeleteEvaluacionCuajaSemillas: (id: string) => void;
+  onUpdateParcela?: (p: Parcela) => void;
+  fenologia?: SeguimientoFenologico[];
+  onAddFenologia?: (f: SeguimientoFenologico) => void;
+  onUpdateFenologia?: (f: SeguimientoFenologico) => void;
   activeUserName?: string;
   canEdit?: boolean;
 }
@@ -98,6 +105,10 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
   onAddEvaluacionCuajaSemillas,
   onUpdateEvaluacionCuajaSemillas,
   onDeleteEvaluacionCuajaSemillas,
+  onUpdateParcela,
+  fenologia = [],
+  onAddFenologia,
+  onUpdateFenologia,
   activeUserName = 'Administrador',
   canEdit = true
 }) => {
@@ -130,7 +141,108 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
   const [editingPolenId, setEditingPolenId] = useState<string | null>(null);
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
 
+  // Estado para edición rápida de estado fenológico y fecha por cuartel
+  const [editingFenCuartelId, setEditingFenCuartelId] = useState<string | null>(null);
+  const [draftFenEstado, setDraftFenEstado] = useState('');
+  const [draftFenFecha, setDraftFenFecha] = useState('');
+  const [syncFenTimeline, setSyncFenTimeline] = useState(true);
+  const [fenSavedToast, setFenSavedToast] = useState<string | null>(null);
+
   const todayISO = () => new Date().toISOString().split('T')[0];
+
+  const contextFenStage = useMemo(() => {
+    switch (activeTab) {
+      case 'brotacion':
+        return {
+          code: 'BBCH 10',
+          nombre: 'Brotación y primeras hojas',
+          label: 'BBCH 10 · Brotación y primeras hojas',
+          desc: 'Apertura de brotes y despliegue de primeras hojas verdes.',
+        };
+      case 'botones':
+        return {
+          code: 'BBCH 55',
+          nombre: 'Botones florales desarrollados',
+          label: 'BBCH 55 · Botones florales desarrollados',
+          desc: 'Botones florales visibles listos para conteo y raleo de laterales.',
+        };
+      case 'carga_raleo':
+        return {
+          code: 'BBCH 75',
+          nombre: 'Crecimiento rápido de fruto',
+          label: 'BBCH 75 · Crecimiento rápido de fruto',
+          desc: 'Expansión celular del fruto, ajuste de carga objetivo y raleo.',
+        };
+      case 'cuaja_semillas':
+        return {
+          code: 'BBCH 69',
+          nombre: 'Cuaja y caída de pétalos',
+          label: 'BBCH 69 · Cuaja y caída de pétalos',
+          desc: 'Fin de floración, fruto cuajado visible y evaluación de semillas.',
+        };
+      default:
+        return {
+          code: 'BBCH 65',
+          nombre: 'Plena floración (50%-100%)',
+          label: 'BBCH 65 · Plena floración (50%-100%)',
+          desc: 'Máxima floración simultánea macho/hembra y polinización activa.',
+        };
+    }
+  }, [activeTab]);
+
+  const handleSaveCuartelFen = (
+    p: Parcela,
+    nuevoEstado: string,
+    nuevaFecha: string,
+    alsoSyncTimeline: boolean
+  ) => {
+    const cleanEstado = nuevoEstado.trim();
+    const cleanFecha = nuevaFecha.trim() || todayISO();
+    if (!cleanEstado || !onUpdateParcela) return;
+
+    onUpdateParcela({
+      ...p,
+      estadoFenologico: cleanEstado,
+      fechaEstadoFenologico: cleanFecha,
+    });
+
+    if (alsoSyncTimeline) {
+      const codeMatch = cleanEstado.match(/BBCH\s*\d+/i);
+      const escala = codeMatch ? codeMatch[0].toUpperCase().replace(/\s+/, ' ') : contextFenStage.code;
+      const nombreLim = cleanEstado.replace(/^BBCH\s*\d+\s*[·:-]?\s*/i, '').trim() || cleanEstado;
+      const existing = fenologia.find(
+        (f) =>
+          (f.parcelaId === p.id || f.parcelaId === 'general') &&
+          f.escalaBBCH.toUpperCase() === escala
+      );
+      if (existing && onUpdateFenologia) {
+        onUpdateFenologia({
+          ...existing,
+          fecha: cleanFecha,
+          nombreEtapa: nombreLim,
+          estadoEtapa: 'en_curso',
+          porcentajeAvance: existing.porcentajeAvance && existing.porcentajeAvance > 0 ? existing.porcentajeAvance : 50,
+        });
+      } else if (onAddFenologia) {
+        onAddFenologia({
+          id: `fen-${Date.now()}`,
+          fecha: cleanFecha,
+          parcelaId: p.id,
+          parcelaNombre: p.nombre,
+          escalaBBCH: escala,
+          nombreEtapa: nombreLim,
+          estadoDescripcion: `Registrado desde pestaña ${activeTab}`,
+          estadoEtapa: 'en_curso',
+          porcentajeAvance: 50,
+          observaciones: '',
+        });
+      }
+    }
+
+    setEditingFenCuartelId(null);
+    setFenSavedToast(`Fenología actualizada en ${p.nombre} (${cleanFecha})`);
+    setTimeout(() => setFenSavedToast(null), 3000);
+  };
 
   // Defaults para formularios
   const getDefaultBrotacion = () => ({
@@ -787,6 +899,142 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           Cuaja & Conteo de Semillas ({evaluacionesCuajaSemillas.length})
         </button>
       </div>
+
+      {/* BARRA CONTEXTUAL EDITABLE DE ESTADO FENOLÓGICO Y FECHA POR CUARTEL */}
+      {parcelas.length > 0 && onUpdateParcela && (
+        <div className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-2xs space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Sprout className="w-4 h-4 text-emerald-700 shrink-0" />
+              <div>
+                <h2 className="text-xs sm:text-sm font-bold text-stone-900">
+                  Estado Fenológico de los Cuarteles &amp; Fecha de Etapa
+                </h2>
+                <p className="text-[11px] text-stone-500">
+                  Etapa sugerida para esta pestaña: <strong className="text-emerald-800">{contextFenStage.label}</strong>
+                </p>
+              </div>
+            </div>
+            {fenSavedToast && (
+              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                {fenSavedToast}
+              </span>
+            )}
+          </div>
+
+          <datalist id="polin-bbch-list">
+            {BBCH_SUGERENCIAS.map((b) => (
+              <option key={b.code} value={`${b.code} · ${b.nombre}`} />
+            ))}
+          </datalist>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
+            {parcelas.map((p) => {
+              const isEditingThis = editingFenCuartelId === p.id;
+              return (
+                <div
+                  key={p.id}
+                  className={`p-3 rounded-xl border transition-all ${
+                    isEditingThis
+                      ? 'bg-emerald-50/70 border-emerald-400'
+                      : 'bg-stone-50 border-stone-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="font-bold text-stone-900 truncate">{p.nombre}</span>
+                    {canEdit && !isEditingThis && (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleSaveCuartelFen(p, contextFenStage.label, todayISO(), true)
+                          }
+                          className="px-2 py-0.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded text-[10px] font-bold cursor-pointer"
+                          title={`Marcar ${contextFenStage.label} con fecha de hoy`}
+                        >
+                          Aplicar {contextFenStage.code}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingFenCuartelId(p.id);
+                            setDraftFenEstado(p.estadoFenologico || contextFenStage.label);
+                            setDraftFenFecha(p.fechaEstadoFenologico || todayISO());
+                            setSyncFenTimeline(true);
+                          }}
+                          className="px-2 py-0.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Pencil className="w-2.5 h-2.5" />
+                          <span>Editar</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {isEditingThis ? (
+                    <div className="space-y-2 pt-1">
+                      <input
+                        type="text"
+                        list="polin-bbch-list"
+                        value={draftFenEstado}
+                        onChange={(e) => setDraftFenEstado(e.target.value)}
+                        placeholder="Ej. BBCH 65 · Plena floración"
+                        className="w-full p-1.5 bg-white border border-stone-300 rounded-lg text-xs font-medium"
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                        <input
+                          type="date"
+                          value={draftFenFecha}
+                          onChange={(e) => setDraftFenFecha(e.target.value)}
+                          className="flex-1 p-1.5 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                      <label className="flex items-center gap-1.5 text-[10px] text-stone-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={syncFenTimeline}
+                          onChange={(e) => setSyncFenTimeline(e.target.checked)}
+                          className="rounded accent-emerald-700"
+                        />
+                        <span>Sincronizar también en cronograma BBCH / Temporadas</span>
+                      </label>
+                      <div className="flex justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setEditingFenCuartelId(null)}
+                          className="px-2.5 py-1 bg-white border border-stone-300 text-stone-700 rounded-lg text-[11px] font-bold cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleSaveCuartelFen(p, draftFenEstado, draftFenFecha, syncFenTimeline)
+                          }
+                          className="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Check className="w-3 h-3" />
+                          <span>Guardar</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2 text-[11px]">
+                      <span className="text-emerald-900 font-semibold truncate">
+                        {p.estadoFenologico || 'Sin estado fenológico definido'}
+                      </span>
+                      <span className="font-mono tabular-nums text-stone-500 shrink-0">
+                        {p.fechaEstadoFenologico || 'Sin fecha'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* SECCIÓN 1: % DE BROTACIÓN & YEMAS (CON SWITCH HILERA / CUARTEL) */}
       {activeTab === 'brotacion' && (
