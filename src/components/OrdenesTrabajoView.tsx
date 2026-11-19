@@ -5,8 +5,10 @@ import {
   InsumoInventario, 
   UsuarioPredio,
   DestinoProducto,
-  ProductoItemOrden
+  ProductoItemOrden,
+  ExplotacionAgricola
 } from '../types/campo';
+import { exportOrdenesTrabajoPDF } from '../utils/pdfExport';
 import { 
   FileCheck2, 
   Plus, 
@@ -25,7 +27,8 @@ import {
   X,
   Droplet,
   ChevronRight,
-  Info
+  Info,
+  Download
 } from 'lucide-react';
 
 interface OrdenesTrabajoViewProps {
@@ -38,6 +41,7 @@ interface OrdenesTrabajoViewProps {
   onUpdateOrden?: (orden: OrdenTrabajoFitosanitaria) => void;
   onExecuteOrden: (ordenId: string, aplicadorNombre: string, firma: string) => void;
   onDeleteOrden: (id: string) => void;
+  explotacion?: ExplotacionAgricola;
   canEdit?: boolean;
 }
 
@@ -58,6 +62,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
   onUpdateOrden,
   onExecuteOrden,
   onDeleteOrden,
+  explotacion,
   canEdit = true
 }) => {
   const [isNewOrdenOpen, setIsNewOrdenOpen] = useState(false);
@@ -297,15 +302,26 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
           </p>
         </div>
 
-        {canEdit && (
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-center">
           <button
-            onClick={handleOpenNewOrden}
-            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
+            type="button"
+            onClick={() => exportOrdenesTrabajoPDF(ordenes, explotacion)}
+            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Emitir Nueva Receta Fitosanitaria</span>
+            <Download className="w-4 h-4 text-purple-800" />
+            <span>Exportar PDF ({ordenes.length})</span>
           </button>
-        )}
+
+          {canEdit && (
+            <button
+              onClick={handleOpenNewOrden}
+              className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>Emitir Nueva Receta Fitosanitaria</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tarjeta Informativa de Descuento Automático de Bodega */}

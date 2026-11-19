@@ -1,17 +1,38 @@
-import React from 'react';
-import { CondicionHorasFrio, ExplotacionAgricola, Parcela, RegistroLabor, SeguimientoFenologico } from '../types/campo';
-import { 
-  FileText, 
-  Printer, 
-  Download, 
-  Upload, 
-  ShieldCheck, 
+import React, { useMemo, useState } from 'react';
+import {
+  AppStateData,
+  CondicionHorasFrio,
+  ExplotacionAgricola,
+  Parcela,
+  RegistroLabor,
+  SeguimientoFenologico,
+} from '../types/campo';
+import {
+  FileText,
+  Printer,
+  Download,
+  Upload,
   Award,
-  CheckCircle2
+  CheckCircle2,
+  CheckSquare,
+  Square,
+  FlaskConical,
+  Wrench,
+  Tractor,
 } from 'lucide-react';
-import { exportDataAsJSON, getStoredData } from '../utils/storage';
+import { exportDataAsJSON, getStoredData, getStoredSectoresRiego } from '../utils/storage';
 import { estimarEtapaKiwiPorFrioYGradosDia, normalizarCondicionHorasFrio } from '../utils/agroClimaCalculos';
 import { obtenerEtapaFenologicaActiva } from '../utils/fenologiaHelper';
+import {
+  esItemFitosanitario,
+  esItemMaterialRiego,
+  exportBodegaFitosanitariosPDF,
+  exportBodegaRiegoMaterialesPDF,
+  exportLibroCompletoPDF,
+  exportMaquinariaPDF,
+  PDF_SECTIONS_META,
+  PdfSectionKey,
+} from '../utils/pdfExport';
 
 interface InformeOficialViewProps {
   explotacion: ExplotacionAgricola;
@@ -19,6 +40,7 @@ interface InformeOficialViewProps {
   labores: RegistroLabor[];
   horasFrio?: CondicionHorasFrio;
   fenologia?: SeguimientoFenologico[];
+  fullData?: AppStateData;
   onImportJSON: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isAdmin?: boolean;
 }
@@ -29,9 +51,34 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
   labores,
   horasFrio,
   fenologia = [],
+  fullData,
   onImportJSON,
   isAdmin = true
 }) => {
+  const [selectedSections, setSelectedSections] = useState<PdfSectionKey[]>(
+    () => PDF_SECTIONS_META.map((s) => s.key)
+  );
+  const [pdfFeedback, setPdfFeedback] = useState<string | null>(null);
+
+  const resolvedData: Partial<AppStateData> = useMemo(
+    () =>
+      fullData ?? {
+        explotacion,
+        parcelas,
+        labores,
+        horasFrio,
+        fenologia,
+      },
+    [fullData, explotacion, parcelas, labores, horasFrio, fenologia]
+  );
+
+  const sectoresRiego = useMemo(() => getStoredSectoresRiego(), []);
+  const inventarioAll = resolvedData.inventario || [];
+  const itemsFito = useMemo(() => inventarioAll.filter(esItemFitosanitario), [inventarioAll]);
+  const itemsRiegoMat = useMemo(() => inventarioAll.filter(esItemMaterialRiego), [inventarioAll]);
+  const maquinariasList = resolvedData.maquinarias || [];
+  const mantencionesList = resolvedData.registrosMantencion || [];
+
   const hfNorm = normalizarCondicionHorasFrio(horasFrio);
   const etapaActual = estimarEtapaKiwiPorFrioYGradosDia(
     hfNorm.totalAcumuladoHF ?? 0,
@@ -40,6 +87,31 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
     hfNorm.metaVariedadGD ?? 1850
   );
   const etapaRegistrada = obtenerEtapaFenologicaActiva(fenologia);
+
+  const notifyPdf = (message: string) => {
+    setPdfFeedback(message);
+    window.setTimeout(() => {
+      setPdfFeedback((prev) => (prev === message ? null : prev));
+    }, 5000);
+  };
+
+  const handleToggleSection = (key: PdfSectionKey) => {
+    setSelectedSections((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
+  const handleExportTodoPDF = () => {
+    exportLibroCompletoPDF(resolvedData, undefined, sectoresRiego);
+    notifyPdf('PDF completo del huerto generado y descargado (todos los módulos).');
+  };
+
+  const handleExportSeleccionPDF = () => {
+    if (selectedSections.length === 0) return;
+    exportLibroCompletoPDF(resolvedData, selectedSections, sectoresRiego);
+    notifyPdf(`PDF personalizado generado con ${selectedSections.length} módulo(s).`);
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -111,45 +183,190 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
             Resolución SAG N° 2433 / GlobalGAP IFA v6
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
-            Cuaderno de Campo Oficial para Fiscalización
+            Informes Oficiales & Exportación PDF Integral
           </h1>
           <p className="text-xs text-stone-500">
-            Formato oficial estandarizado para inspectores del SAG, certificadoras internacionales y trazabilidad de exportación.
+            Descarga reportes PDF descargables de cualquier módulo o del huerto completo, además del cuaderno oficial imprimible para SAG y GlobalGAP.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={handlePrint}
-            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
+            type="button"
+            onClick={handleExportTodoPDF}
+            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
           >
-            <Printer className="w-4 h-4" />
-            <span>Imprimir Cuaderno Oficial</span>
+            <Download className="w-4 h-4" />
+            <span>Exportar Todo a PDF</span>
           </button>
 
           <button
+            type="button"
+            onClick={handlePrint}
+            className="px-3.5 py-2 bg-stone-800 hover:bg-stone-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Imprimir Cuaderno</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handleExportCSV}
-            className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
           >
             <Download className="w-4 h-4" />
             <span>Exportar Excel / CSV</span>
           </button>
 
           <button
+            type="button"
             onClick={handleExportJSON}
-            className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
           >
             <Download className="w-4 h-4" />
-            <span>Copia Respaldo JSON</span>
+            <span>Respaldo JSON</span>
           </button>
 
           {isAdmin && (
-            <label className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer">
+            <label className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0">
               <Upload className="w-4 h-4" />
               <span>Importar JSON</span>
               <input type="file" accept=".json" onChange={onImportJSON} className="hidden" />
             </label>
           )}
+        </div>
+      </div>
+
+      {/* CENTRO DE EXPORTACIÓN PDF INTEGRAL */}
+      <div className="no-print bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-stone-200 pb-4">
+          <div>
+            <h2 className="text-base font-black text-stone-900 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-emerald-700" />
+              <span>Centro de Exportación PDF por Módulos</span>
+            </h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Descarga informes PDF directos de tus bodegas y maquinaria, o selecciona qué módulos combinar en un único documento.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                exportBodegaFitosanitariosPDF(itemsFito, explotacion);
+                notifyPdf(`PDF de Bodega Fitosanitarios descargado (${itemsFito.length} productos).`);
+              }}
+              className="px-3 py-2 bg-stone-50 hover:bg-emerald-50 text-stone-800 hover:text-emerald-950 border border-stone-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            >
+              <FlaskConical className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Bodega Fitosanitarios PDF</span>
+              <span className="font-mono tabular-nums text-stone-500">({itemsFito.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                exportBodegaRiegoMaterialesPDF(itemsRiegoMat, explotacion);
+                notifyPdf(`PDF de Bodega Riego & Materiales descargado (${itemsRiegoMat.length} artículos).`);
+              }}
+              className="px-3 py-2 bg-stone-50 hover:bg-blue-50 text-stone-800 hover:text-blue-950 border border-stone-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            >
+              <Wrench className="w-3.5 h-3.5 text-blue-700" />
+              <span>Bodega Riego & Materiales PDF</span>
+              <span className="font-mono tabular-nums text-stone-500">({itemsRiegoMat.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                exportMaquinariaPDF(maquinariasList, mantencionesList, explotacion);
+                notifyPdf(`PDF de Maquinaria y Mantenciones descargado (${maquinariasList.length} equipos).`);
+              }}
+              className="px-3 py-2 bg-stone-50 hover:bg-amber-50 text-stone-800 hover:text-amber-950 border border-stone-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            >
+              <Tractor className="w-3.5 h-3.5 text-amber-700" />
+              <span>Maquinaria & Mantenciones PDF</span>
+              <span className="font-mono tabular-nums text-stone-500">({maquinariasList.length})</span>
+            </button>
+          </div>
+        </div>
+
+        {pdfFeedback && (
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-semibold flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+            <span>{pdfFeedback}</span>
+          </div>
+        )}
+
+        {/* Selector de módulos para PDF combinado */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="text-xs font-bold text-stone-700">
+              Armar PDF Combinado ({selectedSections.length} de {PDF_SECTIONS_META.length} módulos seleccionados):
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setSelectedSections(PDF_SECTIONS_META.map((s) => s.key))}
+                className="px-2.5 py-1 text-[11px] font-bold text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg cursor-pointer transition-colors"
+              >
+                Seleccionar Todo
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedSections([])}
+                className="px-2.5 py-1 text-[11px] font-bold text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg cursor-pointer transition-colors"
+              >
+                Ninguno
+              </button>
+              <button
+                type="button"
+                disabled={selectedSections.length === 0}
+                onClick={handleExportSeleccionPDF}
+                className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 disabled:bg-stone-300 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Exportar Selección a PDF ({selectedSections.length})</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {PDF_SECTIONS_META.map((sec) => {
+              const checked = selectedSections.includes(sec.key);
+              const count = sec.countResolver(resolvedData, sectoresRiego);
+              return (
+                <button
+                  key={sec.key}
+                  type="button"
+                  onClick={() => handleToggleSection(sec.key)}
+                  className={`p-3 rounded-xl border text-left transition-colors cursor-pointer flex items-start gap-2.5 ${
+                    checked
+                      ? 'bg-emerald-50/60 border-emerald-300 text-stone-900'
+                      : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                  }`}
+                >
+                  {checked ? (
+                    <CheckSquare className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                  ) : (
+                    <Square className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-stone-900 truncate">{sec.label}</span>
+                      <span className="text-[11px] font-mono tabular-nums font-bold text-stone-600 shrink-0">
+                        {count}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-500 mt-0.5 leading-snug line-clamp-2">
+                      {sec.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

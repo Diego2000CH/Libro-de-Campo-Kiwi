@@ -1397,6 +1397,7 @@ export default function App() {
             inventario={inventario}
             usuarios={usuarios}
             activeUser={activeUser}
+            explotacion={explotacion}
             canEdit={canEdit}
             onAddOrden={guardEdit(handleAddOrden)}
             onUpdateOrden={handleUpdateOrden}
@@ -1418,6 +1419,7 @@ export default function App() {
         {(activeTab === 'fitosanitarios' || activeTab === 'inventario') && (
           <FitosanitariosView
             inventario={inventario}
+            explotacion={explotacion}
             canEdit={canEdit}
             onAddInsumo={guardEdit((i) => setInventario((prev) => [...prev, i]))}
             onUpdateInsumo={guardEdit((i) => setInventario((prev) => prev.map((item) => item.id === i.id ? i : item)))}
@@ -1428,6 +1430,7 @@ export default function App() {
         {activeTab === 'materiales' && (
           <MaterialesRiegoView
             inventario={inventario}
+            explotacion={explotacion}
             canEdit={canEdit}
             onAddInsumo={guardEdit((i) => setInventario((prev) => [...prev, i]))}
             onUpdateInsumo={guardEdit((i) => setInventario((prev) => prev.map((item) => item.id === i.id ? i : item)))}
@@ -1438,6 +1441,7 @@ export default function App() {
         {activeTab === 'pozo' && (
           <PozoView
             registrosPozo={registrosPozo}
+            explotacion={explotacion}
             canEdit={canEdit}
             onAddRegistroPozo={guardEdit((r) => setRegistrosPozo((prev) => [r, ...prev]))}
             onUpdateRegistroPozo={guardEdit((r) => setRegistrosPozo((prev) => prev.map((item) => item.id === r.id ? r : item)))}
@@ -1453,6 +1457,7 @@ export default function App() {
             onDeleteTurnoRiego={guardEdit((id) => setTurnosRiego((prev) => prev.filter((t) => t.id !== id)))}
             parcelas={parcelas}
             clima={clima}
+            explotacion={explotacion}
             canEdit={canEdit}
           />
         )}
@@ -1461,6 +1466,7 @@ export default function App() {
           <MaquinariasView
             maquinarias={maquinarias}
             registrosMantencion={registrosMantencion}
+            explotacion={explotacion}
             canEdit={canEdit}
             onAddMaquinaria={guardEdit((m) => setMaquinarias((prev) => [m, ...prev]))}
             onUpdateMaquinaria={guardEdit((m) => setMaquinarias((prev) => prev.map((item) => item.id === m.id ? m : item)))}
@@ -1555,6 +1561,7 @@ export default function App() {
           <LaboresView
             labores={labores}
             parcelas={parcelas}
+            explotacion={explotacion}
             canEdit={canEdit}
             onOpenNewLabor={handleOpenNewLabor}
             onEditLabor={handleEditLabor}
@@ -1665,6 +1672,7 @@ export default function App() {
             labores={labores}
             horasFrio={normalizarCondicionHorasFrio(horasFrio, registrosTermicos)}
             fenologia={fenologia}
+            fullData={buildFullStateData()}
             isAdmin={isAdmin}
             onImportJSON={guardAdmin((e) => {
               const file = e.target.files?.[0];

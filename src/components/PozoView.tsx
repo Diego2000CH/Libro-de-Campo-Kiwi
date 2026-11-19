@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { RegistroExtraccionPozo, SectorRiego } from '../types/campo';
+import { RegistroExtraccionPozo, SectorRiego, ExplotacionAgricola } from '../types/campo';
 import { getStoredSectoresRiego, saveStoredSectoresRiego } from '../utils/storage';
+import { exportPozoPDF } from '../utils/pdfExport';
 import { 
   Droplet, 
   Plus, 
@@ -16,7 +17,8 @@ import {
   AlertCircle,
   Settings,
   X,
-  Check
+  Check,
+  Download
 } from 'lucide-react';
 
 interface PozoViewProps {
@@ -24,6 +26,7 @@ interface PozoViewProps {
   onAddRegistroPozo: (registro: RegistroExtraccionPozo) => void;
   onUpdateRegistroPozo: (registro: RegistroExtraccionPozo) => void;
   onDeleteRegistroPozo: (id: string) => void;
+  explotacion?: ExplotacionAgricola;
   canEdit?: boolean;
 }
 
@@ -32,6 +35,7 @@ export const PozoView: React.FC<PozoViewProps> = ({
   onAddRegistroPozo,
   onUpdateRegistroPozo,
   onDeleteRegistroPozo,
+  explotacion,
   canEdit = true
 }) => {
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
@@ -273,26 +277,37 @@ export const PozoView: React.FC<PozoViewProps> = ({
           </p>
         </div>
 
-        {canEdit && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setIsSectoresModalOpen(true)}
-              className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold border border-stone-300 shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors"
-              title="Editar o agregar sectores de riego del predio"
-            >
-              <Settings className="w-3.5 h-3.5 text-stone-600" />
-              <span>Gestionar Sectores de Riego</span>
-            </button>
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-center">
+          <button
+            type="button"
+            onClick={() => exportPozoPDF(registrosPozo, sectoresRiego, explotacion)}
+            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold border border-stone-300 shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+          >
+            <Download className="w-4 h-4 text-blue-800" />
+            <span>Exportar PDF ({registrosPozo.length})</span>
+          </button>
 
-            <button
-              onClick={handleOpenNew}
-              className="px-3.5 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Anotar Muestreo / Lectura DGA</span>
-            </button>
-          </div>
-        )}
+          {canEdit && (
+            <>
+              <button
+                onClick={() => setIsSectoresModalOpen(true)}
+                className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold border border-stone-300 shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+                title="Editar o agregar sectores de riego del predio"
+              >
+                <Settings className="w-3.5 h-3.5 text-stone-600" />
+                <span>Gestionar Sectores de Riego</span>
+              </button>
+
+              <button
+                onClick={handleOpenNew}
+                className="px-3.5 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Anotar Muestreo / Lectura DGA</span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Tarjetas de Métricas DGA */}

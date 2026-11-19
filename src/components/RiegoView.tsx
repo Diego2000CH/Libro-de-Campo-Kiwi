@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { TurnoRiego, SectorRiego, Parcela, ClimaCondiciones } from '../types/campo';
+import { TurnoRiego, SectorRiego, Parcela, ClimaCondiciones, ExplotacionAgricola } from '../types/campo';
 import { getStoredSectoresRiego, saveStoredSectoresRiego } from '../utils/storage';
+import { exportRiegoPDF } from '../utils/pdfExport';
 import { 
   Droplet, 
   Plus, 
@@ -19,7 +20,8 @@ import {
   Sparkles,
   Waves,
   Zap,
-  Info
+  Info,
+  Download
 } from 'lucide-react';
 
 interface RiegoViewProps {
@@ -29,6 +31,7 @@ interface RiegoViewProps {
   onDeleteTurnoRiego: (id: string) => void;
   parcelas: Parcela[];
   clima?: ClimaCondiciones;
+  explotacion?: ExplotacionAgricola;
   canEdit?: boolean;
 }
 
@@ -39,6 +42,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
   onDeleteTurnoRiego,
   parcelas,
   clima,
+  explotacion,
   canEdit = true
 }) => {
   const [isNewTurnoOpen, setIsNewTurnoOpen] = useState(false);
@@ -295,25 +299,36 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
           </p>
         </div>
 
-        {canEdit && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setIsSectoresModalOpen(true)}
-              className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors"
-            >
-              <Settings className="w-3.5 h-3.5 text-stone-600" />
-              <span>Gestionar Sectores</span>
-            </button>
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-center">
+          <button
+            type="button"
+            onClick={() => exportRiegoPDF(turnosRiego, sectoresRiego, explotacion)}
+            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+          >
+            <Download className="w-4 h-4 text-cyan-800" />
+            <span>Exportar PDF ({turnosRiego.length})</span>
+          </button>
 
-            <button
-              onClick={() => handleOpenNewTurno()}
-              className="px-4 py-2 bg-cyan-800 hover:bg-cyan-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Registrar Turno de Riego</span>
-            </button>
-          </div>
-        )}
+          {canEdit && (
+            <>
+              <button
+                onClick={() => setIsSectoresModalOpen(true)}
+                className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+              >
+                <Settings className="w-3.5 h-3.5 text-stone-600" />
+                <span>Gestionar Sectores</span>
+              </button>
+
+              <button
+                onClick={() => handleOpenNewTurno()}
+                className="px-4 py-2 bg-cyan-800 hover:bg-cyan-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Registrar Turno de Riego</span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Tarjetas de Resumen Hídrico */}

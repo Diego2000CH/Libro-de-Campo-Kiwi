@@ -135,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'laboratorio', label: 'Laboratorio', icon: FlaskConical },
     { id: 'auditoria', label: 'Auditoría & BPA', icon: ShieldCheck },
     { id: 'planificacion', label: 'Temporadas & Tareas', icon: CalendarClock, badgeCount: alertasProactivasCount },
-    { id: 'informe', label: 'Informe SAG', icon: FileText },
+    { id: 'informe', label: 'Informes & PDF', icon: FileText },
     { id: 'usuarios', label: isAdmin ? 'Equipo & Claves' : 'Mi Cuenta', icon: Users }
   ];
 

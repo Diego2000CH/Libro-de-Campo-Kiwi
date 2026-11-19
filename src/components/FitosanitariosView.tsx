@@ -4,8 +4,10 @@ import {
   CategoriaFitosanitario, 
   DestinoProducto,
   EstadoFertilizante,
-  SolubilidadFertilizante
+  SolubilidadFertilizante,
+  ExplotacionAgricola
 } from '../types/campo';
+import { exportBodegaFitosanitariosPDF } from '../utils/pdfExport';
 import { 
   FlaskConical, 
   Search, 
@@ -22,7 +24,8 @@ import {
   Tag,
   Info,
   Layers,
-  Leaf
+  Leaf,
+  Download
 } from 'lucide-react';
 
 interface FitosanitariosViewProps {
@@ -30,6 +33,7 @@ interface FitosanitariosViewProps {
   onAddInsumo: (insumo: InsumoInventario) => void;
   onUpdateInsumo: (insumo: InsumoInventario) => void;
   onDeleteInsumo: (id: string) => void;
+  explotacion?: ExplotacionAgricola;
   canEdit?: boolean;
 }
 
@@ -60,6 +64,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
   onAddInsumo,
   onUpdateInsumo,
   onDeleteInsumo,
+  explotacion,
   canEdit = true
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -340,15 +345,30 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
           </p>
         </div>
 
-        {canEdit && (
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-center">
           <button
-            onClick={handleOpenNew}
-            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center transition-colors"
+            type="button"
+            onClick={() => {
+              const catName = CATEGORIAS_FITOSANITARIOS.find((c) => c.id === selectedCategoria)?.label;
+              const filtro = selectedCategoria !== 'todos' || searchTerm ? `${catName || 'Todos'}${searchTerm ? ` · "${searchTerm}"` : ''}` : undefined;
+              exportBodegaFitosanitariosPDF(fitoFiltrados, explotacion, filtro);
+            }}
+            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
           >
-            <Plus className="w-4 h-4" />
-            <span>Ingresar Producto Fitosanitario</span>
+            <Download className="w-4 h-4 text-emerald-800" />
+            <span>Exportar PDF ({fitoFiltrados.length})</span>
           </button>
-        )}
+
+          {canEdit && (
+            <button
+              onClick={handleOpenNew}
+              className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Ingresar Producto Fitosanitario</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Alerta de Stock Crítico */}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { RegistroLabor, Parcela, TipoLabor } from '../types/campo';
+import { RegistroLabor, Parcela, TipoLabor, ExplotacionAgricola } from '../types/campo';
+import { exportLaboresPDF } from '../utils/pdfExport';
 import { 
   Sprout, 
   Search, 
@@ -21,6 +22,7 @@ interface LaboresViewProps {
   onOpenNewLabor: () => void;
   onEditLabor: (labor: RegistroLabor) => void;
   onDeleteLabor: (id: string) => void;
+  explotacion?: ExplotacionAgricola;
   canEdit?: boolean;
 }
 
@@ -30,6 +32,7 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
   onOpenNewLabor,
   onEditLabor,
   onDeleteLabor,
+  explotacion,
   canEdit = true
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,15 +65,35 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
           </p>
         </div>
 
-        {canEdit && (
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-center">
           <button
-            onClick={onOpenNewLabor}
-            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center"
+            type="button"
+            onClick={() => {
+              const parts: string[] = [];
+              if (selectedTipo !== 'todos') parts.push(selectedTipo);
+              if (selectedParcelaId !== 'todas') {
+                const pName = parcelas.find((p) => p.id === selectedParcelaId)?.nombre;
+                if (pName) parts.push(pName);
+              }
+              if (searchTerm) parts.push(`"${searchTerm}"`);
+              exportLaboresPDF(laboresFiltradas, explotacion, parts.length ? parts.join(' · ') : undefined);
+            }}
+            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
           >
-            <Plus className="w-4 h-4" />
-            <span>Nueva Labor</span>
+            <Download className="w-4 h-4 text-emerald-800" />
+            <span>Exportar PDF ({laboresFiltradas.length})</span>
           </button>
-        )}
+
+          {canEdit && (
+            <button
+              onClick={onOpenNewLabor}
+              className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Nueva Labor</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Barra de Filtros */}
