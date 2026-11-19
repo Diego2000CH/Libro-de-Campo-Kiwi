@@ -33,7 +33,8 @@ import {
   TareaAgronomica,
   ResumenTemporada,
   ItemAuditoriaBPA,
-  PlanillaAuditoriaBPA
+  PlanillaAuditoriaBPA,
+  EventualidadHuerto
 } from '../types/campo';
 import { getNivelAcceso } from './permissions';
 import { getTemporadaDefaults, normalizarCondicionHorasFrio } from './agroClimaCalculos';
@@ -491,6 +492,7 @@ export function getBlankRealOrchardData(
     evaluacionesCuajaSemillas: [],
     turnosRiego: [],
     clima: getBlankClima(),
+    eventualidades: [],
     liquidacionesPacking: [],
     analisisLaboratorio: [],
     registrosEnvases: [],
@@ -544,6 +546,7 @@ export function stripDemoRecords(data: AppStateData): AppStateData {
     planesCargaRaleo: filterOutDemo(data.planesCargaRaleo),
     evaluacionesCuajaSemillas: filterOutDemo(data.evaluacionesCuajaSemillas),
     turnosRiego: filterOutDemo(data.turnosRiego),
+    eventualidades: Array.isArray(data.eventualidades) ? data.eventualidades : [],
     liquidacionesPacking: Array.isArray(data.liquidacionesPacking) ? data.liquidacionesPacking : [],
     analisisLaboratorio: Array.isArray(data.analisisLaboratorio) ? data.analisisLaboratorio : [],
     registrosEnvases: Array.isArray(data.registrosEnvases) ? data.registrosEnvases : [],
@@ -588,6 +591,7 @@ export function getDemoSampleData(): AppStateData {
     evaluacionesCuajaSemillas: initialEvaluacionesCuajaSemillas,
     turnosRiego: initialTurnosRiego,
     clima: initialClimaLaCabana,
+    eventualidades: [],
     liquidacionesPacking: [],
     analisisLaboratorio: [],
     registrosEnvases: [],
@@ -644,6 +648,7 @@ export function getStoredData(): AppStateData {
       planesCargaRaleo: stored.planesCargaRaleo || [],
       evaluacionesCuajaSemillas: stored.evaluacionesCuajaSemillas || [],
       turnosRiego: stored.turnosRiego || [],
+      eventualidades: stored.eventualidades || [],
       liquidacionesPacking: stored.liquidacionesPacking || [],
       analisisLaboratorio: stored.analisisLaboratorio || [],
       registrosEnvases: stored.registrosEnvases || [],
@@ -757,6 +762,10 @@ export function getStoredPolinizacion(): RegistroPolinizacion[] {
 
 export function getStoredTurnosRiego(): TurnoRiego[] {
   return getStoredData().turnosRiego || [];
+}
+
+export function getStoredEventualidades(): EventualidadHuerto[] {
+  return getStoredData().eventualidades || [];
 }
 
 export function getStoredMuestreosBrotacion(): MuestreoBrotacion[] {

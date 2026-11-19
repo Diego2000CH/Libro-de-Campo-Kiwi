@@ -2,6 +2,7 @@ import { jsPDF } from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 import {
   AppStateData,
+  EventualidadHuerto,
   ExplotacionAgricola,
   InsumoInventario,
   MaquinariaEquipo,
@@ -111,8 +112,8 @@ export const PDF_SECTIONS_META: PdfSectionMeta[] = [
   },
   {
     key: 'riego',
-    label: 'Turnos de Riego & Fertirriego',
-    description: 'Horarios, lámina (mm), volumen (m³), fertirriego y presiones de línea.',
+    label: 'Turnos de Riego & Parámetros Estándar',
+    description: 'Caudalímetro (ini/fin), caudal (L/s), lámina bruta/neta, eficiencia, presiones, CE/pH, suelo y fertirriego.',
     countResolver: (d) => d.turnosRiego?.length || 0,
   },
   {
@@ -129,9 +130,9 @@ export const PDF_SECTIONS_META: PdfSectionMeta[] = [
   },
   {
     key: 'clima_frio',
-    label: 'Clima, Horas Frío & Grados Día',
-    description: 'Resumen agroclimático de temporada y bitácora térmica (HF y GDD).',
-    countResolver: (d) => (d.registrosTermicos?.length || 0) + (d.horasFrio ? 1 : 0),
+    label: 'Clima, Horas Frío, GDD & Heladas',
+    description: 'Resumen agroclimático, bitácora térmica (HF/GDD) y registro anual de eventualidades (heladas, granizo, viento).',
+    countResolver: (d) => (d.registrosTermicos?.length || 0) + (d.eventualidades?.length || 0) + (d.horasFrio ? 1 : 0),
   },
   {
     key: 'fenologia',
@@ -877,7 +878,7 @@ function renderRiegoSection(
   let y = drawSectionBanner(
     doc,
     startY,
-    'CONTROL DE TURNOS DE RIEGO & FERTIRRIEGO',
+    'CONTROL DE TURNOS DE RIEGO, PARÁMETROS HIDRÁULICOS & FERTIRRIEGO',
     `${turnos.length} turnos`,
     [14, 116, 144]
   );
@@ -887,34 +888,58 @@ function renderRiegoSection(
   }
 
   const head = [
-    'Fecha & Horario',
-    'Sector',
+    'Fecha / Horario / Hrs',
+    'Sector / Método / Sup.',
     'Cuarteles Regados',
-    'Duración (hrs)',
-    'Caudalímetro (Ini / Fin)',
-    'Lámina (mm)',
-    'Volumen (m³)',
+    'Caudalímetro (Ini/Fin) & Vol.',
+    'Caudal Medido (L/s · m³/h)',
+    'Lámina Bruta / Neta (Efic.)',
+    'Presiones (Pre/Cab/Fin) & Filtros',
+    'Agua (CE/pH) & Suelo (cb/%)',
     'Fertirriego',
-    'Presión Cab. / Fin (Bar)',
     'Operador & Obs.',
   ];
 
-  const body = turnos.map((t) => [
-    `${t.fecha}\n${t.horaInicio}${t.horaTermino ? ` - ${t.horaTermino}` : ''}`,
-    t.sectorNombre,
-    t.cuartelesInvolucrados?.length ? t.cuartelesInvolucrados.join(', ') : '—',
-    `${num(t.duracionHoras, 2)} hrs`,
-    t.caudalimetroInicialM3 !== undefined || t.caudalimetroFinalM3 !== undefined
-      ? `Ini: ${num(t.caudalimetroInicialM3 ?? 0, 1)} m³\nFin: ${num(t.caudalimetroFinalM3 ?? 0, 1)} m³`
-      : '—',
-    `${num(t.laminaAguaMm, 1)} mm`,
-    `${num(t.volumenM3, 1)} m³`,
-    t.conFertirriego
-      ? `${str(t.fertilizanteInyectado)} (${num(t.dosisFertilizanteKg, 1)} kg)`
-      : 'Solo agua',
-    `${num(t.presionCabezalBar, 2)} / ${num(t.presionFinLineaBar, 2)} bar`,
-    `${str(t.operadorRiego)}${t.observaciones ? `\n${t.observaciones}` : ''}`,
-  ]);
+  const body = turnos.map((t) => {
+    const qMedidoLs =
+      t.caudalMedidoLs !== undefined
+        ? t.caudalMedidoLs
+        : t.duracionHoras > 0 && t.volumenM3 > 0
+        ? (t.volumenM3 * 1000) / (t.duracionHoras * 3600)
+        : 0;
+    const qM3h = t.duracionHoras > 0 && t.volumenM3 > 0 ? t.volumenM3 / t.duracionHoras : 0;
+    const ef = t.eficienciaRiegoPct ?? 90;
+    const neta = t.laminaNetaMm !== undefined ? t.laminaNetaMm : t.laminaAguaMm * (ef / 100);
+
+    const calidadParts: string[] = [];
+    if (t.ceAguaDsM !== undefined) calidadParts.push(`CE: ${num(t.ceAguaDsM, 2)} dS/m`);
+    if (t.phAgua !== undefined) calidadParts.push(`pH: ${num(t.phAgua, 1)}`);
+    if (t.tensionSueloCb !== undefined) calidadParts.push(`Tens: ${num(t.tensionSueloCb, 0)} cb`);
+    if (t.humedadSueloPct !== undefined) calidadParts.push(`Hum: ${num(t.humedadSueloPct, 0)}%`);
+
+    return [
+      `${t.fecha}\n${t.horaInicio}${t.horaTermino ? ` - ${t.horaTermino}` : ''}\n(${num(t.duracionHoras, 2)} hrs)`,
+      `${t.sectorNombre}\n${t.metodoRiego || 'Goteo'}${t.superficieRegadaHa ? ` · ${num(t.superficieRegadaHa, 2)} ha` : ''}`,
+      t.cuartelesInvolucrados?.length ? t.cuartelesInvolucrados.join(', ') : '—',
+      `${
+        t.caudalimetroInicialM3 !== undefined || t.caudalimetroFinalM3 !== undefined
+          ? `Ini: ${num(t.caudalimetroInicialM3 ?? 0, 1)}\nFin: ${num(t.caudalimetroFinalM3 ?? 0, 1)}\n`
+          : ''
+      }Vol: ${num(t.volumenM3, 1)} m³`,
+      `${qMedidoLs > 0 ? `${num(qMedidoLs, 2)} L/s` : '—'}${qM3h > 0 ? `\n(${num(qM3h, 1)} m³/h)` : ''}${
+        t.caudalInicialLs || t.caudalFinalLs
+          ? `\nIni/Fin: ${num(t.caudalInicialLs ?? 0, 1)}/${num(t.caudalFinalLs ?? 0, 1)}`
+          : ''
+      }`,
+      `Bruta: ${num(t.laminaAguaMm, 1)} mm\nNeta: ${num(neta, 1)} mm\n(Efic. ${num(ef, 0)}%)`,
+      `${t.presionPreFiltroBar !== undefined ? `Pre: ${num(t.presionPreFiltroBar, 2)}b\n` : ''}Cab: ${num(t.presionCabezalBar, 2)}b · Fin: ${num(t.presionFinLineaBar, 2)}b\n${t.estadoFiltros || 'Limpios'}`,
+      calidadParts.length > 0 ? calidadParts.join('\n') : '—',
+      t.conFertirriego
+        ? `${str(t.fertilizanteInyectado)} (${num(t.dosisFertilizanteKg, 1)} kg)`
+        : 'Solo agua',
+      `${str(t.operadorRiego)}${t.observaciones ? `\n${t.observaciones}` : ''}`,
+    ];
+  });
 
   y = renderTable(
     doc,
@@ -1075,12 +1100,13 @@ function renderClimaFrioSection(doc: jsPDF, startY: number, data: Partial<AppSta
   const hf = normalizarCondicionHorasFrio(data.horasFrio, data.registrosTermicos);
   const regs = data.registrosTermicos || [];
   const clima = data.clima;
+  const eventualidades = data.eventualidades || [];
 
   let y = drawSectionBanner(
     doc,
     startY,
-    'AGROCLIMA, HORAS FRÍO & GRADOS DÍA (GDD)',
-    `${regs.length} registros térmicos`,
+    'AGROCLIMA, HORAS FRÍO, GRADOS DÍA (GDD) & EVENTUALIDADES ANUALES',
+    `${regs.length} reg. térmicos · ${eventualidades.length} eventualidades`,
     [3, 105, 161]
   );
 
@@ -1141,6 +1167,41 @@ function renderClimaFrioSection(doc: jsPDF, startY: number, data: Partial<AppSta
     ]);
     y = renderTable(doc, y, headT, bodyT, 'Sin registros térmicos periódicos.', [3, 105, 161]);
   }
+
+  const headE = [
+    'Fecha / Año / Horario',
+    'Tipo Eventualidad',
+    'Severidad & Daño Est.',
+    'Parámetros (T° Mín/Máx · Lluvia · Viento)',
+    'Cuarteles Afectados & Fenología',
+    'Medida de Mitigación Aplicada',
+    'Responsable & Obs.',
+  ];
+  const bodyE = eventualidades.map((ev) => {
+    const params: string[] = [];
+    if (ev.tempMinimaC !== undefined) params.push(`T° Mín: ${num(ev.tempMinimaC, 1)}°C`);
+    if (ev.tempMaximaC !== undefined) params.push(`T° Máx: ${num(ev.tempMaximaC, 1)}°C`);
+    if (ev.precipitacionMm !== undefined) params.push(`Lluvia: ${num(ev.precipitacionMm, 1)} mm`);
+    if (ev.vientoKmH !== undefined) params.push(`Viento: ${num(ev.vientoKmH, 1)} km/h`);
+
+    return [
+      `${ev.fecha} (${ev.anio})${ev.horaInicio ? `\n${ev.horaInicio}${ev.horaTermino ? ` - ${ev.horaTermino}` : ''}` : ''}${ev.duracionHoras ? ` · ${num(ev.duracionHoras, 1)} hrs` : ''}`,
+      ev.tipo,
+      `${ev.severidad.toUpperCase()}${ev.danioEstimadoPct !== undefined ? `\nDaño est.: ${num(ev.danioEstimadoPct, 0)}%` : ''}`,
+      params.length > 0 ? params.join('\n') : '—',
+      `${ev.parcelasNombres?.length ? ev.parcelasNombres.join(', ') : 'Todo el predio'}${ev.estadoFenologico ? `\nEtapa: ${ev.estadoFenologico}` : ''}`,
+      str(ev.medidaMitigacion),
+      `${str(ev.registradoPor)}${ev.observaciones ? `\n${ev.observaciones}` : ''}`,
+    ];
+  });
+  y = renderTable(
+    doc,
+    y,
+    headE,
+    bodyE,
+    'No hay eventualidades climáticas (heladas, granizos, temporales) registradas en el año.',
+    [8, 145, 178]
+  );
 
   return y;
 }
@@ -1686,14 +1747,68 @@ export function exportRiegoPDF(
   const doc = createLandscapeDoc();
   const startY = drawDocumentHeader(
     doc,
-    'CONTROL DE TURNOS DE RIEGO & FERTIRRIEGO',
-    'Bitácora de Turnos de Riego, Láminas, Volúmenes (m³), Fertirriego y Presiones',
+    'CONTROL DE TURNOS DE RIEGO, PARÁMETROS ESTÁNDAR & FERTIRRIEGO',
+    'Caudalímetro (Ini/Fin), Caudal (L/s), Lámina Bruta/Neta, Presiones, CE/pH, Suelo y Fertirriego',
     explotacion,
     `${turnos.length} turnos`
   );
   renderRiegoSection(doc, startY, turnos, sectores);
   applyFooters(doc, explotacion?.nombreFundo || 'Control de Riego');
   doc.save(`turnos_riego_${sanitizeFileName(explotacion?.nombreFundo || 'huerto')}.pdf`);
+}
+
+export function exportEventualidadesPDF(
+  eventualidades: EventualidadHuerto[],
+  explotacion?: ExplotacionAgricola,
+  anioLabel?: string
+): void {
+  const doc = createLandscapeDoc();
+  const sub = anioLabel
+    ? `Bitácora Anual de Heladas, Granizos y Eventos Climáticos · Filtro: ${anioLabel}`
+    : 'Bitácora Anual de Heladas, Granizos, Vientos, Temporales y Medidas de Mitigación';
+  const startY = drawDocumentHeader(
+    doc,
+    'BITÁCORA ANUAL DE EVENTUALIDADES CLIMÁTICAS & HELADAS',
+    sub,
+    explotacion,
+    `${eventualidades.length} eventos`
+  );
+  const headE = [
+    'Fecha / Año / Horario',
+    'Tipo Eventualidad',
+    'Severidad & Daño Est.',
+    'Parámetros (T° Mín/Máx · Lluvia · Viento)',
+    'Cuarteles Afectados & Fenología',
+    'Medida de Mitigación Aplicada',
+    'Responsable & Obs.',
+  ];
+  const bodyE = eventualidades.map((ev) => {
+    const params: string[] = [];
+    if (ev.tempMinimaC !== undefined) params.push(`T° Mín: ${num(ev.tempMinimaC, 1)}°C`);
+    if (ev.tempMaximaC !== undefined) params.push(`T° Máx: ${num(ev.tempMaximaC, 1)}°C`);
+    if (ev.precipitacionMm !== undefined) params.push(`Lluvia: ${num(ev.precipitacionMm, 1)} mm`);
+    if (ev.vientoKmH !== undefined) params.push(`Viento: ${num(ev.vientoKmH, 1)} km/h`);
+
+    return [
+      `${ev.fecha} (${ev.anio})${ev.horaInicio ? `\n${ev.horaInicio}${ev.horaTermino ? ` - ${ev.horaTermino}` : ''}` : ''}${ev.duracionHoras ? ` · ${num(ev.duracionHoras, 1)} hrs` : ''}`,
+      ev.tipo,
+      `${ev.severidad.toUpperCase()}${ev.danioEstimadoPct !== undefined ? `\nDaño est.: ${num(ev.danioEstimadoPct, 0)}%` : ''}`,
+      params.length > 0 ? params.join('\n') : '—',
+      `${ev.parcelasNombres?.length ? ev.parcelasNombres.join(', ') : 'Todo el predio'}${ev.estadoFenologico ? `\nEtapa: ${ev.estadoFenologico}` : ''}`,
+      str(ev.medidaMitigacion),
+      `${str(ev.registradoPor)}${ev.observaciones ? `\n${ev.observaciones}` : ''}`,
+    ];
+  });
+  renderTable(
+    doc,
+    startY,
+    headE,
+    bodyE,
+    'No hay eventualidades climáticas registradas.',
+    [8, 145, 178]
+  );
+  applyFooters(doc, explotacion?.nombreFundo || 'Eventualidades Climáticas');
+  doc.save(`eventualidades_heladas_${sanitizeFileName(explotacion?.nombreFundo || 'huerto')}.pdf`);
 }
 
 export function exportOrdenesTrabajoPDF(

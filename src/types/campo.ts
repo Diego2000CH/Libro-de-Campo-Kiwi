@@ -105,6 +105,13 @@ export interface LugarPredio {
   colorHex?: string;
 }
 
+export type MetodoRiego =
+  | 'Goteo'
+  | 'Microaspersión'
+  | 'Aspersión Antihelada'
+  | 'Surco / Tendido'
+  | 'Otro';
+
 export interface TurnoRiego {
   id: string;
   fecha: string;
@@ -112,17 +119,33 @@ export interface TurnoRiego {
   horaTermino?: string;
   sectorRiegoId: number | string;
   sectorNombre: string;
+  cuartelesIds?: string[];
   cuartelesInvolucrados: string[];
+  superficieRegadaHa?: number;
+  metodoRiego?: MetodoRiego;
   duracionHoras: number;
-  laminaAguaMm: number;
+  laminaAguaMm: number; // Lámina Bruta (mm)
+  laminaNetaMm?: number; // Lámina Neta (mm = Bruta * eficiencia%)
+  eficienciaRiegoPct?: number; // ej. 90% goteo, 85% microaspersión, 75% aspersión
   volumenM3: number;
   caudalimetroInicialM3?: number;
   caudalimetroFinalM3?: number;
+  caudalInicialLs?: number;
+  caudalFinalLs?: number;
+  caudalMedidoLs?: number; // Calculado: (volumenM3 * 1000) / (duracionHoras * 3600)
   conFertirriego: boolean;
   fertilizanteInyectado?: string;
   dosisFertilizanteKg?: number;
+  presionPreFiltroBar?: number;
   presionCabezalBar: number;
   presionFinLineaBar: number;
+  estadoFiltros?: 'Limpios' | 'Requiere Retrolavado' | 'Mantención';
+  ceAguaDsM?: number; // Conductividad Eléctrica (dS/m)
+  phAgua?: number;
+  tensionSueloCb?: number; // Tensiómetro / Sensor matriz (cb o kPa)
+  humedadSueloPct?: number; // Humedad volumétrica (%)
+  etoReferenciaMm?: number;
+  kcAplicado?: number;
   operadorRiego: string;
   observaciones?: string;
 }
@@ -805,6 +828,38 @@ export interface ResumenTemporada {
   observaciones?: string;
 }
 
+export type TipoEventualidad =
+  | 'Helada Radiativa'
+  | 'Helada Advectiva'
+  | 'Granizo'
+  | 'Lluvia Intensa / Temporal'
+  | 'Viento Fuerte'
+  | 'Ola de Calor'
+  | 'Corte Energía / Agua'
+  | 'Otra';
+
+export interface EventualidadHuerto {
+  id: string;
+  fecha: string;
+  horaInicio?: string;
+  horaTermino?: string;
+  duracionHoras?: number;
+  anio: number;
+  tipo: TipoEventualidad;
+  severidad: 'Leve' | 'Moderada' | 'Severa' | 'Crítica';
+  tempMinimaC?: number;
+  tempMaximaC?: number;
+  precipitacionMm?: number;
+  vientoKmH?: number;
+  parcelasIds: string[];
+  parcelasNombres: string[];
+  estadoFenologico?: string;
+  danioEstimadoPct?: number;
+  medidaMitigacion?: string;
+  registradoPor: string;
+  observaciones?: string;
+}
+
 export interface EstadoFenologicoCatalogo {
   id: string;
   code: string;
@@ -839,6 +894,7 @@ export interface AppStateData {
   evaluacionesCuajaSemillas?: EvaluacionCuajaSemillas[];
   turnosRiego?: TurnoRiego[];
   clima?: ClimaCondiciones;
+  eventualidades?: EventualidadHuerto[];
   liquidacionesPacking?: LiquidacionPacking[];
   analisisLaboratorio?: AnalisisLaboratorio[];
   registrosEnvases?: RegistroEnvaseLimpio[];

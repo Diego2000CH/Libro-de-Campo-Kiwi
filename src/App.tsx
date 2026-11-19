@@ -49,6 +49,7 @@ import {
   getStoredEstadosFenologicosPersonalizados,
   getStoredPolinizacion, 
   getStoredTurnosRiego,
+  getStoredEventualidades,
   getStoredMuestreosBrotacion,
   getStoredConteosBotones,
   getStoredSincroniasFlorales,
@@ -105,6 +106,7 @@ import {
   PlanCargaRaleo,
   EvaluacionCuajaSemillas,
   TurnoRiego,
+  EventualidadHuerto,
   LiquidacionPacking,
   AnalisisLaboratorio,
   RegistroEnvaseLimpio,
@@ -158,6 +160,7 @@ export default function App() {
   );
   const [polinizacion, setPolinizacion] = useState<RegistroPolinizacion[]>(getStoredPolinizacion);
   const [turnosRiego, setTurnosRiego] = useState<TurnoRiego[]>(getStoredTurnosRiego);
+  const [eventualidades, setEventualidades] = useState<EventualidadHuerto[]>(getStoredEventualidades);
   const [muestreosBrotacion, setMuestreosBrotacion] = useState<MuestreoBrotacion[]>(getStoredMuestreosBrotacion);
   const [conteosBotones, setConteosBotones] = useState<ConteoBotonesFlorales[]>(getStoredConteosBotones);
   const [sincroniasFlorales, setSincroniasFlorales] = useState<SincroniaFloral[]>(getStoredSincroniasFlorales);
@@ -254,6 +257,7 @@ export default function App() {
     evaluacionesCuajaSemillas,
     turnosRiego,
     clima,
+    eventualidades,
     liquidacionesPacking,
     analisisLaboratorio,
     registrosEnvases,
@@ -293,6 +297,7 @@ export default function App() {
     if (Array.isArray(d.evaluacionesCuajaSemillas)) setEvaluacionesCuajaSemillas(d.evaluacionesCuajaSemillas);
     if (Array.isArray(d.turnosRiego)) setTurnosRiego(d.turnosRiego);
     if (d.clima) setClima(d.clima);
+    if (Array.isArray(d.eventualidades)) setEventualidades(d.eventualidades);
     if (Array.isArray(d.liquidacionesPacking)) setLiquidacionesPacking(d.liquidacionesPacking);
     if (Array.isArray(d.analisisLaboratorio)) setAnalisisLaboratorio(d.analisisLaboratorio);
     if (Array.isArray(d.registrosEnvases)) setRegistrosEnvases(d.registrosEnvases);
@@ -793,6 +798,7 @@ export default function App() {
     evaluacionesCuajaSemillas,
     turnosRiego,
     clima,
+    eventualidades,
     liquidacionesPacking,
     analisisLaboratorio,
     registrosEnvases,
@@ -1130,6 +1136,7 @@ export default function App() {
     setPlanesCargaRaleo(defaults.planesCargaRaleo || []);
     setEvaluacionesCuajaSemillas(defaults.evaluacionesCuajaSemillas || []);
     setTurnosRiego(defaults.turnosRiego || []);
+    setEventualidades([]);
     setLiquidacionesPacking([]);
     setAnalisisLaboratorio([]);
     setRegistrosEnvases([]);
@@ -1158,6 +1165,7 @@ export default function App() {
     setOrdenesTrabajo([]);
     setRegistrosPozo([]);
     setTurnosRiego([]);
+    setEventualidades([]);
     setHorasFrio(blank.horasFrio);
     setRegistrosTermicos([]);
     setFenologia([]);
@@ -1573,6 +1581,17 @@ export default function App() {
           <ClimaView
             clima={clima}
             onUpdateClima={guardEdit(setClima)}
+            eventualidades={eventualidades}
+            parcelas={parcelas}
+            explotacion={explotacion}
+            activeUserName={activeUser?.nombre}
+            onAddEventualidad={guardEdit((ev) => setEventualidades((prev) => [ev, ...prev]))}
+            onUpdateEventualidad={guardEdit((ev) =>
+              setEventualidades((prev) => prev.map((item) => (item.id === ev.id ? ev : item)))
+            )}
+            onDeleteEventualidad={guardEdit((id) =>
+              setEventualidades((prev) => prev.filter((item) => item.id !== id))
+            )}
             canEdit={canEdit}
           />
         )}
@@ -1699,6 +1718,8 @@ export default function App() {
                     if (parsed.fenologia) setFenologia(parsed.fenologia);
                     if (Array.isArray(parsed.estadosFenologicosPersonalizados)) setEstadosFenologicosCustom(parsed.estadosFenologicosPersonalizados);
                     if (parsed.polinizacion) setPolinizacion(parsed.polinizacion);
+                    if (Array.isArray(parsed.turnosRiego)) setTurnosRiego(parsed.turnosRiego);
+                    if (Array.isArray(parsed.eventualidades)) setEventualidades(parsed.eventualidades);
                     if (Array.isArray(parsed.liquidacionesPacking)) setLiquidacionesPacking(parsed.liquidacionesPacking);
                     if (Array.isArray(parsed.analisisLaboratorio)) setAnalisisLaboratorio(parsed.analisisLaboratorio);
                     if (Array.isArray(parsed.registrosEnvases)) setRegistrosEnvases(parsed.registrosEnvases);

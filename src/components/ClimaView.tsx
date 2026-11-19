@@ -1,33 +1,77 @@
-import React, { useState, useEffect } from 'react';
-import { ClimaCondiciones } from '../types/campo';
-import { 
-  CloudSun, 
-  Thermometer, 
-  Droplet, 
-  Wind, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Sun, 
-  CloudRain,
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  ClimaCondiciones,
+  EventualidadHuerto,
+  ExplotacionAgricola,
+  Parcela,
+  TipoEventualidad
+} from '../types/campo';
+import {
+  CloudSun,
+  Thermometer,
+  Droplet,
+  Wind,
+  AlertTriangle,
+  CheckCircle2,
+  Sun,
   ShieldAlert,
-  Compass,
   Edit3,
-  X,
-  Check,
   MapPin,
   RefreshCw,
   Search,
   Navigation,
   Calendar,
-  Waves,
-  Info
+  Info,
+  Plus,
+  Trash2,
+  Snowflake,
+  Download,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import { calcularGradosDiaPeriodo } from '../utils/agroClimaCalculos';
+import { exportEventualidadesPDF } from '../utils/pdfExport';
 
 interface ClimaViewProps {
   clima: ClimaCondiciones;
   onUpdateClima: (clima: ClimaCondiciones) => void;
+  eventualidades?: EventualidadHuerto[];
+  parcelas?: Parcela[];
+  explotacion?: ExplotacionAgricola;
+  activeUserName?: string;
+  onAddEventualidad?: (ev: EventualidadHuerto) => void;
+  onUpdateEventualidad?: (ev: EventualidadHuerto) => void;
+  onDeleteEventualidad?: (id: string) => void;
   canEdit?: boolean;
+}
+
+const TIPOS_EVENTUALIDAD: TipoEventualidad[] = [
+  'Helada Radiativa',
+  'Helada Advectiva',
+  'Granizo',
+  'Lluvia Intensa / Temporal',
+  'Viento Fuerte',
+  'Ola de Calor',
+  'Corte Energía / Agua',
+  'Otra'
+];
+
+const SEVERIDADES_EVENTO: EventualidadHuerto['severidad'][] = [
+  'Leve',
+  'Moderada',
+  'Severa',
+  'Crítica'
+];
+
+function calcularDuracionEventoHrs(inicio?: string, termino?: string): number | undefined {
+  if (!inicio || !termino) return undefined;
+  const [hi, mi] = inicio.split(':').map(Number);
+  const [ht, mt] = termino.split(':').map(Number);
+  if ([hi, mi, ht, mt].some((n) => Number.isNaN(n))) return undefined;
+  let mIni = hi * 60 + mi;
+  let mFin = ht * 60 + mt;
+  if (mFin < mIni) mFin += 24 * 60;
+  return Number(((mFin - mIni) / 60).toFixed(1));
 }
 
 interface GeoResultado {
@@ -72,6 +116,13 @@ const COMUNAS_RAPIDAS = [
 export const ClimaView: React.FC<ClimaViewProps> = ({
   clima: climaProp,
   onUpdateClima,
+  eventualidades = [],
+  parcelas = [],
+  explotacion,
+  activeUserName = 'Encargado de Huerto',
+  onAddEventualidad,
+  onUpdateEventualidad,
+  onDeleteEventualidad,
   canEdit = true
 }) => {
   const [localClima, setLocalClima] = useState<ClimaCondiciones>(climaProp);
@@ -113,6 +164,69 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
   // Modal para edición manual de respaldo
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [formData, setFormData] = useState<ClimaCondiciones>({ ...clima });
+
+  // Estado de Bitácora Anual de Eventualidades (Heladas, Granizo, Temporales)
+  const currentYear = new Date().getFullYear();
+  const [filtroAnio, setFiltroAnio] = useState<string>('todos');
+  const [filtroTipoEv, setFiltroTipoEv] = useState<string>('todos');
+  const [isEventoModalOpen, setIsEventoModalOpen] = useState(false);
+  const [editingEvento, setEditingEvento] = useState<EventualidadHuerto | null>(null);
+  const [eventoToDelete, setEventoToDelete] = useState<EventualidadHuerto | null>(null);
+  const [eventoForm, setEventoForm] = useState<Partial<EventualidadHuerto>>({
+    fecha: new Date().toISOString().split('T')[0],
+    horaInicio: '03:00',
+    horaTermino: '07:30',
+    duracionHoras: 4.5,
+    anio: currentYear,
+    tipo: 'Helada Radiativa',
+    severidad: 'Moderada',
+    tempMinimaC: undefined,
+    tempMaximaC: undefined,
+    precipitacionMm: undefined,
+    vientoKmH: undefined,
+    parcelasIds: [],
+    parcelasNombres: [],
+    estadoFenologico: '',
+    danioEstimadoPct: 0,
+    medidaMitigacion: '',
+    registradoPor: activeUserName,
+    observaciones: ''
+  });
+
+  const aniosDisponibles = useMemo(() => {
+    const years = new Set<number>([currentYear]);
+    eventualidades.forEach((ev) => {
+      if (ev.anio) years.add(ev.anio);
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [eventualidades, currentYear]);
+
+  const eventualidadesFiltradas = useMemo(() => {
+    return eventualidades
+      .filter((ev) => (filtroAnio === 'todos' ? true : String(ev.anio) === filtroAnio))
+      .filter((ev) => (filtroTipoEv === 'todos' ? true : ev.tipo === filtroTipoEv))
+      .sort((a, b) => b.fecha.localeCompare(a.fecha));
+  }, [eventualidades, filtroAnio, filtroTipoEv]);
+
+  const statsEventualidades = useMemo(() => {
+    const heladas = eventualidadesFiltradas.filter((ev) =>
+      ev.tipo.toLowerCase().includes('helada')
+    );
+    const tempsMin = eventualidadesFiltradas
+      .map((ev) => ev.tempMinimaC)
+      .filter((t): t is number => typeof t === 'number' && !Number.isNaN(t));
+    const minAbsoluta = tempsMin.length > 0 ? Math.min(...tempsMin) : null;
+    const horasTotales = eventualidadesFiltradas.reduce(
+      (acc, ev) => acc + (ev.duracionHoras || 0),
+      0
+    );
+    return {
+      total: eventualidadesFiltradas.length,
+      heladas: heladas.length,
+      minAbsoluta,
+      horasTotales: Number(horasTotales.toFixed(1))
+    };
+  }, [eventualidadesFiltradas]);
 
   // Función para convertir grados a puntos cardinales
   const getDireccionViento = (deg: number): string => {
@@ -287,7 +401,7 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
   // Obtener GPS del navegador
   const handleUsarGps = () => {
     if (!navigator.geolocation) {
-      alert('Tu navegador no soporta geolocalización.');
+      setErrorMensaje('Tu navegador no soporta geolocalización GPS.');
       return;
     }
     setIsLoadingClima(true);
@@ -300,7 +414,7 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
       },
       (err) => {
         setIsLoadingClima(false);
-        alert('No se pudo obtener la posición GPS: ' + err.message);
+        setErrorMensaje('No se pudo obtener la posición GPS: ' + err.message);
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
@@ -317,6 +431,106 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
     onUpdateClima(formData);
     setUltimaSincronizacion(`Manual (${new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })})`);
     setIsEditOpen(false);
+  };
+
+  // Gestión de Eventualidades Climáticas (Heladas, Granizo, etc.)
+  const handleOpenNewEvento = (preset?: Partial<EventualidadHuerto>) => {
+    const today = new Date().toISOString().split('T')[0];
+    const yearFromDate = parseInt(today.split('-')[0], 10) || currentYear;
+    setEditingEvento(null);
+    setEventoForm({
+      fecha: today,
+      horaInicio: '03:00',
+      horaTermino: '07:30',
+      duracionHoras: 4.5,
+      anio: yearFromDate,
+      tipo: preset?.tipo || 'Helada Radiativa',
+      severidad: preset?.severidad || 'Moderada',
+      tempMinimaC: preset?.tempMinimaC,
+      tempMaximaC: preset?.tempMaximaC,
+      precipitacionMm: preset?.precipitacionMm,
+      vientoKmH: preset?.vientoKmH,
+      parcelasIds: [],
+      parcelasNombres: [],
+      estadoFenologico: parcelas[0]?.estadoFenologico || '',
+      danioEstimadoPct: 0,
+      medidaMitigacion: preset?.medidaMitigacion || '',
+      registradoPor: activeUserName,
+      observaciones: ''
+    });
+    setIsEventoModalOpen(true);
+  };
+
+  const handleOpenEditEvento = (ev: EventualidadHuerto) => {
+    setEditingEvento(ev);
+    setEventoForm({ ...ev });
+    setIsEventoModalOpen(true);
+  };
+
+  const handleToggleParcelaEvento = (p: Parcela) => {
+    setEventoForm((prev) => {
+      const currentIds = prev.parcelasIds || [];
+      const exists = currentIds.includes(p.id);
+      const nextIds = exists
+        ? currentIds.filter((id) => id !== p.id)
+        : [...currentIds, p.id];
+      const nextNames = parcelas
+        .filter((item) => nextIds.includes(item.id))
+        .map((item) => item.nombre);
+      return {
+        ...prev,
+        parcelasIds: nextIds,
+        parcelasNombres: nextNames
+      };
+    });
+  };
+
+  const handleEventoHoraChange = (field: 'horaInicio' | 'horaTermino', val: string) => {
+    setEventoForm((prev) => {
+      const nextIni = field === 'horaInicio' ? val : prev.horaInicio;
+      const nextFin = field === 'horaTermino' ? val : prev.horaTermino;
+      const dur = calcularDuracionEventoHrs(nextIni, nextFin);
+      return {
+        ...prev,
+        [field]: val,
+        duracionHoras: dur !== undefined ? dur : prev.duracionHoras
+      };
+    });
+  };
+
+  const handleSaveEvento = (e: React.FormEvent) => {
+    e.preventDefault();
+    const fechaStr = eventoForm.fecha || new Date().toISOString().split('T')[0];
+    const anioCalculado = parseInt(fechaStr.split('-')[0], 10) || eventoForm.anio || currentYear;
+    const payload: EventualidadHuerto = {
+      id: editingEvento ? editingEvento.id : `ev-${Date.now()}`,
+      fecha: fechaStr,
+      horaInicio: eventoForm.horaInicio || undefined,
+      horaTermino: eventoForm.horaTermino || undefined,
+      duracionHoras: eventoForm.duracionHoras,
+      anio: anioCalculado,
+      tipo: (eventoForm.tipo as TipoEventualidad) || 'Helada Radiativa',
+      severidad: (eventoForm.severidad as EventualidadHuerto['severidad']) || 'Moderada',
+      tempMinimaC: eventoForm.tempMinimaC,
+      tempMaximaC: eventoForm.tempMaximaC,
+      precipitacionMm: eventoForm.precipitacionMm,
+      vientoKmH: eventoForm.vientoKmH,
+      parcelasIds: eventoForm.parcelasIds || [],
+      parcelasNombres: eventoForm.parcelasNombres || [],
+      estadoFenologico: eventoForm.estadoFenologico || '',
+      danioEstimadoPct: eventoForm.danioEstimadoPct,
+      medidaMitigacion: eventoForm.medidaMitigacion || '',
+      registradoPor: eventoForm.registradoPor || activeUserName,
+      observaciones: eventoForm.observaciones || ''
+    };
+
+    if (editingEvento) {
+      onUpdateEventualidad?.(payload);
+    } else {
+      onAddEventualidad?.(payload);
+    }
+    setIsEventoModalOpen(false);
+    setEditingEvento(null);
   };
 
   return (
@@ -511,16 +725,35 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
       )}
 
       {clima.alertaHelada && (
-        <div className="p-4 bg-cyan-50 border-2 border-cyan-300 rounded-2xl text-cyan-950 flex items-start gap-3 shadow-xs">
-          <Thermometer className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
-          <div className="space-y-1 text-xs">
-            <div className="font-black uppercase tracking-wider text-cyan-900 text-[11px]">
-              ❄️ ALERTA DE HELADA AGRONÓMICA: MÍNIMA PRONOSTICADA {clima.tempMinima}°C
+        <div className="p-4 bg-cyan-50 border-2 border-cyan-300 rounded-2xl text-cyan-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-3">
+            <Thermometer className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
+            <div className="space-y-1 text-xs">
+              <div className="font-black uppercase tracking-wider text-cyan-900 text-[11px]">
+                ❄️ ALERTA DE HELADA AGRONÓMICA: MÍNIMA PRONOSTICADA {clima.tempMinima}°C
+              </div>
+              <p className="leading-relaxed">
+                Temperaturas cercanas o bajo cero dañan irreversiblemente los brotes tiernos y racimos florales de Hayward. Activar sistemas de mitigación (aspersión antiheladas sub/sobre copa o torres de viento).
+              </p>
             </div>
-            <p className="leading-relaxed">
-              Temperaturas cercanas o bajo cero dañan irreversiblemente los brotes tiernos y racimos florales de Hayward. Activar sistemas de mitigación (aspersión antiheladas sub/sobre copa o torres de viento).
-            </p>
           </div>
+          {canEdit && onAddEventualidad && (
+            <button
+              type="button"
+              onClick={() =>
+                handleOpenNewEvento({
+                  tipo: 'Helada Radiativa',
+                  tempMinimaC: clima.tempMinima,
+                  severidad: clima.tempMinima <= -2 ? 'Crítica' : clima.tempMinima <= 0 ? 'Severa' : 'Moderada',
+                  medidaMitigacion: 'Aspersión antiheladas / Monitoreo térmico'
+                })
+              }
+              className="px-3.5 py-2 bg-cyan-900 hover:bg-cyan-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap"
+            >
+              <Snowflake className="w-3.5 h-3.5" />
+              <span>Registrar Helada en Bitácora</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -770,6 +1003,596 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* BITÁCORA ANUAL DE EVENTUALIDADES CLIMÁTICAS (HELADAS, GRANIZO, TEMPORALES) */}
+      <div className="bg-white rounded-2xl border border-stone-200 shadow-2xs overflow-hidden">
+        <div className="p-5 border-b border-stone-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-cyan-800 mb-0.5">
+              <Snowflake className="w-3.5 h-3.5 text-cyan-700" />
+              <span>Registro Histórico Anual del Predio</span>
+            </div>
+            <h2 className="text-base sm:text-lg font-black text-stone-900 tracking-tight">
+              Bitácora Anual de Heladas y Eventualidades Climáticas
+            </h2>
+            <p className="text-xs text-stone-500">
+              Registra heladas radiativas/advectivas, granizos, lluvias intensas, vientos fuertes u otras eventualidades ocurridas durante el año, su impacto y mitigación.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={filtroAnio}
+              onChange={(e) => setFiltroAnio(e.target.value)}
+              className="px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-bold text-stone-800"
+              aria-label="Filtrar eventualidades por año"
+            >
+              <option value="todos">Todos los años ({eventualidades.length})</option>
+              {aniosDisponibles.map((yr) => (
+                <option key={yr} value={String(yr)}>
+                  Año {yr}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={filtroTipoEv}
+              onChange={(e) => setFiltroTipoEv(e.target.value)}
+              className="px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold text-stone-800"
+              aria-label="Filtrar eventualidades por tipo"
+            >
+              <option value="todos">Todos los eventos</option>
+              {TIPOS_EVENTUALIDAD.map((tp) => (
+                <option key={tp} value={tp}>
+                  {tp}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() =>
+                exportEventualidadesPDF(
+                  eventualidadesFiltradas,
+                  explotacion,
+                  filtroAnio === 'todos' ? undefined : `Año ${filtroAnio}`
+                )
+              }
+              className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            >
+              <Download className="w-3.5 h-3.5 text-cyan-800" />
+              <span>PDF ({eventualidadesFiltradas.length})</span>
+            </button>
+
+            {canEdit && onAddEventualidad && (
+              <button
+                type="button"
+                onClick={() => handleOpenNewEvento()}
+                className="px-4 py-2 bg-cyan-900 hover:bg-cyan-800 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Registrar Helada / Eventualidad</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Resumen Anual de Eventualidades */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-stone-50/70 border-b border-stone-200">
+          <div className="p-3 bg-white rounded-xl border border-stone-200">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              Eventualidades Filtradas
+            </div>
+            <div className="text-xl font-black text-stone-900 font-mono tabular-nums mt-0.5">
+              {statsEventualidades.total}
+            </div>
+            <div className="text-[11px] text-stone-500">
+              {filtroAnio === 'todos' ? 'Histórico total' : `Temporada ${filtroAnio}`}
+            </div>
+          </div>
+
+          <div className="p-3 bg-white rounded-xl border border-stone-200">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-cyan-700">
+              Heladas Registradas
+            </div>
+            <div className="text-xl font-black text-cyan-900 font-mono tabular-nums mt-0.5">
+              {statsEventualidades.heladas}
+            </div>
+            <div className="text-[11px] text-stone-500">Radiativas y advectivas</div>
+          </div>
+
+          <div className="p-3 bg-white rounded-xl border border-stone-200">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-blue-700">
+              Mínima Absoluta
+            </div>
+            <div className="text-xl font-black text-blue-900 font-mono tabular-nums mt-0.5">
+              {statsEventualidades.minAbsoluta !== null ? `${statsEventualidades.minAbsoluta}°C` : '—'}
+            </div>
+            <div className="text-[11px] text-stone-500">Menor temperatura registrada</div>
+          </div>
+
+          <div className="p-3 bg-white rounded-xl border border-stone-200">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
+              Duración Acumulada
+            </div>
+            <div className="text-xl font-black text-stone-900 font-mono tabular-nums mt-0.5">
+              {statsEventualidades.horasTotales} hrs
+            </div>
+            <div className="text-[11px] text-stone-500">Horas bajo eventos críticos</div>
+          </div>
+        </div>
+
+        {/* Tabla de Eventualidades */}
+        {eventualidadesFiltradas.length === 0 ? (
+          <div className="p-8 text-center text-stone-400 space-y-2">
+            <Snowflake className="w-10 h-10 mx-auto text-stone-300" />
+            <p className="font-bold text-sm text-stone-700">
+              No hay eventualidades registradas para este filtro
+            </p>
+            <p className="text-xs">
+              Registra heladas, granizos, temporales o cortes de riego ocurridos en el año para mantener trazabilidad técnica y análisis de daño.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-stone-50 text-stone-600 font-bold border-b border-stone-200">
+                <tr>
+                  <th className="p-3">Fecha & Horario</th>
+                  <th className="p-3">Eventualidad</th>
+                  <th className="p-3">Severidad & Daño</th>
+                  <th className="p-3">Mediciones (T° / Lluvia / Viento)</th>
+                  <th className="p-3">Cuarteles & Fenología</th>
+                  <th className="p-3">Mitigación & Respuesta</th>
+                  <th className="p-3">Responsable</th>
+                  {canEdit && <th className="p-3 text-right">Acciones</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-100 text-stone-700">
+                {eventualidadesFiltradas.map((ev) => (
+                  <tr key={ev.id} className="hover:bg-cyan-50/30 transition-colors align-top">
+                    <td className="p-3 whitespace-nowrap">
+                      <div className="font-bold text-stone-900 font-mono">{ev.fecha}</div>
+                      {(ev.horaInicio || ev.duracionHoras) && (
+                        <div className="text-[11px] text-stone-500 font-mono">
+                          {ev.horaInicio || ''}
+                          {ev.horaTermino ? ` - ${ev.horaTermino}` : ''}
+                          {ev.duracionHoras ? ` (${ev.duracionHoras}h)` : ''}
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-3">
+                      <div className="font-extrabold text-stone-900">{ev.tipo}</div>
+                      <div className="text-[10px] text-stone-400 font-mono">Año {ev.anio}</div>
+                    </td>
+                    <td className="p-3 whitespace-nowrap">
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded border text-[10px] font-bold uppercase ${
+                          ev.severidad === 'Crítica'
+                            ? 'bg-rose-50 text-rose-800 border-rose-300'
+                            : ev.severidad === 'Severa'
+                            ? 'bg-amber-50 text-amber-800 border-amber-300'
+                            : ev.severidad === 'Moderada'
+                            ? 'bg-cyan-50 text-cyan-800 border-cyan-300'
+                            : 'bg-stone-100 text-stone-700 border-stone-300'
+                        }`}
+                      >
+                        {ev.severidad}
+                      </span>
+                      {ev.danioEstimadoPct !== undefined && ev.danioEstimadoPct > 0 && (
+                        <div className="text-[11px] font-mono text-rose-700 font-bold mt-1">
+                          Daño est.: {ev.danioEstimadoPct}%
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-3 font-mono text-[11px] tabular-nums whitespace-nowrap">
+                      {ev.tempMinimaC !== undefined && (
+                        <div className={ev.tempMinimaC <= 0 ? 'text-cyan-800 font-bold' : ''}>
+                          T° Mín: {ev.tempMinimaC}°C
+                        </div>
+                      )}
+                      {ev.tempMaximaC !== undefined && <div>T° Máx: {ev.tempMaximaC}°C</div>}
+                      {ev.precipitacionMm !== undefined && <div>Lluvia: {ev.precipitacionMm} mm</div>}
+                      {ev.vientoKmH !== undefined && <div>Viento: {ev.vientoKmH} km/h</div>}
+                      {ev.tempMinimaC === undefined &&
+                        ev.tempMaximaC === undefined &&
+                        ev.precipitacionMm === undefined &&
+                        ev.vientoKmH === undefined && <span className="text-stone-400">—</span>}
+                    </td>
+                    <td className="p-3">
+                      <div className="font-semibold text-stone-800">
+                        {ev.parcelasNombres?.length
+                          ? ev.parcelasNombres.join(', ')
+                          : 'Todo el predio'}
+                      </div>
+                      {ev.estadoFenologico && (
+                        <div className="text-[11px] text-stone-500">Etapa: {ev.estadoFenologico}</div>
+                      )}
+                    </td>
+                    <td className="p-3 max-w-xs">
+                      <div className="text-stone-800 font-medium">
+                        {ev.medidaMitigacion || 'Sin medida registrada'}
+                      </div>
+                      {ev.observaciones && (
+                        <div className="text-[11px] text-stone-500 mt-0.5">{ev.observaciones}</div>
+                      )}
+                    </td>
+                    <td className="p-3 text-[11px] text-stone-600 whitespace-nowrap">
+                      {ev.registradoPor}
+                    </td>
+                    {canEdit && (
+                      <td className="p-3 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditEvento(ev)}
+                            className="p-1.5 text-stone-500 hover:text-cyan-700 hover:bg-cyan-50 rounded-lg cursor-pointer"
+                            title="Editar eventualidad"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEventoToDelete(ev)}
+                            className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                            title="Eliminar eventualidad"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* MODAL REGISTRAR / EDITAR EVENTUALIDAD CLIMÁTICA */}
+      {isEventoModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 overflow-hidden">
+            <div className="bg-cyan-950 text-white p-4 flex items-center justify-between">
+              <h3 className="font-bold text-sm flex items-center gap-2">
+                <Snowflake className="w-4 h-4 text-cyan-300" />
+                {editingEvento
+                  ? 'Editar Eventualidad Climática'
+                  : 'Registrar Helada o Eventualidad Anual'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsEventoModalOpen(false)}
+                className="text-cyan-200 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEvento} className="p-5 space-y-3.5 text-xs max-h-[85vh] overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Tipo de Eventualidad:</label>
+                  <select
+                    value={eventoForm.tipo || 'Helada Radiativa'}
+                    onChange={(e) =>
+                      setEventoForm({ ...eventoForm, tipo: e.target.value as TipoEventualidad })
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    required
+                  >
+                    {TIPOS_EVENTUALIDAD.map((tp) => (
+                      <option key={tp} value={tp}>
+                        {tp}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Fecha del Evento:</label>
+                  <input
+                    type="date"
+                    value={eventoForm.fecha || ''}
+                    onChange={(e) => setEventoForm({ ...eventoForm, fecha: e.target.value })}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Severidad:</label>
+                  <select
+                    value={eventoForm.severidad || 'Moderada'}
+                    onChange={(e) =>
+                      setEventoForm({
+                        ...eventoForm,
+                        severidad: e.target.value as EventualidadHuerto['severidad']
+                      })
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                  >
+                    {SEVERIDADES_EVENTO.map((sev) => (
+                      <option key={sev} value={sev}>
+                        {sev}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2.5">
+                <div>
+                  <label className="block font-semibold text-stone-600 mb-1">Hora Inicio:</label>
+                  <input
+                    type="time"
+                    value={eventoForm.horaInicio || ''}
+                    onChange={(e) => handleEventoHoraChange('horaInicio', e.target.value)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-stone-600 mb-1">Hora Término:</label>
+                  <input
+                    type="time"
+                    value={eventoForm.horaTermino || ''}
+                    onChange={(e) => handleEventoHoraChange('horaTermino', e.target.value)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-stone-600 mb-1">Duración (hrs):</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    value={eventoForm.duracionHoras ?? ''}
+                    onChange={(e) =>
+                      setEventoForm({
+                        ...eventoForm,
+                        duracionHoras: e.target.value === '' ? undefined : parseFloat(e.target.value)
+                      })
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+                <div className="font-bold text-stone-800">Mediciones Registradas en el Evento</div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div>
+                    <label className="block font-semibold text-stone-600 mb-1">T° Mínima (°C):</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="ej. -1.8"
+                      value={eventoForm.tempMinimaC ?? ''}
+                      onChange={(e) =>
+                        setEventoForm({
+                          ...eventoForm,
+                          tempMinimaC: e.target.value === '' ? undefined : parseFloat(e.target.value)
+                        })
+                      }
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-stone-600 mb-1">T° Máxima (°C):</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Opcional"
+                      value={eventoForm.tempMaximaC ?? ''}
+                      onChange={(e) =>
+                        setEventoForm({
+                          ...eventoForm,
+                          tempMaximaC: e.target.value === '' ? undefined : parseFloat(e.target.value)
+                        })
+                      }
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-stone-600 mb-1">Lluvia (mm):</label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      placeholder="Opcional"
+                      value={eventoForm.precipitacionMm ?? ''}
+                      onChange={(e) =>
+                        setEventoForm({
+                          ...eventoForm,
+                          precipitacionMm: e.target.value === '' ? undefined : parseFloat(e.target.value)
+                        })
+                      }
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-stone-600 mb-1">Viento (km/h):</label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      placeholder="Opcional"
+                      value={eventoForm.vientoKmH ?? ''}
+                      onChange={(e) =>
+                        setEventoForm({
+                          ...eventoForm,
+                          vientoKmH: e.target.value === '' ? undefined : parseFloat(e.target.value)
+                        })
+                      }
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Cuarteles afectados */}
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-stone-800">
+                    Cuarteles Afectados (vacío = todo el predio)
+                  </span>
+                  <span className="text-[11px] text-stone-500">
+                    {eventoForm.parcelasIds?.length || 0} seleccionados
+                  </span>
+                </div>
+                {parcelas.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {parcelas.map((p) => {
+                      const checked = (eventoForm.parcelasIds || []).includes(p.id);
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => handleToggleParcelaEvento(p)}
+                          className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer ${
+                            checked
+                              ? 'bg-cyan-900 text-white border-cyan-900'
+                              : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-100'
+                          }`}
+                        >
+                          {checked ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />}
+                          <span>{p.codigoCuartel ? `${p.codigoCuartel} · ` : ''}{p.nombre}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-stone-500">
+                    No hay cuarteles creados; se registrará para todo el predio.
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div>
+                  <label className="block font-semibold text-stone-600 mb-1">Estado Fenológico:</label>
+                  <input
+                    type="text"
+                    placeholder="ej. Brotes tiernos / Plena flor"
+                    value={eventoForm.estadoFenologico || ''}
+                    onChange={(e) =>
+                      setEventoForm({ ...eventoForm, estadoFenologico: e.target.value })
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-stone-600 mb-1">Daño Estimado (%):</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={eventoForm.danioEstimadoPct ?? 0}
+                    onChange={(e) =>
+                      setEventoForm({
+                        ...eventoForm,
+                        danioEstimadoPct: e.target.value === '' ? 0 : parseInt(e.target.value, 10)
+                      })
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Registrado Por:</label>
+                  <input
+                    type="text"
+                    value={eventoForm.registradoPor || ''}
+                    onChange={(e) =>
+                      setEventoForm({ ...eventoForm, registradoPor: e.target.value })
+                    }
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">
+                  Medida de Mitigación / Acción Realizada:
+                </label>
+                <input
+                  type="text"
+                  placeholder="ej. Activación aspersión antiheladas 03:15 hrs / Aplicación cobre post-helada"
+                  value={eventoForm.medidaMitigacion || ''}
+                  onChange={(e) =>
+                    setEventoForm({ ...eventoForm, medidaMitigacion: e.target.value })
+                  }
+                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-stone-600 mb-1">Observaciones:</label>
+                <textarea
+                  rows={2}
+                  placeholder="Detalle de zonas bajas afectadas, daños en yemas/brotes o seguimiento..."
+                  value={eventoForm.observaciones || ''}
+                  onChange={(e) => setEventoForm({ ...eventoForm, observaciones: e.target.value })}
+                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+                <button
+                  type="button"
+                  onClick={() => setIsEventoModalOpen(false)}
+                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-cyan-900 hover:bg-cyan-800 text-white font-bold rounded-lg cursor-pointer"
+                >
+                  {editingEvento ? 'Guardar Cambios' : 'Registrar Eventualidad'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CONFIRMAR ELIMINAR EVENTUALIDAD */}
+      {eventoToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 p-5 space-y-4">
+            <div className="flex items-center gap-3 text-rose-600">
+              <AlertTriangle className="w-6 h-6" />
+              <h3 className="font-bold text-sm text-stone-900">¿Eliminar Eventualidad?</h3>
+            </div>
+            <p className="text-xs text-stone-600">
+              Se eliminará el registro de <strong>{eventoToDelete.tipo}</strong> del{' '}
+              <strong>{eventoToDelete.fecha}</strong>.
+            </p>
+            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+              <button
+                type="button"
+                onClick={() => setEventoToDelete(null)}
+                className="px-3 py-1.5 border border-stone-300 rounded-lg text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteEventualidad?.(eventoToDelete.id);
+                  setEventoToDelete(null);
+                }}
+                className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg cursor-pointer"
+              >
+                Eliminar
+              </button>
+            </div>
           </div>
         </div>
       )}
