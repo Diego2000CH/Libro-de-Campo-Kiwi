@@ -891,6 +891,7 @@ function renderRiegoSection(
     'Sector',
     'Cuarteles Regados',
     'Duración (hrs)',
+    'Caudalímetro (Ini / Fin)',
     'Lámina (mm)',
     'Volumen (m³)',
     'Fertirriego',
@@ -903,6 +904,9 @@ function renderRiegoSection(
     t.sectorNombre,
     t.cuartelesInvolucrados?.length ? t.cuartelesInvolucrados.join(', ') : '—',
     `${num(t.duracionHoras, 2)} hrs`,
+    t.caudalimetroInicialM3 !== undefined || t.caudalimetroFinalM3 !== undefined
+      ? `Ini: ${num(t.caudalimetroInicialM3 ?? 0, 1)} m³\nFin: ${num(t.caudalimetroFinalM3 ?? 0, 1)} m³`
+      : '—',
     `${num(t.laminaAguaMm, 1)} mm`,
     `${num(t.volumenM3, 1)} m³`,
     t.conFertirriego

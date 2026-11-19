@@ -21,7 +21,8 @@ import {
   Waves,
   Zap,
   Info,
-  Download
+  Download,
+  Gauge
 } from 'lucide-react';
 
 interface RiegoViewProps {
@@ -82,6 +83,9 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
   const totalM3Riego = turnosRiego.reduce((acc, t) => acc + (t.volumenM3 || 0), 0);
   const totalLaminaMm = turnosRiego.reduce((acc, t) => acc + (t.laminaAguaMm || 0), 0);
   const laminaPromedio = turnosRiego.length > 0 ? (totalLaminaMm / turnosRiego.length).toFixed(1) : '0.0';
+  const ultimoCaudalimetroM3 = turnosRiego.length > 0
+    ? Math.max(...turnosRiego.map((t) => t.caudalimetroFinalM3 || 0))
+    : 0;
 
   // Demanda hídrica diaria de referencia
   const etoActual = clima?.evapotranspiracionEtoMmDia ?? 0;
@@ -99,6 +103,8 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
     duracionHoras: 0,
     laminaAguaMm: 0,
     volumenM3: 0,
+    caudalimetroInicialM3: 0,
+    caudalimetroFinalM3: 0,
     conFertirriego: false,
     fertilizanteInyectado: '',
     dosisFertilizanteKg: 0,
@@ -132,6 +138,8 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
       duracionHoras: duracion,
       laminaAguaMm: laminaCalculada,
       volumenM3: m3Calculado,
+      caudalimetroInicialM3: ultimoCaudalimetroM3,
+      caudalimetroFinalM3: ultimoCaudalimetroM3,
       conFertirriego: false,
       fertilizanteInyectado: '',
       dosisFertilizanteKg: 0,
@@ -145,7 +153,11 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
 
   const handleOpenEditTurno = (turno: TurnoRiego) => {
     setEditingTurno(turno);
-    setFormTurno({ ...turno });
+    setFormTurno({
+      ...turno,
+      caudalimetroInicialM3: turno.caudalimetroInicialM3 ?? 0,
+      caudalimetroFinalM3: turno.caudalimetroFinalM3 ?? 0
+    });
     setIsEditTurnoOpen(true);
   };
 
@@ -159,17 +171,23 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
     const supHa = sec?.ha || 5.0;
     const caudalLs = sec?.caudalDisenoLs || 20.0;
     const duracion = formTurno.duracionHoras || 6.5;
-    const m3 = Math.round((caudalLs * duracion * 3600) / 1000);
-    const lamina = Number(((m3 / (supHa * 10))).toFixed(1));
 
-    setFormTurno(prev => ({
-      ...prev,
-      sectorRiegoId: secId,
-      sectorNombre: sec?.nombre || `Sector ${secId}`,
-      cuartelesInvolucrados: cuartelesDelSector.length > 0 ? cuartelesDelSector : [`Sector ${secId}`],
-      volumenM3: m3,
-      laminaAguaMm: lamina
-    }));
+    setFormTurno(prev => {
+      const hasMeterDelta = (prev.caudalimetroFinalM3 ?? 0) > (prev.caudalimetroInicialM3 ?? 0);
+      const m3 = hasMeterDelta
+        ? Number(((prev.caudalimetroFinalM3 ?? 0) - (prev.caudalimetroInicialM3 ?? 0)).toFixed(1))
+        : Math.round((caudalLs * duracion * 3600) / 1000);
+      const lamina = supHa > 0 ? Number(((m3 / (supHa * 10))).toFixed(1)) : 0;
+
+      return {
+        ...prev,
+        sectorRiegoId: secId,
+        sectorNombre: sec?.nombre || `Sector ${secId}`,
+        cuartelesInvolucrados: cuartelesDelSector.length > 0 ? cuartelesDelSector : [`Sector ${secId}`],
+        volumenM3: m3,
+        laminaAguaMm: lamina
+      };
+    });
   };
 
   // Cambio de duración en horas
@@ -177,19 +195,55 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
     const sec = sectoresRiego.find(s => String(s.id) === String(formTurno.sectorRiegoId));
     const supHa = sec?.ha || 5.0;
     const caudalLs = sec?.caudalDisenoLs || 20.0;
-    const m3 = Math.round((caudalLs * hrs * 3600) / 1000);
-    const lamina = Number(((m3 / (supHa * 10))).toFixed(1));
 
-    setFormTurno(prev => ({
-      ...prev,
-      duracionHoras: hrs,
-      volumenM3: m3,
-      laminaAguaMm: lamina
-    }));
+    setFormTurno(prev => {
+      const hasMeterDelta = (prev.caudalimetroFinalM3 ?? 0) > (prev.caudalimetroInicialM3 ?? 0);
+      if (hasMeterDelta) {
+        return { ...prev, duracionHoras: hrs };
+      }
+      const m3 = Math.round((caudalLs * hrs * 3600) / 1000);
+      const lamina = supHa > 0 ? Number(((m3 / (supHa * 10))).toFixed(1)) : 0;
+      return {
+        ...prev,
+        duracionHoras: hrs,
+        volumenM3: m3,
+        laminaAguaMm: lamina
+      };
+    });
+  };
+
+  // Cambio de caudalímetro inicial / final
+  const handleCaudalimetroChange = (field: 'caudalimetroInicialM3' | 'caudalimetroFinalM3', value: number) => {
+    setFormTurno((prev) => {
+      const nextInicial = field === 'caudalimetroInicialM3' ? value : (prev.caudalimetroInicialM3 ?? 0);
+      const nextFinal = field === 'caudalimetroFinalM3' ? value : (prev.caudalimetroFinalM3 ?? 0);
+      const sec = sectoresRiego.find(s => String(s.id) === String(prev.sectorRiegoId));
+      const supHa = sec?.ha || 0;
+
+      if (nextFinal > nextInicial) {
+        const diffM3 = Number((nextFinal - nextInicial).toFixed(1));
+        const lamina = supHa > 0 ? Number((diffM3 / (supHa * 10)).toFixed(1)) : (prev.laminaAguaMm ?? 0);
+        return {
+          ...prev,
+          [field]: value,
+          volumenM3: diffM3,
+          laminaAguaMm: lamina
+        };
+      }
+
+      return {
+        ...prev,
+        [field]: value
+      };
+    });
   };
 
   const handleSaveNewTurno = (e: React.FormEvent) => {
     e.preventDefault();
+    const caudIni = Number(formTurno.caudalimetroInicialM3 ?? 0);
+    const caudFin = Number(formTurno.caudalimetroFinalM3 ?? 0);
+    const volDesdeCaud = caudFin > caudIni ? Number((caudFin - caudIni).toFixed(1)) : undefined;
+
     const nuevo: TurnoRiego = {
       id: `tr-${Date.now()}`,
       fecha: formTurno.fecha || new Date().toISOString().split('T')[0],
@@ -198,14 +252,16 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
       sectorRiegoId: formTurno.sectorRiegoId || 1,
       sectorNombre: formTurno.sectorNombre || 'Sector 1',
       cuartelesInvolucrados: formTurno.cuartelesInvolucrados || [],
-      duracionHoras: formTurno.duracionHoras || 6.5,
-      laminaAguaMm: formTurno.laminaAguaMm || 4.5,
-      volumenM3: formTurno.volumenM3 || 260,
+      duracionHoras: formTurno.duracionHoras ?? 0,
+      laminaAguaMm: formTurno.laminaAguaMm ?? 0,
+      volumenM3: volDesdeCaud ?? (formTurno.volumenM3 ?? 0),
+      caudalimetroInicialM3: caudIni,
+      caudalimetroFinalM3: caudFin,
       conFertirriego: !!formTurno.conFertirriego,
       fertilizanteInyectado: formTurno.conFertirriego ? formTurno.fertilizanteInyectado : '',
       dosisFertilizanteKg: formTurno.conFertirriego ? formTurno.dosisFertilizanteKg : 0,
-      presionCabezalBar: formTurno.presionCabezalBar || 3.8,
-      presionFinLineaBar: formTurno.presionFinLineaBar || 1.8,
+      presionCabezalBar: formTurno.presionCabezalBar ?? 0,
+      presionFinLineaBar: formTurno.presionFinLineaBar ?? 0,
       operadorRiego: formTurno.operadorRiego || 'Operador de Riego',
       observaciones: formTurno.observaciones || ''
     };
@@ -216,6 +272,10 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
   const handleSaveEditTurno = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTurno) return;
+    const caudIni = formTurno.caudalimetroInicialM3 ?? editingTurno.caudalimetroInicialM3 ?? 0;
+    const caudFin = formTurno.caudalimetroFinalM3 ?? editingTurno.caudalimetroFinalM3 ?? 0;
+    const volDesdeCaud = caudFin > caudIni ? Number((caudFin - caudIni).toFixed(1)) : undefined;
+
     const updated: TurnoRiego = {
       ...editingTurno,
       fecha: formTurno.fecha || editingTurno.fecha,
@@ -226,7 +286,9 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
       cuartelesInvolucrados: formTurno.cuartelesInvolucrados || editingTurno.cuartelesInvolucrados,
       duracionHoras: formTurno.duracionHoras ?? editingTurno.duracionHoras,
       laminaAguaMm: formTurno.laminaAguaMm ?? editingTurno.laminaAguaMm,
-      volumenM3: formTurno.volumenM3 ?? editingTurno.volumenM3,
+      volumenM3: volDesdeCaud ?? (formTurno.volumenM3 ?? editingTurno.volumenM3),
+      caudalimetroInicialM3: caudIni,
+      caudalimetroFinalM3: caudFin,
       conFertirriego: !!formTurno.conFertirriego,
       fertilizanteInyectado: formTurno.conFertirriego ? formTurno.fertilizanteInyectado : '',
       dosisFertilizanteKg: formTurno.conFertirriego ? formTurno.dosisFertilizanteKg : 0,
@@ -347,8 +409,12 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
             <span className="text-[10px] font-bold uppercase tracking-wider">Volumen Aplicado</span>
             <Waves className="w-4 h-4 text-blue-600" />
           </div>
-          <div className="text-2xl font-black text-stone-900">{totalM3Riego.toLocaleString('es-CL')} m³</div>
-          <p className="text-[11px] text-stone-500">{(totalM3Riego * 1000).toLocaleString('es-CL')} litros de agua</p>
+          <div className="text-2xl font-black text-stone-900 font-mono tabular-nums">{totalM3Riego.toLocaleString('es-CL')} m³</div>
+          <p className="text-[11px] text-stone-500 font-mono tabular-nums">
+            {ultimoCaudalimetroM3 > 0
+              ? `Últ. caudalímetro: ${ultimoCaudalimetroM3.toLocaleString('es-CL')} m³`
+              : `${(totalM3Riego * 1000).toLocaleString('es-CL')} litros de agua`}
+          </p>
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-1">
@@ -496,6 +562,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                   <th className="p-3">Fecha & Horario</th>
                   <th className="p-3">Sector & Cuarteles</th>
                   <th className="p-3">Duración</th>
+                  <th className="p-3">Caudalímetro (m³)</th>
                   <th className="p-3">Lámina (mm)</th>
                   <th className="p-3">Volumen (m³)</th>
                   <th className="p-3">Fertirriego</th>
@@ -519,13 +586,23 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                         {turno.cuartelesInvolucrados?.join(', ') || 'Cuartel general'}
                       </div>
                     </td>
-                    <td className="p-3 font-mono font-bold text-stone-900">
+                    <td className="p-3 font-mono font-bold text-stone-900 tabular-nums">
                       {turno.duracionHoras} hrs
                     </td>
-                    <td className="p-3 font-mono font-black text-cyan-800">
+                    <td className="p-3 font-mono text-[11px] text-stone-700 tabular-nums whitespace-nowrap">
+                      {turno.caudalimetroInicialM3 !== undefined || turno.caudalimetroFinalM3 !== undefined ? (
+                        <div>
+                          <div>Ini: <strong className="text-stone-900">{(turno.caudalimetroInicialM3 ?? 0).toLocaleString('es-CL')}</strong></div>
+                          <div>Fin: <strong className="text-cyan-900">{(turno.caudalimetroFinalM3 ?? 0).toLocaleString('es-CL')}</strong></div>
+                        </div>
+                      ) : (
+                        <span className="text-stone-400">—</span>
+                      )}
+                    </td>
+                    <td className="p-3 font-mono font-black text-cyan-800 tabular-nums">
                       {turno.laminaAguaMm} mm
                     </td>
-                    <td className="p-3 font-mono font-bold text-stone-900">
+                    <td className="p-3 font-mono font-bold text-stone-900 tabular-nums">
                       {turno.volumenM3} m³
                     </td>
                     <td className="p-3">
@@ -663,6 +740,46 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                 </div>
               </div>
 
+              {/* Lecturas de Caudalímetro Inicial y Final */}
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-stone-800 flex items-center gap-1.5 text-xs">
+                    <Gauge className="w-3.5 h-3.5 text-cyan-700" />
+                    <span>Caudalímetro (Totalizador m³)</span>
+                  </span>
+                  {(formTurno.caudalimetroFinalM3 ?? 0) > (formTurno.caudalimetroInicialM3 ?? 0) && (
+                    <span className="text-[11px] font-mono font-bold text-cyan-800 tabular-nums">
+                      Diferencia: {((formTurno.caudalimetroFinalM3 ?? 0) - (formTurno.caudalimetroInicialM3 ?? 0)).toFixed(1)} m³
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">Caudalímetro Inicial (m³):</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formTurno.caudalimetroInicialM3 ?? 0}
+                      onChange={(e) => handleCaudalimetroChange('caudalimetroInicialM3', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold tabular-nums"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">Caudalímetro Final (m³):</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formTurno.caudalimetroFinalM3 ?? 0}
+                      onChange={(e) => handleCaudalimetroChange('caudalimetroFinalM3', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-cyan-950 tabular-nums"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3 p-3 bg-cyan-50/60 border border-cyan-200 rounded-xl">
                 <div>
                   <label className="block font-bold text-cyan-900 mb-1">Lámina Aplicada (mm):</label>
@@ -671,7 +788,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                     step="0.1"
                     value={formTurno.laminaAguaMm}
                     onChange={(e) => setFormTurno({ ...formTurno, laminaAguaMm: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-black font-mono text-cyan-950"
+                    className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-black font-mono text-cyan-950 tabular-nums"
                     required
                   />
                   <span className="text-[10px] text-cyan-800">1 mm = 10 m³/ha</span>
@@ -680,9 +797,10 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                   <label className="block font-bold text-cyan-900 mb-1">Volumen Total (m³):</label>
                   <input
                     type="number"
+                    step="0.1"
                     value={formTurno.volumenM3}
-                    onChange={(e) => setFormTurno({ ...formTurno, volumenM3: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-black font-mono text-cyan-950"
+                    onChange={(e) => setFormTurno({ ...formTurno, volumenM3: parseFloat(e.target.value) || 0 })}
+                    className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-black font-mono text-cyan-950 tabular-nums"
                     required
                   />
                   <span className="text-[10px] text-cyan-800">

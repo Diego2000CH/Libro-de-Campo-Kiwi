@@ -116,6 +116,8 @@ export interface TurnoRiego {
   duracionHoras: number;
   laminaAguaMm: number;
   volumenM3: number;
+  caudalimetroInicialM3?: number;
+  caudalimetroFinalM3?: number;
   conFertirriego: boolean;
   fertilizanteInyectado?: string;
   dosisFertilizanteKg?: number;
