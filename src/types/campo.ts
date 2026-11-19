@@ -803,6 +803,13 @@ export interface ResumenTemporada {
   observaciones?: string;
 }
 
+export interface EstadoFenologicoCatalogo {
+  id: string;
+  code: string;
+  nombre: string;
+  descripcion?: string;
+}
+
 export interface AppStateData {
   explotacion: ExplotacionAgricola;
   parcelas: Parcela[];
@@ -820,6 +827,7 @@ export interface AppStateData {
   horasFrio: CondicionHorasFrio;
   registrosTermicos?: RegistroTermicoHuerto[];
   fenologia: SeguimientoFenologico[];
+  estadosFenologicosPersonalizados?: EstadoFenologicoCatalogo[];
   polinizacion: RegistroPolinizacion[];
   muestreosBrotacion?: MuestreoBrotacion[];
   conteosBotones?: ConteoBotonesFlorales[];

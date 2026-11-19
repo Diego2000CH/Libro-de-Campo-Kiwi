@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   ClimaCondiciones,
   CondicionHorasFrio,
+  EstadoFenologicoCatalogo,
   Parcela,
   PeriodicidadRegistroTermico,
   RegistroPolinizacion,
@@ -21,7 +22,10 @@ import {
 import {
   BBCH_SUGERENCIAS,
   buildPreformedFenologiaKiwi,
+  combinarCatalogoFenologico,
+  formatEstadoFenologicoLabel,
   obtenerEtapaFenologicaActiva,
+  parseEstadoFenologicoTexto,
   resolveEstadoEtapa,
 } from '../utils/fenologiaHelper';
 import { GraficosTermicosHuerto } from './GraficosTermicosHuerto';
@@ -39,6 +43,7 @@ import {
   Sprout,
   Thermometer,
   Trash2,
+  X,
 } from 'lucide-react';
 
 interface HorasFrioFenologiaViewProps {
@@ -56,6 +61,9 @@ interface HorasFrioFenologiaViewProps {
   onUpdateFenologia?: (f: SeguimientoFenologico) => void;
   onDeleteFenologia: (id: string) => void;
   onReplaceFenologia?: (list: SeguimientoFenologico[]) => void;
+  estadosFenologicosPersonalizados?: EstadoFenologicoCatalogo[];
+  onAddEstadoFenologicoCustom?: (item: EstadoFenologicoCatalogo) => void;
+  onDeleteEstadoFenologicoCustom?: (id: string) => void;
   polinizacion: RegistroPolinizacion[];
   onAddPolinizacion: (p: RegistroPolinizacion) => void;
   onUpdatePolinizacion?: (p: RegistroPolinizacion) => void;
@@ -79,6 +87,9 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
   onUpdateFenologia,
   onDeleteFenologia,
   onReplaceFenologia,
+  estadosFenologicosPersonalizados = [],
+  onAddEstadoFenologicoCustom,
+  onDeleteEstadoFenologicoCustom,
   polinizacion,
   onAddPolinizacion,
   onUpdatePolinizacion,
@@ -99,9 +110,18 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
   const [editingCuartelEstadoId, setEditingCuartelEstadoId] = useState<string | null>(null);
   const [cuartelEstadoDraft, setCuartelEstadoDraft] = useState<string>('');
   const [cuartelFechaDraft, setCuartelFechaDraft] = useState<string>('');
+  const [isCatalogoFormOpen, setIsCatalogoFormOpen] = useState(false);
+  const [nuevoCatCode, setNuevoCatCode] = useState('');
+  const [nuevoCatNombre, setNuevoCatNombre] = useState('');
+  const [nuevoCatDesc, setNuevoCatDesc] = useState('');
   const [isNewPolinizacionOpen, setIsNewPolinizacionOpen] = useState(false);
   const [editingPolId, setEditingPolId] = useState<string | null>(null);
   const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
+
+  const catalogoEstados = useMemo(
+    () => combinarCatalogoFenologico(estadosFenologicosPersonalizados, fenologia, parcelas),
+    [estadosFenologicosPersonalizados, fenologia, parcelas]
+  );
 
   const todayISO = () => new Date().toISOString().split('T')[0];
 
@@ -212,6 +232,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
       porcentajeAvance: 50,
       observaciones: '',
       sincronizarCuartel: false,
+      guardarEnCatalogo: true,
     };
   };
   const [fenForm, setFenForm] = useState(getDefaultFenForm);
@@ -495,7 +516,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
 
   const handleOpenEditFen = (f: SeguimientoFenologico) => {
     setEditingFenId(f.id);
-    const sug = BBCH_SUGERENCIAS.find((s) => s.code.toLowerCase() === (f.escalaBBCH || '').toLowerCase());
+    const sug = catalogoEstados.find((s) => s.code.toLowerCase() === (f.escalaBBCH || '').toLowerCase());
     setFenForm({
       fecha: f.fecha || todayISO(),
       fechaFin: f.fechaFin || f.fecha || todayISO(),
@@ -507,16 +528,36 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
       porcentajeAvance: f.porcentajeAvance ?? 50,
       observaciones: f.observaciones || '',
       sincronizarCuartel: false,
+      guardarEnCatalogo: false,
     });
     setIsNewFenologiaOpen(true);
   };
 
-  const handleSaveFenologia = (e: React.FormEvent) => {
-    e.preventDefault();
+  const guardarEstadoCatalogoSiNoExiste = (codeRaw: string, nombreRaw: string, descRaw?: string) => {
+    if (!onAddEstadoFenologicoCustom) return;
+    const code = (codeRaw || 'PERS').trim() || 'PERS';
+    const nombre = (nombreRaw || '').trim();
+    if (!nombre) return;
+    const yaExiste = catalogoEstados.some(
+      (c) =>
+        c.nombre.trim().toLowerCase() === nombre.toLowerCase() &&
+        c.code.trim().toLowerCase() === code.toLowerCase()
+    );
+    if (yaExiste) return;
+    onAddEstadoFenologicoCustom({
+      id: `efp-${Date.now()}`,
+      code,
+      nombre,
+      descripcion: descRaw?.trim() || undefined,
+    });
+  };
+
+  const persistirFenologia = (keepOpenForNext: boolean) => {
     const p = parcelas.find((item) => item.id === fenForm.parcelaId);
     const nombreCuartel = fenForm.parcelaId === 'general' ? 'Huerto General' : (p ? p.nombre : 'Huerto General');
-    const sug = BBCH_SUGERENCIAS.find((s) => s.code.toLowerCase() === fenForm.escalaBBCH.trim().toLowerCase());
+    const sug = catalogoEstados.find((s) => s.code.toLowerCase() === fenForm.escalaBBCH.trim().toLowerCase());
     const nombreEtapaFinal = fenForm.nombreEtapa.trim() || sug?.nombre || fenForm.escalaBBCH.trim();
+    const escalaFinal = fenForm.escalaBBCH.trim() || 'PERS';
 
     const payload: SeguimientoFenologico = {
       id: editingFenId || `fen-${Date.now()}`,
@@ -524,7 +565,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
       fechaFin: fenForm.fechaFin || undefined,
       parcelaId: fenForm.parcelaId || 'general',
       parcelaNombre: nombreCuartel,
-      escalaBBCH: fenForm.escalaBBCH.trim() || 'Etapa',
+      escalaBBCH: escalaFinal,
       nombreEtapa: nombreEtapaFinal,
       estadoDescripcion: fenForm.estadoDescripcion.trim() || nombreEtapaFinal,
       estadoEtapa: fenForm.estadoEtapa,
@@ -537,15 +578,48 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
       onAddFenologia(payload);
     }
 
+    if (fenForm.guardarEnCatalogo) {
+      guardarEstadoCatalogoSiNoExiste(escalaFinal, nombreEtapaFinal, payload.estadoDescripcion);
+    }
+
     if (fenForm.sincronizarCuartel && p && onUpdateParcela) {
       onUpdateParcela({
         ...p,
-        estadoFenologico: `${payload.escalaBBCH} · ${nombreEtapaFinal}`,
+        estadoFenologico: formatEstadoFenologicoLabel(escalaFinal, nombreEtapaFinal),
+        fechaEstadoFenologico: payload.fecha,
       });
     }
 
-    setIsNewFenologiaOpen(false);
-    setEditingFenId(null);
+    if (keepOpenForNext) {
+      setEditingFenId(null);
+      setFenForm({
+        ...getDefaultFenForm(),
+        parcelaId: fenForm.parcelaId,
+        escalaBBCH: '',
+        nombreEtapa: '',
+        estadoDescripcion: '',
+      });
+    } else {
+      setIsNewFenologiaOpen(false);
+      setEditingFenId(null);
+    }
+  };
+
+  const handleSaveFenologia = (e: React.FormEvent) => {
+    e.preventDefault();
+    persistirFenologia(false);
+  };
+
+  const handleCreateCustomCatalogoItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    const nombre = nuevoCatNombre.trim();
+    if (!nombre || !onAddEstadoFenologicoCustom) return;
+    const code = nuevoCatCode.trim() || `ET-${estadosFenologicosPersonalizados.length + 1}`;
+    guardarEstadoCatalogoSiNoExiste(code, nombre, nuevoCatDesc);
+    setNuevoCatCode('');
+    setNuevoCatNombre('');
+    setNuevoCatDesc('');
+    setIsCatalogoFormOpen(false);
   };
 
   const handleToggleEstadoEtapa = (f: SeguimientoFenologico) => {
@@ -1116,16 +1190,28 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
             )}
           </div>
 
-          {/* Escala de Etapas Kiwi Hayward por Grados Día */}
+          {/* Escala de Etapas Kiwi Hayward por Grados Día + Etapas Adicionales */}
           <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <h3 className="font-extrabold text-sm text-stone-900 flex items-center gap-2">
                 <Thermometer className="w-4 h-4 text-amber-600" />
-                Referencia Fenológica por Grados Día (1 Julio – 30 Abril · Kiwi Hayward)
+                Referencia Fenológica por Grados Día &amp; Etapas Registradas
               </h3>
-              <span className="text-[11px] font-mono text-stone-500">
-                Acumulado actual: <strong className="text-amber-700">{safeHF.totalAcumuladoGD ?? 0} °D</strong>
-              </span>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="text-[11px] font-mono text-stone-500">
+                  Acumulado actual: <strong className="text-amber-700">{safeHF.totalAcumuladoGD ?? 0} °D</strong>
+                </span>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenNewFen()}
+                    className="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Agregar Otra Etapa</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
@@ -1194,6 +1280,51 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                   </div>
                 );
               })}
+
+              {fenologia
+                .filter(
+                  (f) =>
+                    !ETAPAS_GDD_KIWI.some(
+                      (e) =>
+                        f.escalaBBCH.toLowerCase() === e.bbch.toLowerCase() ||
+                        (f.nombreEtapa || '').toLowerCase() === e.nombre.toLowerCase()
+                    )
+                )
+                .map((extra) => (
+                  <div
+                    key={extra.id}
+                    className="p-3 rounded-xl border border-emerald-200 bg-emerald-50/40 flex flex-col justify-between gap-2"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900">
+                          {extra.escalaBBCH}
+                        </span>
+                        <span className="text-[10px] font-bold text-emerald-700">Adicional</span>
+                      </div>
+                      <div className="font-bold text-stone-900 text-xs pt-0.5">
+                        {extra.nombreEtapa || extra.estadoDescripcion}
+                      </div>
+                      <p className="text-[10px] text-stone-500 leading-snug line-clamp-2">
+                        {extra.estadoDescripcion}
+                      </p>
+                      <div className="text-[10px] font-mono text-emerald-800 bg-emerald-100/70 px-1.5 py-0.5 rounded">
+                        {extra.fecha}
+                        {extra.fechaFin ? ` → ${extra.fechaFin}` : ''}
+                      </div>
+                    </div>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditFen(extra)}
+                        className="w-full py-1 px-2 bg-white hover:bg-emerald-50 border border-stone-200 hover:border-emerald-300 rounded-lg text-[10px] font-bold text-emerald-900 flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        <span>Editar Fechas / Estado</span>
+                      </button>
+                    )}
+                  </div>
+                ))}
             </div>
           </div>
 
@@ -1364,6 +1495,117 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
             </div>
           </div>
 
+          {/* Catálogo de Estados Fenológicos Personalizados + Botón Agregar Nuevos */}
+          <div className="bg-white rounded-2xl border border-stone-200 p-4 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="font-bold text-xs uppercase tracking-wider text-stone-700">
+                  Catálogo de Estados Fenológicos ({catalogoEstados.length} disponibles · {estadosFenologicosPersonalizados.length} personalizados)
+                </h3>
+                <p className="text-[11px] text-stone-500">
+                  Puedes agregar todos los estados fenológicos adicionales que necesites y usarlos luego en cualquier cuartel o cronograma.
+                </p>
+              </div>
+              {canEdit && onAddEstadoFenologicoCustom && (
+                <button
+                  type="button"
+                  onClick={() => setIsCatalogoFormOpen((v) => !v)}
+                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isCatalogoFormOpen ? 'Cerrar Formulario' : 'Agregar Nuevo Estado al Catálogo'}</span>
+                </button>
+              )}
+            </div>
+
+            {isCatalogoFormOpen && canEdit && onAddEstadoFenologicoCustom && (
+              <form
+                onSubmit={handleCreateCustomCatalogoItem}
+                className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs items-end"
+              >
+                <div className="sm:col-span-3">
+                  <label className="block font-bold text-stone-700 mb-1">Código / Sigla:</label>
+                  <input
+                    type="text"
+                    value={nuevoCatCode}
+                    onChange={(e) => setNuevoCatCode(e.target.value)}
+                    placeholder="Ej. BBCH 07 o Lloro"
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                  />
+                </div>
+                <div className="sm:col-span-4">
+                  <label className="block font-bold text-stone-700 mb-1">Nombre del Estado Fenológico:</label>
+                  <input
+                    type="text"
+                    value={nuevoCatNombre}
+                    onChange={(e) => setNuevoCatNombre(e.target.value)}
+                    placeholder="Ej. Yema algodonosa / Botón rosado"
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-semibold"
+                    required
+                  />
+                </div>
+                <div className="sm:col-span-3">
+                  <label className="block font-bold text-stone-700 mb-1">Descripción (opcional):</label>
+                  <input
+                    type="text"
+                    value={nuevoCatDesc}
+                    onChange={(e) => setNuevoCatDesc(e.target.value)}
+                    placeholder="Detalle técnico..."
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  />
+                </div>
+                <div className="sm:col-span-2 flex gap-1.5">
+                  <button
+                    type="submit"
+                    className="w-full py-2 px-3 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {estadosFenologicosPersonalizados.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {estadosFenologicosPersonalizados.map((item) => (
+                  <div
+                    key={item.id}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-[11px]"
+                  >
+                    <span className="font-mono font-bold text-emerald-900">{item.code}</span>
+                    <span className="text-stone-800 font-semibold">{item.nombre}</span>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleOpenNewFen({
+                            escalaBBCH: item.code,
+                            nombreEtapa: item.nombre,
+                            estadoDescripcion: item.descripcion || item.nombre,
+                          })
+                        }
+                        className="text-emerald-700 hover:text-emerald-950 font-bold underline text-[10px] cursor-pointer ml-1"
+                        title="Registrar etapa con fechas usando este estado"
+                      >
+                        + Fecha
+                      </button>
+                    )}
+                    {canEdit && onDeleteEstadoFenologicoCustom && (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteEstadoFenologicoCustom(item.id)}
+                        className="text-stone-400 hover:text-rose-700 cursor-pointer"
+                        title="Quitar estado personalizado del catálogo"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Editor Directo del Estado Fenológico Actual por Cuartel */}
           {parcelas.length > 0 && (
             <div className="bg-white rounded-2xl border border-stone-200 p-4 space-y-3">
@@ -1377,6 +1619,12 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                 {parcelas.map((p) => {
                   const isEditing = editingCuartelEstadoId === p.id;
+                  const draftEnCatalogo = catalogoEstados.some(
+                    (c) =>
+                      formatEstadoFenologicoLabel(c.code, c.nombre).toLowerCase() ===
+                        cuartelEstadoDraft.trim().toLowerCase() ||
+                      c.nombre.toLowerCase() === cuartelEstadoDraft.trim().toLowerCase()
+                  );
                   return (
                     <div key={p.id} className="p-3 rounded-xl bg-stone-50 border border-stone-200 space-y-2 text-xs">
                       <div className="flex items-center justify-between gap-2">
@@ -1401,14 +1649,49 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                       </div>
                       {isEditing ? (
                         <div className="space-y-1.5">
+                          <select
+                            value={
+                              catalogoEstados.some(
+                                (s) => formatEstadoFenologicoLabel(s.code, s.nombre) === cuartelEstadoDraft
+                              )
+                                ? cuartelEstadoDraft
+                                : ''
+                            }
+                            onChange={(e) => {
+                              if (e.target.value) setCuartelEstadoDraft(e.target.value);
+                            }}
+                            className="w-full p-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-700"
+                          >
+                            <option value="">Seleccionar de la lista o escribir abajo...</option>
+                            {catalogoEstados.map((s) => {
+                              const label = formatEstadoFenologicoLabel(s.code, s.nombre);
+                              return (
+                                <option key={s.id} value={label}>
+                                  {label}
+                                </option>
+                              );
+                            })}
+                          </select>
                           <input
                             type="text"
                             list="bbch-nombres-list"
                             value={cuartelEstadoDraft}
                             onChange={(e) => setCuartelEstadoDraft(e.target.value)}
-                            placeholder="Ej. BBCH 65 · Plena floración"
+                            placeholder="O escribe cualquier estado fenológico nuevo..."
                             className="w-full p-1.5 bg-white border border-emerald-400 rounded-lg text-xs font-semibold"
                           />
+                          {onAddEstadoFenologicoCustom && cuartelEstadoDraft.trim() && !draftEnCatalogo && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const parsed = parseEstadoFenologicoTexto(cuartelEstadoDraft);
+                                guardarEstadoCatalogoSiNoExiste(parsed.code, parsed.nombre);
+                              }}
+                              className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+                            >
+                              + Guardar &quot;{cuartelEstadoDraft.trim()}&quot; en el catálogo
+                            </button>
+                          )}
                           <div className="flex items-center gap-2">
                             <label className="text-[10px] font-bold text-stone-600 shrink-0">Fecha:</label>
                             <input
@@ -1451,8 +1734,8 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                 })}
               </div>
               <datalist id="bbch-nombres-list">
-                {BBCH_SUGERENCIAS.map((s) => (
-                  <option key={s.code} value={`${s.code} · ${s.nombre}`} />
+                {catalogoEstados.map((s) => (
+                  <option key={s.id} value={formatEstadoFenologicoLabel(s.code, s.nombre)} />
                 ))}
               </datalist>
             </div>
@@ -2232,19 +2515,19 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Código / Escala BBCH:</label>
+                  <label className="block font-bold text-stone-700 mb-1">Código / Escala BBCH o Personalizado:</label>
                   <input
                     type="text"
                     list="bbch-sugerencias-modal"
                     value={fenForm.escalaBBCH}
                     onChange={(e) => {
                       const val = e.target.value;
-                      const match = BBCH_SUGERENCIAS.find((s) => s.code.toLowerCase() === val.trim().toLowerCase());
+                      const match = catalogoEstados.find((s) => s.code.toLowerCase() === val.trim().toLowerCase());
                       setFenForm((prev) => ({
                         ...prev,
                         escalaBBCH: val,
                         nombreEtapa: match ? match.nombre : prev.nombreEtapa,
-                        estadoDescripcion: match ? match.descripcion : prev.estadoDescripcion,
+                        estadoDescripcion: match?.descripcion || prev.estadoDescripcion,
                       }));
                     }}
                     placeholder="Ej. BBCH 65 o Etapa personalizada"
@@ -2252,8 +2535,8 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                     required
                   />
                   <datalist id="bbch-sugerencias-modal">
-                    {BBCH_SUGERENCIAS.map((s) => (
-                      <option key={s.code} value={s.code}>{s.nombre}</option>
+                    {catalogoEstados.map((s) => (
+                      <option key={s.id} value={s.code}>{s.nombre}</option>
                     ))}
                   </datalist>
                 </div>
@@ -2263,7 +2546,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                     type="text"
                     value={fenForm.nombreEtapa}
                     onChange={(e) => setFenForm({ ...fenForm, nombreEtapa: e.target.value })}
-                    placeholder="Ej. Plena floración, Brotación..."
+                    placeholder="Ej. Plena floración, Lloro de savia, Pinta..."
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-semibold"
                     required
                   />
@@ -2325,6 +2608,18 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                 />
               </div>
 
+              {onAddEstadoFenologicoCustom && (
+                <label className="flex items-center gap-2 p-2.5 bg-stone-50 border border-stone-200 rounded-xl text-[11px] font-semibold text-stone-800 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={fenForm.guardarEnCatalogo}
+                    onChange={(e) => setFenForm({ ...fenForm, guardarEnCatalogo: e.target.checked })}
+                    className="w-4 h-4 text-emerald-700 rounded cursor-pointer"
+                  />
+                  <span>Guardar este estado en el catálogo para reutilizarlo en otros cuarteles</span>
+                </label>
+              )}
+
               {fenForm.parcelaId !== 'general' && onUpdateParcela && (
                 <label className="flex items-center gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] font-semibold text-emerald-950 cursor-pointer">
                   <input
@@ -2337,7 +2632,7 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                 </label>
               )}
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex flex-wrap justify-end gap-2 border-t border-stone-200">
                 <button
                   type="button"
                   onClick={() => setIsNewFenologiaOpen(false)}
@@ -2345,6 +2640,18 @@ export const HorasFrioFenologiaView: React.FC<HorasFrioFenologiaViewProps> = ({
                 >
                   Cancelar
                 </button>
+                {!editingFenId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!fenForm.nombreEtapa.trim() && !fenForm.escalaBBCH.trim()) return;
+                      persistirFenologia(true);
+                    }}
+                    className="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold rounded-lg cursor-pointer"
+                  >
+                    Guardar y Agregar Otro
+                  </button>
+                )}
                 <button
                   type="submit"
                   className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs cursor-pointer"

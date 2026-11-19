@@ -46,6 +46,7 @@ import {
   getStoredCondicionHorasFrio, 
   getStoredRegistrosTermicos,
   getStoredFenologia, 
+  getStoredEstadosFenologicosPersonalizados,
   getStoredPolinizacion, 
   getStoredTurnosRiego,
   getStoredMuestreosBrotacion,
@@ -95,6 +96,7 @@ import {
   CondicionHorasFrio,
   RegistroTermicoHuerto,
   SeguimientoFenologico,
+  EstadoFenologicoCatalogo,
   RegistroPolinizacion,
   MuestreoBrotacion,
   ConteoBotonesFlorales,
@@ -151,6 +153,9 @@ export default function App() {
   const [horasFrio, setHorasFrio] = useState<CondicionHorasFrio>(getStoredCondicionHorasFrio);
   const [registrosTermicos, setRegistrosTermicos] = useState<RegistroTermicoHuerto[]>(getStoredRegistrosTermicos);
   const [fenologia, setFenologia] = useState<SeguimientoFenologico[]>(getStoredFenologia);
+  const [estadosFenologicosCustom, setEstadosFenologicosCustom] = useState<EstadoFenologicoCatalogo[]>(
+    getStoredEstadosFenologicosPersonalizados
+  );
   const [polinizacion, setPolinizacion] = useState<RegistroPolinizacion[]>(getStoredPolinizacion);
   const [turnosRiego, setTurnosRiego] = useState<TurnoRiego[]>(getStoredTurnosRiego);
   const [muestreosBrotacion, setMuestreosBrotacion] = useState<MuestreoBrotacion[]>(getStoredMuestreosBrotacion);
@@ -239,6 +244,7 @@ export default function App() {
     horasFrio: normalizarCondicionHorasFrio(horasFrio, registrosTermicos),
     registrosTermicos,
     fenologia,
+    estadosFenologicosPersonalizados: estadosFenologicosCustom,
     polinizacion,
     muestreosBrotacion,
     conteosBotones,
@@ -277,6 +283,7 @@ export default function App() {
     if (Array.isArray(d.registrosTermicos)) setRegistrosTermicos(d.registrosTermicos);
     if (d.horasFrio) setHorasFrio(normalizarCondicionHorasFrio(d.horasFrio, hydratedRegs));
     if (Array.isArray(d.fenologia)) setFenologia(d.fenologia);
+    if (Array.isArray(d.estadosFenologicosPersonalizados)) setEstadosFenologicosCustom(d.estadosFenologicosPersonalizados);
     if (Array.isArray(d.polinizacion)) setPolinizacion(d.polinizacion);
     if (Array.isArray(d.muestreosBrotacion)) setMuestreosBrotacion(d.muestreosBrotacion);
     if (Array.isArray(d.conteosBotones)) setConteosBotones(d.conteosBotones);
@@ -776,6 +783,7 @@ export default function App() {
     horasFrio,
     registrosTermicos,
     fenologia,
+    estadosFenologicosCustom,
     polinizacion,
     muestreosBrotacion,
     conteosBotones,
@@ -835,6 +843,21 @@ export default function App() {
     }
     fn(...args);
   };
+
+  const handleAddEstadoFenologicoCustom = guardEdit((item: EstadoFenologicoCatalogo) => {
+    setEstadosFenologicosCustom((prev) => {
+      const dup = prev.some(
+        (e) =>
+          e.nombre.trim().toLowerCase() === item.nombre.trim().toLowerCase() &&
+          e.code.trim().toLowerCase() === item.code.trim().toLowerCase()
+      );
+      return dup ? prev : [...prev, item];
+    });
+  });
+
+  const handleDeleteEstadoFenologicoCustom = guardEdit((id: string) => {
+    setEstadosFenologicosCustom((prev) => prev.filter((item) => item.id !== id));
+  });
 
   const openSwitchUserModal = (target?: UsuarioPredio) => {
     setSwitchTargetUser(target || null);
@@ -1098,6 +1121,7 @@ export default function App() {
     setHorasFrio(defaults.horasFrio);
     setRegistrosTermicos(defaults.registrosTermicos || []);
     setFenologia(defaults.fenologia);
+    setEstadosFenologicosCustom([]);
     setPolinizacion(defaults.polinizacion);
     setMuestreosBrotacion(defaults.muestreosBrotacion || []);
     setConteosBotones(defaults.conteosBotones || []);
@@ -1137,6 +1161,7 @@ export default function App() {
     setHorasFrio(blank.horasFrio);
     setRegistrosTermicos([]);
     setFenologia([]);
+    setEstadosFenologicosCustom([]);
     setPolinizacion([]);
     setMuestreosBrotacion([]);
     setConteosBotones([]);
@@ -1340,6 +1365,8 @@ export default function App() {
             onUpdateLugar={guardEdit((l) => setLugares((prev) => prev.map((item) => item.id === l.id ? l : item)))}
             onDeleteLugar={guardEdit((id) => setLugares((prev) => prev.filter((item) => item.id !== id)))}
             onRegisterLaborForParcela={(pId) => handleOpenNewLaborWithDefaults(pId, undefined)}
+            estadosFenologicosPersonalizados={estadosFenologicosCustom}
+            onAddEstadoFenologicoCustom={handleAddEstadoFenologicoCustom}
           />
         )}
 
@@ -1467,6 +1494,9 @@ export default function App() {
             onAddPolinizacion={guardEdit((p) => setPolinizacion((prev) => [p, ...prev]))}
             onUpdatePolinizacion={guardEdit((p) => setPolinizacion((prev) => prev.map((item) => item.id === p.id ? p : item)))}
             onDeletePolinizacion={guardEdit((id) => setPolinizacion((prev) => prev.filter((p) => p.id !== id)))}
+            estadosFenologicosPersonalizados={estadosFenologicosCustom}
+            onAddEstadoFenologicoCustom={handleAddEstadoFenologicoCustom}
+            onDeleteEstadoFenologicoCustom={handleDeleteEstadoFenologicoCustom}
             activeUserName={activeUser?.nombre}
             canEdit={canEdit}
           />
@@ -1514,6 +1544,8 @@ export default function App() {
             fenologia={fenologia}
             onAddFenologia={guardEdit((f) => setFenologia((prev) => [f, ...prev]))}
             onUpdateFenologia={guardEdit((f) => setFenologia((prev) => prev.map((item) => (item.id === f.id ? f : item))))}
+            estadosFenologicosPersonalizados={estadosFenologicosCustom}
+            onAddEstadoFenologicoCustom={handleAddEstadoFenologicoCustom}
             activeUserName={activeUser?.nombre}
             canEdit={canEdit}
           />
@@ -1619,6 +1651,9 @@ export default function App() {
             onDeleteFenologia={guardEdit((id) => setFenologia((prev) => prev.filter((f) => f.id !== id)))}
             onReplaceFenologia={guardEdit(setFenologia)}
             onUpdateParcela={guardEdit((p) => setParcelas((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
+            estadosFenologicosPersonalizados={estadosFenologicosCustom}
+            onAddEstadoFenologicoCustom={handleAddEstadoFenologicoCustom}
+            onDeleteEstadoFenologicoCustom={handleDeleteEstadoFenologicoCustom}
             canEdit={canEdit}
           />
         )}
@@ -1654,6 +1689,7 @@ export default function App() {
                     if (Array.isArray(parsed.registrosTermicos)) setRegistrosTermicos(parsed.registrosTermicos);
                     if (parsed.horasFrio) setHorasFrio(normalizarCondicionHorasFrio(parsed.horasFrio, importedRegs));
                     if (parsed.fenologia) setFenologia(parsed.fenologia);
+                    if (Array.isArray(parsed.estadosFenologicosPersonalizados)) setEstadosFenologicosCustom(parsed.estadosFenologicosPersonalizados);
                     if (parsed.polinizacion) setPolinizacion(parsed.polinizacion);
                     if (Array.isArray(parsed.liquidacionesPacking)) setLiquidacionesPacking(parsed.liquidacionesPacking);
                     if (Array.isArray(parsed.analisisLaboratorio)) setAnalisisLaboratorio(parsed.analisisLaboratorio);

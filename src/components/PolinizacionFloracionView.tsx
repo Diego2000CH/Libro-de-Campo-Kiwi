@@ -7,9 +7,14 @@ import {
   AplicacionPolenAsistido,
   PlanCargaRaleo,
   EvaluacionCuajaSemillas,
-  SeguimientoFenologico
+  SeguimientoFenologico,
+  EstadoFenologicoCatalogo
 } from '../types/campo';
-import { BBCH_SUGERENCIAS } from '../utils/fenologiaHelper';
+import {
+  combinarCatalogoFenologico,
+  formatEstadoFenologicoLabel,
+  parseEstadoFenologicoTexto,
+} from '../utils/fenologiaHelper';
 import { CargaObjetivoRaleoPanel } from './CargaObjetivoRaleoPanel';
 import { CuajaSemillasPanel } from './CuajaSemillasPanel';
 import { 
@@ -66,6 +71,8 @@ interface PolinizacionFloracionViewProps {
   fenologia?: SeguimientoFenologico[];
   onAddFenologia?: (f: SeguimientoFenologico) => void;
   onUpdateFenologia?: (f: SeguimientoFenologico) => void;
+  estadosFenologicosPersonalizados?: EstadoFenologicoCatalogo[];
+  onAddEstadoFenologicoCustom?: (item: EstadoFenologicoCatalogo) => void;
   activeUserName?: string;
   canEdit?: boolean;
 }
@@ -109,6 +116,8 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
   fenologia = [],
   onAddFenologia,
   onUpdateFenologia,
+  estadosFenologicosPersonalizados = [],
+  onAddEstadoFenologicoCustom,
   activeUserName = 'Administrador',
   canEdit = true
 }) => {
@@ -147,8 +156,47 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
   const [draftFenFecha, setDraftFenFecha] = useState('');
   const [syncFenTimeline, setSyncFenTimeline] = useState(true);
   const [fenSavedToast, setFenSavedToast] = useState<string | null>(null);
+  const [isCatalogoFormOpen, setIsCatalogoFormOpen] = useState(false);
+  const [nuevoCatCode, setNuevoCatCode] = useState('');
+  const [nuevoCatNombre, setNuevoCatNombre] = useState('');
 
   const todayISO = () => new Date().toISOString().split('T')[0];
+
+  const catalogoEstados = useMemo(
+    () => combinarCatalogoFenologico(estadosFenologicosPersonalizados, fenologia, parcelas),
+    [estadosFenologicosPersonalizados, fenologia, parcelas]
+  );
+
+  const guardarEstadoCatalogoSiNoExiste = (codeRaw: string, nombreRaw: string) => {
+    if (!onAddEstadoFenologicoCustom) return;
+    const code = (codeRaw || 'PERS').trim() || 'PERS';
+    const nombre = (nombreRaw || '').trim();
+    if (!nombre) return;
+    const yaExiste = catalogoEstados.some(
+      (c) =>
+        c.nombre.trim().toLowerCase() === nombre.toLowerCase() &&
+        c.code.trim().toLowerCase() === code.toLowerCase()
+    );
+    if (yaExiste) return;
+    onAddEstadoFenologicoCustom({
+      id: `efp-${Date.now()}`,
+      code,
+      nombre,
+    });
+  };
+
+  const handleCreateCustomCatalogoItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    const nombre = nuevoCatNombre.trim();
+    if (!nombre || !onAddEstadoFenologicoCustom) return;
+    const code = nuevoCatCode.trim() || `ET-${estadosFenologicosPersonalizados.length + 1}`;
+    guardarEstadoCatalogoSiNoExiste(code, nombre);
+    setNuevoCatCode('');
+    setNuevoCatNombre('');
+    setIsCatalogoFormOpen(false);
+    setFenSavedToast(`Estado "${formatEstadoFenologicoLabel(code, nombre)}" agregado al catálogo`);
+    setTimeout(() => setFenSavedToast(null), 3000);
+  };
 
   const contextFenStage = useMemo(() => {
     switch (activeTab) {
@@ -915,22 +963,77 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 </p>
               </div>
             </div>
-            {fenSavedToast && (
-              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
-                {fenSavedToast}
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {fenSavedToast && (
+                <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                  {fenSavedToast}
+                </span>
+              )}
+              {canEdit && onAddEstadoFenologicoCustom && (
+                <button
+                  type="button"
+                  onClick={() => setIsCatalogoFormOpen((v) => !v)}
+                  className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>{isCatalogoFormOpen ? 'Cerrar' : 'Agregar Nuevo Estado'}</span>
+                </button>
+              )}
+            </div>
           </div>
 
+          {isCatalogoFormOpen && canEdit && onAddEstadoFenologicoCustom && (
+            <form
+              onSubmit={handleCreateCustomCatalogoItem}
+              className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs items-end"
+            >
+              <div className="sm:col-span-3">
+                <label className="block font-bold text-stone-700 mb-1">Código / Sigla:</label>
+                <input
+                  type="text"
+                  value={nuevoCatCode}
+                  onChange={(e) => setNuevoCatCode(e.target.value)}
+                  placeholder="Ej. BBCH 63"
+                  className="w-full p-1.5 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                />
+              </div>
+              <div className="sm:col-span-7">
+                <label className="block font-bold text-stone-700 mb-1">Nombre del Nuevo Estado Fenológico:</label>
+                <input
+                  type="text"
+                  value={nuevoCatNombre}
+                  onChange={(e) => setNuevoCatNombre(e.target.value)}
+                  placeholder="Ej. Apertura floral machos 30%"
+                  className="w-full p-1.5 bg-white border border-stone-300 rounded-lg font-semibold"
+                  required
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <button
+                  type="submit"
+                  className="w-full py-1.5 px-3 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
+          )}
+
           <datalist id="polin-bbch-list">
-            {BBCH_SUGERENCIAS.map((b) => (
-              <option key={b.code} value={`${b.code} · ${b.nombre}`} />
+            {catalogoEstados.map((b) => (
+              <option key={b.id} value={formatEstadoFenologicoLabel(b.code, b.nombre)} />
             ))}
           </datalist>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
             {parcelas.map((p) => {
               const isEditingThis = editingFenCuartelId === p.id;
+              const draftEnCatalogo = catalogoEstados.some(
+                (c) =>
+                  formatEstadoFenologicoLabel(c.code, c.nombre).toLowerCase() ===
+                    draftFenEstado.trim().toLowerCase() ||
+                  c.nombre.toLowerCase() === draftFenEstado.trim().toLowerCase()
+              );
               return (
                 <div
                   key={p.id}
@@ -973,14 +1076,49 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
                   {isEditingThis ? (
                     <div className="space-y-2 pt-1">
+                      <select
+                        value={
+                          catalogoEstados.some(
+                            (b) => formatEstadoFenologicoLabel(b.code, b.nombre) === draftFenEstado
+                          )
+                            ? draftFenEstado
+                            : ''
+                        }
+                        onChange={(e) => {
+                          if (e.target.value) setDraftFenEstado(e.target.value);
+                        }}
+                        className="w-full p-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-700"
+                      >
+                        <option value="">Elegir de lista o escribir abajo...</option>
+                        {catalogoEstados.map((b) => {
+                          const label = formatEstadoFenologicoLabel(b.code, b.nombre);
+                          return (
+                            <option key={b.id} value={label}>
+                              {label}
+                            </option>
+                          );
+                        })}
+                      </select>
                       <input
                         type="text"
                         list="polin-bbch-list"
                         value={draftFenEstado}
                         onChange={(e) => setDraftFenEstado(e.target.value)}
-                        placeholder="Ej. BBCH 65 · Plena floración"
-                        className="w-full p-1.5 bg-white border border-stone-300 rounded-lg text-xs font-medium"
+                        placeholder="O escribe cualquier estado fenológico nuevo..."
+                        className="w-full p-1.5 bg-white border border-emerald-400 rounded-lg text-xs font-medium"
                       />
+                      {onAddEstadoFenologicoCustom && draftFenEstado.trim() && !draftEnCatalogo && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const parsed = parseEstadoFenologicoTexto(draftFenEstado);
+                            guardarEstadoCatalogoSiNoExiste(parsed.code, parsed.nombre);
+                          }}
+                          className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+                        >
+                          + Guardar &quot;{draftFenEstado.trim()}&quot; en el catálogo
+                        </button>
+                      )}
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                         <input

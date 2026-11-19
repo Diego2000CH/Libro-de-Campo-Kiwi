@@ -12,6 +12,7 @@ import {
   OrdenTrabajoFitosanitaria,
   CondicionHorasFrio,
   SeguimientoFenologico,
+  EstadoFenologicoCatalogo,
   RegistroPolinizacion,
   MaquinariaEquipo,
   RegistroMantencionMaquinaria,
@@ -480,6 +481,7 @@ export function getBlankRealOrchardData(
     horasFrio: getBlankHorasFrio(),
     registrosTermicos: [],
     fenologia: [],
+    estadosFenologicosPersonalizados: [],
     polinizacion: [],
     muestreosBrotacion: [],
     conteosBotones: [],
@@ -531,6 +533,9 @@ export function stripDemoRecords(data: AppStateData): AppStateData {
       : normalizarCondicionHorasFrio(data.horasFrio, filterOutDemo(data.registrosTermicos)),
     registrosTermicos: filterOutDemo(data.registrosTermicos),
     fenologia: filterOutDemo(data.fenologia),
+    estadosFenologicosPersonalizados: Array.isArray(data.estadosFenologicosPersonalizados)
+      ? data.estadosFenologicosPersonalizados
+      : [],
     polinizacion: filterOutDemo(data.polinizacion),
     muestreosBrotacion: filterOutDemo(data.muestreosBrotacion),
     conteosBotones: filterOutDemo(data.conteosBotones),
@@ -573,6 +578,7 @@ export function getDemoSampleData(): AppStateData {
     horasFrio: initialCondicionHorasFrio,
     registrosTermicos: initialRegistrosTermicos,
     fenologia: initialFenologia,
+    estadosFenologicosPersonalizados: [],
     polinizacion: initialPolinizacion,
     muestreosBrotacion: initialMuestreosBrotacion,
     conteosBotones: initialConteosBotones,
@@ -629,6 +635,7 @@ export function getStoredData(): AppStateData {
       horasFrio: normalizarCondicionHorasFrio(stored.horasFrio, stored.registrosTermicos || []),
       registrosTermicos: stored.registrosTermicos || [],
       fenologia: stored.fenologia || [],
+      estadosFenologicosPersonalizados: stored.estadosFenologicosPersonalizados || [],
       polinizacion: stored.polinizacion || [],
       muestreosBrotacion: stored.muestreosBrotacion || [],
       conteosBotones: stored.conteosBotones || [],
@@ -738,6 +745,10 @@ export function getStoredRegistrosTermicos(): RegistroTermicoHuerto[] {
 
 export function getStoredFenologia(): SeguimientoFenologico[] {
   return getStoredData().fenologia || [];
+}
+
+export function getStoredEstadosFenologicosPersonalizados(): EstadoFenologicoCatalogo[] {
+  return getStoredData().estadosFenologicosPersonalizados || [];
 }
 
 export function getStoredPolinizacion(): RegistroPolinizacion[] {

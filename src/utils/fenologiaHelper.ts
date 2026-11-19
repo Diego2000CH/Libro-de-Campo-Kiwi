@@ -1,4 +1,4 @@
-import { SeguimientoFenologico } from '../types/campo';
+import { EstadoFenologicoCatalogo, Parcela, SeguimientoFenologico } from '../types/campo';
 import { calcularDiasEntreFechas } from './agroClimaCalculos';
 
 export interface BbchSugerencia {
@@ -21,6 +21,100 @@ export const BBCH_SUGERENCIAS: BbchSugerencia[] = [
   { code: 'BBCH 89', nombre: 'Madurez plena de cosecha (≥6.2° Brix)', descripcion: 'Fruta apta para cosecha según normativa SAG y firmeza objetivo.' },
   { code: 'BBCH 91', nombre: 'Post-cosecha y senescencia foliar', descripcion: 'Fertilización de reservas post-cosecha y sello preventivo Psa.' },
 ];
+
+export function formatEstadoFenologicoLabel(code?: string, nombre?: string): string {
+  const c = (code || '').trim();
+  const n = (nombre || '').trim();
+  if (c && n) {
+    if (n.toLowerCase().startsWith(c.toLowerCase())) return n;
+    return `${c} · ${n}`;
+  }
+  return n || c || 'Etapa personalizada';
+}
+
+export function parseEstadoFenologicoTexto(texto: string): { code: string; nombre: string } {
+  const clean = (texto || '').trim();
+  if (!clean) return { code: 'PERS', nombre: '' };
+  const sepIdx = clean.indexOf('·');
+  if (sepIdx > 0) {
+    return {
+      code: clean.slice(0, sepIdx).trim(),
+      nombre: clean.slice(sepIdx + 1).trim() || clean.slice(0, sepIdx).trim(),
+    };
+  }
+  const bbchMatch = clean.match(/^(BBCH\s*[0-9A-Za-z.-]+)\s*[-:]?\s*(.*)$/i);
+  if (bbchMatch) {
+    const code = bbchMatch[1].toUpperCase().replace(/\s+/, ' ');
+    const nombre = (bbchMatch[2] || '').trim() || code;
+    return { code, nombre };
+  }
+  return { code: 'PERS', nombre: clean };
+}
+
+export function combinarCatalogoFenologico(
+  personalizados: EstadoFenologicoCatalogo[] = [],
+  fenologia: SeguimientoFenologico[] = [],
+  parcelas: Parcela[] = []
+): (EstadoFenologicoCatalogo & { esBase?: boolean })[] {
+  const result: (EstadoFenologicoCatalogo & { esBase?: boolean })[] = [];
+  const seen = new Set<string>();
+
+  const register = (item: EstadoFenologicoCatalogo & { esBase?: boolean }) => {
+    const labelKey = formatEstadoFenologicoLabel(item.code, item.nombre).toLowerCase();
+    const nameKey = (item.nombre || '').trim().toLowerCase();
+    if (!nameKey && !item.code.trim()) return;
+    if (seen.has(labelKey) || (nameKey && seen.has(nameKey))) return;
+    seen.add(labelKey);
+    if (nameKey) seen.add(nameKey);
+    result.push(item);
+  };
+
+  for (const s of BBCH_SUGERENCIAS) {
+    register({
+      id: `base-${s.code}`,
+      code: s.code,
+      nombre: s.nombre,
+      descripcion: s.descripcion,
+      esBase: true,
+    });
+  }
+
+  for (const p of personalizados || []) {
+    register({
+      ...p,
+      esBase: false,
+    });
+  }
+
+  for (const f of fenologia || []) {
+    const nombre = (f.nombreEtapa || f.estadoDescripcion || '').trim();
+    const code = (f.escalaBBCH || 'PERS').trim();
+    if (nombre) {
+      register({
+        id: `used-fen-${f.id}`,
+        code,
+        nombre,
+        descripcion: f.estadoDescripcion,
+        esBase: false,
+      });
+    }
+  }
+
+  for (const p of parcelas || []) {
+    const txt = (p.estadoFenologico || '').trim();
+    if (txt && txt.toLowerCase() !== 'normal' && txt.toLowerCase() !== 'sin definir') {
+      const parsed = parseEstadoFenologicoTexto(txt);
+      register({
+        id: `used-par-${p.id}`,
+        code: parsed.code,
+        nombre: parsed.nombre,
+        esBase: false,
+      });
+    }
+  }
+
+  return result;
+}
 
 export const buildPreformedFenologiaKiwi = (
   parcelaId: string,

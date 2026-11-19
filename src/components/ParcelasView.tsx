@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   APIProvider,
   Map as GoogleMap,
@@ -10,9 +10,14 @@ import {
   APILoadingStatus,
   MapMouseEvent,
 } from '@vis.gl/react-google-maps';
-import { Parcela, LugarPredio, TipoLugarPredio, SectorRiego } from '../types/campo';
+import { Parcela, LugarPredio, TipoLugarPredio, SectorRiego, EstadoFenologicoCatalogo } from '../types/campo';
 import { getStoredSectoresRiego, saveStoredSectoresRiego } from '../utils/storage';
-import { BBCH_SUGERENCIAS } from '../utils/fenologiaHelper';
+import {
+  BBCH_SUGERENCIAS,
+  combinarCatalogoFenologico,
+  formatEstadoFenologicoLabel,
+  parseEstadoFenologicoTexto,
+} from '../utils/fenologiaHelper';
 import { 
   Compass, 
   MapPin, 
@@ -52,6 +57,8 @@ interface ParcelasViewProps {
   onUpdateLugar?: (lugar: LugarPredio) => void;
   onDeleteLugar: (id: string) => void;
   onRegisterLaborForParcela: (parcelaId: string) => void;
+  estadosFenologicosPersonalizados?: EstadoFenologicoCatalogo[];
+  onAddEstadoFenologicoCustom?: (item: EstadoFenologicoCatalogo) => void;
   canEdit?: boolean;
 }
 
@@ -791,8 +798,34 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   onUpdateLugar,
   onDeleteLugar,
   onRegisterLaborForParcela,
+  estadosFenologicosPersonalizados = [],
+  onAddEstadoFenologicoCustom,
   canEdit = true
 }) => {
+  const catalogoEstados = useMemo(
+    () => combinarCatalogoFenologico(estadosFenologicosPersonalizados, [], parcelas),
+    [estadosFenologicosPersonalizados, parcelas]
+  );
+  const estadosFenologicosOpciones = useMemo(
+    () => catalogoEstados.map((c) => formatEstadoFenologicoLabel(c.code, c.nombre)),
+    [catalogoEstados]
+  );
+  const guardarEstadoCatalogoSiNoExiste = (textoRaw: string) => {
+    if (!onAddEstadoFenologicoCustom) return;
+    const parsed = parseEstadoFenologicoTexto(textoRaw);
+    if (!parsed.nombre) return;
+    const yaExiste = catalogoEstados.some(
+      (c) =>
+        c.nombre.trim().toLowerCase() === parsed.nombre.toLowerCase() &&
+        c.code.trim().toLowerCase() === parsed.code.toLowerCase()
+    );
+    if (yaExiste) return;
+    onAddEstadoFenologicoCustom({
+      id: `efp-${Date.now()}`,
+      code: parsed.code,
+      nombre: parsed.nombre,
+    });
+  };
   const orchardOrigin =
     defaultCenter && isValidLatLng(defaultCenter.lat, defaultCenter.lng)
       ? defaultCenter
@@ -2203,14 +2236,45 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                               <div className="text-[10px] font-bold text-emerald-900">
                                 Editar Estado Fenológico & Fecha:
                               </div>
+                              <select
+                                value={
+                                  estadosFenologicosOpciones.includes(quickFenEstado)
+                                    ? quickFenEstado
+                                    : ''
+                                }
+                                onChange={(e) => {
+                                  if (e.target.value) setQuickFenEstado(e.target.value);
+                                }}
+                                className="w-full p-1 bg-stone-50 border border-stone-300 rounded text-[11px] text-stone-700"
+                              >
+                                <option value="">Seleccionar de la lista o escribir...</option>
+                                {estadosFenologicosOpciones.map((ef) => (
+                                  <option key={ef} value={ef}>
+                                    {ef}
+                                  </option>
+                                ))}
+                              </select>
                               <input
                                 type="text"
                                 list="estados-fenologicos-list"
                                 value={quickFenEstado}
                                 onChange={(e) => setQuickFenEstado(e.target.value)}
-                                placeholder="Ej. BBCH 65 · Plena floración"
-                                className="w-full p-1.5 bg-stone-50 border border-stone-300 rounded text-[11px] font-medium"
+                                placeholder="O escribe cualquier estado fenológico nuevo..."
+                                className="w-full p-1.5 bg-stone-50 border border-emerald-300 rounded text-[11px] font-medium"
                               />
+                              {onAddEstadoFenologicoCustom &&
+                                quickFenEstado.trim() &&
+                                !estadosFenologicosOpciones.some(
+                                  (o) => o.toLowerCase() === quickFenEstado.trim().toLowerCase()
+                                ) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => guardarEstadoCatalogoSiNoExiste(quickFenEstado)}
+                                    className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+                                  >
+                                    + Guardar &quot;{quickFenEstado.trim()}&quot; en catálogo
+                                  </button>
+                                )}
                               <div className="flex items-center gap-1.5">
                                 <input
                                   type="date"
@@ -2258,7 +2322,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         setQuickFenParcelaId(p.id);
-                                        setQuickFenEstado(p.estadoFenologico || ESTADOS_FENOLOGICOS[0] || '');
+                                        setQuickFenEstado(p.estadoFenologico || estadosFenologicosOpciones[0] || '');
                                         setQuickFenFecha(
                                           p.fechaEstadoFenologico || new Date().toISOString().split('T')[0]
                                         );
@@ -3065,16 +3129,51 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Estado Fenológico:</label>
-                  <input
-                    type="text"
-                    list="estados-fenologicos-list"
-                    value={parcelaForm.estadoFenologico}
-                    onChange={(e) =>
-                      setParcelaForm((prev) => ({ ...prev, estadoFenologico: e.target.value }))
-                    }
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
-                    placeholder="Ej. BBCH 65 · Plena floración"
-                  />
+                  <div className="space-y-1">
+                    <select
+                      value={
+                        estadosFenologicosOpciones.includes(parcelaForm.estadoFenologico)
+                          ? parcelaForm.estadoFenologico
+                          : ''
+                      }
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setParcelaForm((prev) => ({ ...prev, estadoFenologico: e.target.value }));
+                        }
+                      }}
+                      className="w-full p-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-700"
+                    >
+                      <option value="">Elegir de lista o escribir abajo...</option>
+                      {estadosFenologicosOpciones.map((ef) => (
+                        <option key={ef} value={ef}>
+                          {ef}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      list="estados-fenologicos-list"
+                      value={parcelaForm.estadoFenologico}
+                      onChange={(e) =>
+                        setParcelaForm((prev) => ({ ...prev, estadoFenologico: e.target.value }))
+                      }
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                      placeholder="O escribe un estado personalizado..."
+                    />
+                    {onAddEstadoFenologicoCustom &&
+                      parcelaForm.estadoFenologico.trim() &&
+                      !estadosFenologicosOpciones.some(
+                        (o) => o.toLowerCase() === parcelaForm.estadoFenologico.trim().toLowerCase()
+                      ) && (
+                        <button
+                          type="button"
+                          onClick={() => guardarEstadoCatalogoSiNoExiste(parcelaForm.estadoFenologico)}
+                          className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+                        >
+                          + Guardar &quot;{parcelaForm.estadoFenologico.trim()}&quot; en catálogo
+                        </button>
+                      )}
+                  </div>
                 </div>
 
                 <div>
@@ -3265,7 +3364,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
       )}
 
       <datalist id="estados-fenologicos-list">
-        {ESTADOS_FENOLOGICOS.map((ef) => (
+        {estadosFenologicosOpciones.map((ef) => (
           <option key={ef} value={ef} />
         ))}
       </datalist>
