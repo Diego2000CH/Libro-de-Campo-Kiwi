@@ -34,7 +34,9 @@ import {
   ResumenTemporada,
   ItemAuditoriaBPA,
   PlanillaAuditoriaBPA,
-  EventualidadHuerto
+  EventualidadHuerto,
+  ControlHeladaRegistro,
+  ConfigControlHeladas
 } from '../types/campo';
 import { getNivelAcceso } from './permissions';
 import { getTemporadaDefaults, normalizarCondicionHorasFrio } from './agroClimaCalculos';
@@ -456,6 +458,58 @@ export function normalizePlanillaBpa(raw?: PlanillaAuditoriaBPA | null): Planill
   };
 }
 
+export function getDefaultConfigControlHeladas(): ConfigControlHeladas {
+  return {
+    umbralAlertaC: 1.5,
+    umbralEncendidoC: 0.5,
+    umbralApagadoC: 1.5,
+    estadoFenologicoReferencia: 'Brotación / Brotes tiernos (BBCH 11-19)',
+    metodoPrincipalPredio: 'Aspersión Antihelada Sobre-Copa',
+    tasaPrecipitacionMmHora: 3.5,
+    checklist: {
+      aspersoresLimpiosDestapados: false,
+      bombaPresionVerificada: false,
+      caudalimetroOperativo: false,
+      combustibleEnergiaRespaldo: false,
+      sensoresTermicosCalibrados: false,
+      sueloHumedoSinMalezaAlta: false,
+      fechaUltimaVerificacion: '',
+      responsableChecklist: '',
+    },
+    protocoloEmergenciaNotas:
+      'En noches despejadas con baja humedad relativa, iniciar aspersión guiándose por la temperatura de bulbo húmedo (+0.5°C a +1.0°C) y detener solo cuando el hielo superficial comience a fundirse sobre las yemas/brotes.',
+  };
+}
+
+export function normalizeConfigControlHeladas(
+  raw?: ConfigControlHeladas | null
+): ConfigControlHeladas {
+  const def = getDefaultConfigControlHeladas();
+  if (!raw || typeof raw !== 'object') return def;
+  return {
+    umbralAlertaC: typeof raw.umbralAlertaC === 'number' ? raw.umbralAlertaC : def.umbralAlertaC,
+    umbralEncendidoC:
+      typeof raw.umbralEncendidoC === 'number' ? raw.umbralEncendidoC : def.umbralEncendidoC,
+    umbralApagadoC:
+      typeof raw.umbralApagadoC === 'number' ? raw.umbralApagadoC : def.umbralApagadoC,
+    estadoFenologicoReferencia:
+      raw.estadoFenologicoReferencia || def.estadoFenologicoReferencia,
+    metodoPrincipalPredio: raw.metodoPrincipalPredio || def.metodoPrincipalPredio,
+    tasaPrecipitacionMmHora:
+      typeof raw.tasaPrecipitacionMmHora === 'number'
+        ? raw.tasaPrecipitacionMmHora
+        : def.tasaPrecipitacionMmHora,
+    checklist: {
+      ...def.checklist,
+      ...(raw.checklist || {}),
+    },
+    protocoloEmergenciaNotas:
+      raw.protocoloEmergenciaNotas !== undefined
+        ? raw.protocoloEmergenciaNotas
+        : def.protocoloEmergenciaNotas,
+  };
+}
+
 export function getBlankRealOrchardData(
   preserveExplotacion?: ExplotacionAgricola,
   preserveUsuarios?: UsuarioPredio[]
@@ -493,6 +547,8 @@ export function getBlankRealOrchardData(
     turnosRiego: [],
     clima: getBlankClima(),
     eventualidades: [],
+    controlesHelada: [],
+    configControlHeladas: getDefaultConfigControlHeladas(),
     liquidacionesPacking: [],
     analisisLaboratorio: [],
     registrosEnvases: [],
@@ -547,6 +603,8 @@ export function stripDemoRecords(data: AppStateData): AppStateData {
     evaluacionesCuajaSemillas: filterOutDemo(data.evaluacionesCuajaSemillas),
     turnosRiego: filterOutDemo(data.turnosRiego),
     eventualidades: Array.isArray(data.eventualidades) ? data.eventualidades : [],
+    controlesHelada: Array.isArray(data.controlesHelada) ? data.controlesHelada : [],
+    configControlHeladas: normalizeConfigControlHeladas(data.configControlHeladas),
     liquidacionesPacking: Array.isArray(data.liquidacionesPacking) ? data.liquidacionesPacking : [],
     analisisLaboratorio: Array.isArray(data.analisisLaboratorio) ? data.analisisLaboratorio : [],
     registrosEnvases: Array.isArray(data.registrosEnvases) ? data.registrosEnvases : [],
@@ -592,6 +650,8 @@ export function getDemoSampleData(): AppStateData {
     turnosRiego: initialTurnosRiego,
     clima: initialClimaLaCabana,
     eventualidades: [],
+    controlesHelada: [],
+    configControlHeladas: getDefaultConfigControlHeladas(),
     liquidacionesPacking: [],
     analisisLaboratorio: [],
     registrosEnvases: [],
@@ -649,6 +709,8 @@ export function getStoredData(): AppStateData {
       evaluacionesCuajaSemillas: stored.evaluacionesCuajaSemillas || [],
       turnosRiego: stored.turnosRiego || [],
       eventualidades: stored.eventualidades || [],
+      controlesHelada: stored.controlesHelada || [],
+      configControlHeladas: normalizeConfigControlHeladas(stored.configControlHeladas),
       liquidacionesPacking: stored.liquidacionesPacking || [],
       analisisLaboratorio: stored.analisisLaboratorio || [],
       registrosEnvases: stored.registrosEnvases || [],
@@ -766,6 +828,14 @@ export function getStoredTurnosRiego(): TurnoRiego[] {
 
 export function getStoredEventualidades(): EventualidadHuerto[] {
   return getStoredData().eventualidades || [];
+}
+
+export function getStoredControlesHelada(): ControlHeladaRegistro[] {
+  return getStoredData().controlesHelada || [];
+}
+
+export function getStoredConfigControlHeladas(): ConfigControlHeladas {
+  return normalizeConfigControlHeladas(getStoredData().configControlHeladas);
 }
 
 export function getStoredMuestreosBrotacion(): MuestreoBrotacion[] {

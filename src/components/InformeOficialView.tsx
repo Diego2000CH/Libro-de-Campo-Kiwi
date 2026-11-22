@@ -122,9 +122,13 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
       'Hora',
       'Cuartel',
       'Tipo Labor',
-      'Insumo / Producto',
+      'Insumo / Producto Comercial',
+      'Ingrediente Activo / Composicion',
+      'Metodo Aplicacion',
       'Dosis / Ha',
-      'Volumen Caldo L/ha',
+      'Dosis / Planta',
+      'Mojamiento L/ha',
+      'Total Agua Aplicada (L)',
       'Total Utilizado',
       'Carencia SAG (Dias)',
       'Reingreso REI (Horas)',
@@ -141,13 +145,17 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
       `"${l.parcelaNombre}"`,
       `"${l.tipoLabor}"`,
       `"${l.nombreInsumo || ''}"`,
+      `"${l.ingredienteActivo || l.composicionQuimica || ''}"`,
+      `"${l.metodoAplicacion || ''}"`,
       `"${l.dosisPorHa || ''}"`,
+      `"${l.dosisPorPlanta !== undefined ? `${l.dosisPorPlanta} ${l.unidadDosisPlanta || 'g/planta'}` : ''}"`,
       `"${l.volumenCaldoLHa || ''}"`,
+      `"${l.totalAguaAplicadaL ?? ''}"`,
       `"${l.totalInsumoUtilizado ? `${l.totalInsumoUtilizado} ${l.unidadMedida || ''}` : l.volumenM3 ? `${l.volumenM3} m3` : ''}"`,
       `"${l.periodoCarenciaDias || 0}"`,
       `"${l.reingresoHoras || 0}"`,
       `"${l.objetivoPlagaEnfermedad || ''}"`,
-      `"${l.registradoPor}"`,
+      `"${l.aplicadorNombre || l.registradoPor}"`,
       `"${l.numeroCarnetSAG || ''}"`,
       `"${l.tractoristaMaquinaria || ''}"`,
       `"${(l.descripcion || '').replace(/"/g, '""')}"`
@@ -479,13 +487,13 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
                   <th className="p-2 border-r border-stone-300">Fecha</th>
                   <th className="p-2 border-r border-stone-300">Cuartel</th>
                   <th className="p-2 border-r border-stone-300">Producto Comercial</th>
-                  <th className="p-2 border-r border-stone-300">Reg. SAG</th>
-                  <th className="p-2 border-r border-stone-300">Dosis/Ha</th>
-                  <th className="p-2 border-r border-stone-300">Mojamiento L/ha</th>
+                  <th className="p-2 border-r border-stone-300">Ing. Activo / Comp.</th>
+                  <th className="p-2 border-r border-stone-300">Dosis (Ha / Planta)</th>
+                  <th className="p-2 border-r border-stone-300">Agua Total (L) / Caldo</th>
                   <th className="p-2 border-r border-stone-300">Total Utilizado</th>
                   <th className="p-2 border-r border-stone-300">Carencia (Días)</th>
                   <th className="p-2 border-r border-stone-300">Reingreso (Hrs)</th>
-                  <th className="p-2 border-r border-stone-300">Objetivo / Plaga</th>
+                  <th className="p-2 border-r border-stone-300">Objetivo / Método</th>
                   <th className="p-2 border-r border-stone-300">Aplicador / Carnet SAG</th>
                   <th className="p-2">Firma / V°B°</th>
                 </tr>
@@ -496,15 +504,34 @@ export const InformeOficialView: React.FC<InformeOficialViewProps> = ({
                     <td className="p-2 font-mono border-r border-stone-200 whitespace-nowrap">{l.fecha}</td>
                     <td className="p-2 font-semibold border-r border-stone-200">{l.parcelaNombre}</td>
                     <td className="p-2 font-bold border-r border-stone-200 text-stone-900">{l.nombreInsumo}</td>
-                    <td className="p-2 font-mono border-r border-stone-200 whitespace-nowrap">SAG</td>
-                    <td className="p-2 font-mono border-r border-stone-200">{l.dosisPorHa} {l.unidadMedida}/ha</td>
-                    <td className="p-2 font-mono border-r border-stone-200">{l.volumenCaldoLHa || 1000} L</td>
+                    <td className="p-2 border-r border-stone-200 text-[10px]">
+                      {l.ingredienteActivo || l.composicionQuimica || '—'}
+                    </td>
+                    <td className="p-2 font-mono border-r border-stone-200">
+                      <div>{l.dosisPorHa} {l.unidadMedida}/ha</div>
+                      {l.dosisPorPlanta !== undefined && (
+                        <div className="text-[10px] text-emerald-800">{l.dosisPorPlanta} {l.unidadDosisPlanta || 'g/planta'}</div>
+                      )}
+                    </td>
+                    <td className="p-2 font-mono border-r border-stone-200">
+                      {l.tipoLabor === 'fitosanitario' ? (
+                        <>
+                          {l.totalAguaAplicadaL ? <strong>{l.totalAguaAplicadaL.toLocaleString('es-CL')} L</strong> : null}
+                          <div className="text-[10px] text-stone-500">{l.volumenCaldoLHa || 1000} L/ha</div>
+                        </>
+                      ) : (
+                        <span className="text-stone-400">—</span>
+                      )}
+                    </td>
                     <td className="p-2 font-bold font-mono border-r border-stone-200">{l.totalInsumoUtilizado} {l.unidadMedida}</td>
                     <td className="p-2 font-bold text-center border-r border-stone-200">{l.periodoCarenciaDias || 0}d</td>
                     <td className="p-2 font-mono text-center border-r border-stone-200">{l.reingresoHoras || 12}h</td>
-                    <td className="p-2 border-r border-stone-200 text-[10px]">{l.objetivoPlagaEnfermedad || 'Control Fitosanitario'}</td>
                     <td className="p-2 border-r border-stone-200 text-[10px]">
-                      <div>{l.registradoPor}</div>
+                      <div>{l.objetivoPlagaEnfermedad || 'Control Fitosanitario'}</div>
+                      {l.metodoAplicacion && <div className="text-stone-500">{l.metodoAplicacion}</div>}
+                    </td>
+                    <td className="p-2 border-r border-stone-200 text-[10px]">
+                      <div className="font-semibold">{l.aplicadorNombre || l.registradoPor}</div>
                       {l.numeroCarnetSAG && <div className="font-mono text-stone-500 font-bold">{l.numeroCarnetSAG}</div>}
                     </td>
                     <td className="p-2 text-center font-serif text-[10px] text-stone-400 italic">

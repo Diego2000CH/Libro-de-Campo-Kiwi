@@ -2,6 +2,8 @@ import { jsPDF } from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 import {
   AppStateData,
+  ConfigControlHeladas,
+  ControlHeladaRegistro,
   EventualidadHuerto,
   ExplotacionAgricola,
   InsumoInventario,
@@ -25,6 +27,7 @@ export type PdfSectionKey =
   | 'ordenes'
   | 'labores'
   | 'clima_frio'
+  | 'control_heladas'
   | 'fenologia'
   | 'reproductivo'
   | 'cosecha'
@@ -113,7 +116,7 @@ export const PDF_SECTIONS_META: PdfSectionMeta[] = [
   {
     key: 'riego',
     label: 'Turnos de Riego & Parámetros Estándar',
-    description: 'Caudalímetro (ini/fin), caudal (L/s), lámina bruta/neta, eficiencia, presiones, CE/pH, suelo y fertirriego.',
+    description: 'Caudalímetro (ini/fin), caudal (L/s), lámina bruta/neta, eficiencia, presiones, fertirriego (solución madre e inyección).',
     countResolver: (d) => d.turnosRiego?.length || 0,
   },
   {
@@ -130,9 +133,15 @@ export const PDF_SECTIONS_META: PdfSectionMeta[] = [
   },
   {
     key: 'clima_frio',
-    label: 'Clima, Horas Frío, GDD & Heladas',
+    label: 'Clima, Horas Frío, GDD & Eventualidades',
     description: 'Resumen agroclimático, bitácora térmica (HF/GDD) y registro anual de eventualidades (heladas, granizo, viento).',
     countResolver: (d) => (d.registrosTermicos?.length || 0) + (d.eventualidades?.length || 0) + (d.horasFrio ? 1 : 0),
+  },
+  {
+    key: 'control_heladas',
+    label: 'Control Activo de Heladas',
+    description: 'Turnos de defensa antiheladas, T° encendido/mínima/bulbo húmedo, m³ aspersión, combustible, checklist y daño.',
+    countResolver: (d) => d.controlesHelada?.length || 0,
   },
   {
     key: 'fenologia',
@@ -895,8 +904,7 @@ function renderRiegoSection(
     'Caudal Medido (L/s · m³/h)',
     'Lámina Bruta / Neta (Efic.)',
     'Presiones (Pre/Cab/Fin) & Filtros',
-    'Agua (CE/pH) & Suelo (cb/%)',
-    'Fertirriego',
+    'Fertirriego (Sol. Madre & Inyec.)',
     'Operador & Obs.',
   ];
 
@@ -911,11 +919,17 @@ function renderRiegoSection(
     const ef = t.eficienciaRiegoPct ?? 90;
     const neta = t.laminaNetaMm !== undefined ? t.laminaNetaMm : t.laminaAguaMm * (ef / 100);
 
-    const calidadParts: string[] = [];
-    if (t.ceAguaDsM !== undefined) calidadParts.push(`CE: ${num(t.ceAguaDsM, 2)} dS/m`);
-    if (t.phAgua !== undefined) calidadParts.push(`pH: ${num(t.phAgua, 1)}`);
-    if (t.tensionSueloCb !== undefined) calidadParts.push(`Tens: ${num(t.tensionSueloCb, 0)} cb`);
-    if (t.humedadSueloPct !== undefined) calidadParts.push(`Hum: ${num(t.humedadSueloPct, 0)}%`);
+    const fertiTxt = t.conFertirriego
+      ? [
+          str(t.fertilizanteInyectado || 'Fertirriego'),
+          `Sol. Madre: ${num(t.solucionMadreFertilizanteKg ?? t.dosisFertilizanteKg ?? 0, 1)} kg${
+            t.solucionMadreVolumenLitros ? ` / ${num(t.solucionMadreVolumenLitros, 0)} L` : ''
+          }`,
+          t.inyeccionLitrosPorMin ? `Inyección: ${num(t.inyeccionLitrosPorMin, 1)} L/min` : '',
+        ]
+          .filter(Boolean)
+          .join('\n')
+      : 'Solo agua';
 
     return [
       `${t.fecha}\n${t.horaInicio}${t.horaTermino ? ` - ${t.horaTermino}` : ''}\n(${num(t.duracionHoras, 2)} hrs)`,
@@ -933,10 +947,7 @@ function renderRiegoSection(
       }`,
       `Bruta: ${num(t.laminaAguaMm, 1)} mm\nNeta: ${num(neta, 1)} mm\n(Efic. ${num(ef, 0)}%)`,
       `${t.presionPreFiltroBar !== undefined ? `Pre: ${num(t.presionPreFiltroBar, 2)}b\n` : ''}Cab: ${num(t.presionCabezalBar, 2)}b · Fin: ${num(t.presionFinLineaBar, 2)}b\n${t.estadoFiltros || 'Limpios'}`,
-      calidadParts.length > 0 ? calidadParts.join('\n') : '—',
-      t.conFertirriego
-        ? `${str(t.fertilizanteInyectado)} (${num(t.dosisFertilizanteKg, 1)} kg)`
-        : 'Solo agua',
+      fertiTxt,
       `${str(t.operadorRiego)}${t.observaciones ? `\n${t.observaciones}` : ''}`,
     ];
   });
@@ -970,8 +981,8 @@ function renderOrdenesSection(
     'Destino & Cuarteles',
     'Sup. (ha)',
     'Objetivo Fitosanitario',
-    'Mezcla de Productos & Dosis',
-    'Mojamiento / Carencia / REI',
+    'Productos, Ing. Activo & Dosis',
+    'Agua Aplicada / Carencia / REI',
     'EPP Requerido',
     'Agrónomo / Aplicador',
     'Estado / Obs.',
@@ -989,15 +1000,18 @@ function renderOrdenesSection(
         ? o.productos
             .map(
               (p) =>
-                `• ${p.nombreInsumo} (${p.numeroRegistroSAG || 'S/R'}): ${num(
+                `• ${p.nombreInsumo}${p.ingredienteActivoOComposicion ? ` [${p.ingredienteActivoOComposicion}]` : ''} (${p.numeroRegistroSAG || 'S/R'}): ${num(
                   p.dosisPorHa,
                   2
                 )} ${p.unidad}/ha -> Total ${num(p.totalProductoRequerido, 2)} ${p.unidad}`
             )
             .join('\n')
-        : `${o.nombreInsumo} (${o.numeroRegistroSAG || 'S/R'}): ${num(o.dosisPorHa, 2)} ${
+        : `${o.nombreInsumo}${o.ingredienteActivo ? ` [${o.ingredienteActivo}]` : ''} (${o.numeroRegistroSAG || 'S/R'}): ${num(o.dosisPorHa, 2)} ${
             o.unidad
           }/ha -> Total ${num(o.totalProductoRequerido, 2)} ${o.unidad}`;
+
+    const totalAguaL =
+      o.totalAguaAplicadaL ?? Number((o.superficieTotalHa * (o.volumenCaldoLHa || 0)).toFixed(0));
 
     return [
       `${o.codigoReceta}\nEmisión: ${o.fechaEmision}\nProg: ${o.fechaProgramada}`,
@@ -1005,7 +1019,7 @@ function renderOrdenesSection(
       `${num(o.superficieTotalHa, 2)} ha`,
       o.objetivoFitosanitario,
       prods,
-      `Caldo: ${num(o.volumenCaldoLHa, 0)} L/ha\nCarencia: ${o.carenciaDias}d\nREI: ${
+      `Agua: ${num(totalAguaL, 0)} L\n(${num(o.volumenCaldoLHa, 0)} L/ha)\nCarencia: ${o.carenciaDias}d · REI: ${
         o.tiempoReingresoHoras
       }h`,
       o.eppRequerido?.length ? o.eppRequerido.join(', ') : '—',
@@ -1043,23 +1057,42 @@ function renderLaboresSection(
     'Fecha / Hora',
     'Cuartel',
     'Tipo Labor',
-    'Insumo / Agua / Dosis',
+    'Producto / Ing. Activo / Comp.',
+    'Dosis / Agua Aplicada',
     'Carencia / REI',
     'Objetivo / Método / Maq.',
-    'Responsable / Carnet SAG',
+    'Aplicador / Responsable / SAG',
     'Clima & Descripción',
   ];
 
   const body = labores.map((l) => {
-    const insumoTxt = l.nombreInsumo
-      ? `${l.nombreInsumo}${l.dosisPorHa ? ` · ${num(l.dosisPorHa, 2)} ${l.unidadMedida || ''}/ha` : ''}${
-          l.totalInsumoUtilizado
-            ? ` (Total: ${num(l.totalInsumoUtilizado, 2)} ${l.unidadMedida || ''})`
-            : ''
+    const prodParts = [
+      l.nombreInsumo || '',
+      l.ingredienteActivo ? `Ing. Activo: ${l.ingredienteActivo}` : '',
+      l.composicionQuimica ? `Comp: ${l.composicionQuimica}` : '',
+    ].filter(Boolean);
+
+    const dosisParts: string[] = [];
+    if (l.dosisPorHa) {
+      dosisParts.push(
+        `${num(l.dosisPorHa, 2)} ${l.unidadMedida || ''}/ha${
+          l.totalInsumoUtilizado ? ` (Total: ${num(l.totalInsumoUtilizado, 2)} ${l.unidadMedida || ''})` : ''
         }`
-      : l.volumenM3
-      ? `${num(l.volumenM3, 1)} m³ (${num(l.duracionRiegoHoras || 0, 1)} hrs)`
-      : '—';
+      );
+    }
+    if (l.dosisPorPlanta !== undefined) {
+      dosisParts.push(`Planta: ${num(l.dosisPorPlanta, 1)} ${l.unidadDosisPlanta || 'g/planta'}`);
+    }
+    if (l.totalAguaAplicadaL || l.volumenCaldoLHa) {
+      dosisParts.push(
+        `Agua: ${l.totalAguaAplicadaL ? `${num(l.totalAguaAplicadaL, 0)} L` : '—'}${
+          l.volumenCaldoLHa ? ` (${num(l.volumenCaldoLHa, 0)} L/ha)` : ''
+        }`
+      );
+    }
+    if (l.volumenM3) {
+      dosisParts.push(`${num(l.volumenM3, 1)} m³ (${num(l.duracionRiegoHoras || 0, 1)} hrs)`);
+    }
 
     const climaTxt = l.condicionesClimaticas
       ? `${l.condicionesClimaticas.temperaturaC ?? '—'}°C · HR ${
@@ -1071,16 +1104,17 @@ function renderLaboresSection(
       `${l.fecha}${l.hora ? `\n${l.hora}` : ''}`,
       l.parcelaNombre,
       l.tipoLabor.toUpperCase(),
-      insumoTxt,
+      prodParts.join('\n') || '—',
+      dosisParts.join('\n') || '—',
       l.periodoCarenciaDias || l.reingresoHoras
         ? `Car: ${l.periodoCarenciaDias ?? 0}d\nREI: ${l.reingresoHoras ?? 0}h`
         : '—',
       [l.objetivoPlagaEnfermedad, l.metodoAplicacion, l.tractoristaMaquinaria]
         .filter(Boolean)
         .join('\n') || '—',
-      `${str(l.registradoPor)}${l.numeroCarnetSAG ? `\nCarnet: ${l.numeroCarnetSAG}` : ''}${
-        l.aprobadoPorAgronomo ? `\nV°B°: ${l.aprobadoPorAgronomo}` : ''
-      }`,
+      `${l.aplicadorNombre ? `Aplicador: ${l.aplicadorNombre}\n` : ''}Resp: ${str(l.registradoPor)}${
+        l.numeroCarnetSAG ? `\nCarnet: ${l.numeroCarnetSAG}` : ''
+      }${l.aprobadoPorAgronomo ? `\nV°B°: ${l.aprobadoPorAgronomo}` : ''}`,
       [climaTxt, l.descripcion, l.observaciones].filter(Boolean).join('\n') || '—',
     ];
   });
@@ -1201,6 +1235,112 @@ function renderClimaFrioSection(doc: jsPDF, startY: number, data: Partial<AppSta
     bodyE,
     'No hay eventualidades climáticas (heladas, granizos, temporales) registradas en el año.',
     [8, 145, 178]
+  );
+
+  return y;
+}
+
+function renderControlHeladasSection(
+  doc: jsPDF,
+  startY: number,
+  controles: ControlHeladaRegistro[],
+  config?: ConfigControlHeladas
+): number {
+  let y = drawSectionBanner(
+    doc,
+    startY,
+    'CONTROL ACTIVO DE HELADAS & PROTOCOLO ANTIHELADAS',
+    `${controles.length} turnos de defensa`,
+    [14, 116, 144]
+  );
+
+  if (config) {
+    const chk = config.checklist;
+    const chkDone = [
+      chk.aspersoresLimpiosDestapados,
+      chk.bombaPresionVerificada,
+      chk.caudalimetroOperativo,
+      chk.combustibleEnergiaRespaldo,
+      chk.sensoresTermicosCalibrados,
+      chk.sueloHumedoSinMalezaAlta,
+    ].filter(Boolean).length;
+
+    const headCfg = [
+      'Umbral Alerta / Encendido / Apagado',
+      'Método Principal & Precipitación',
+      'Estado Fenológico Ref.',
+      'Checklist Pre-Helada',
+    ];
+    const bodyCfg = [
+      [
+        `Alerta: ${num(config.umbralAlertaC, 1)}°C\nEncendido: ${num(config.umbralEncendidoC, 1)}°C · Apagado: ${num(config.umbralApagadoC, 1)}°C`,
+        `${config.metodoPrincipalPredio}${config.tasaPrecipitacionMmHora ? `\nTasa diseño: ${num(config.tasaPrecipitacionMmHora, 1)} mm/hr` : ''}`,
+        str(config.estadoFenologicoReferencia),
+        `${chkDone}/6 verificados${chk.fechaUltimaVerificacion ? `\nFecha: ${chk.fechaUltimaVerificacion}` : ''}${chk.responsableChecklist ? ` · ${chk.responsableChecklist}` : ''}`,
+      ],
+    ];
+    y = renderTable(doc, y, headCfg, bodyCfg, 'Sin configuración de umbrales.', [14, 116, 144]);
+  }
+
+  const headH = [
+    'Fecha / Temporada / Turno',
+    'Tipo & Método Control',
+    'Temperaturas (°C)',
+    'Viento & HR',
+    'Agua (Caudalímetro / Bar) o Equipo',
+    'Cuarteles (ha) & Fenología',
+    'Daño Est. & Post-Helada',
+    'Operador / Estado',
+  ];
+
+  const bodyH = controles.map((c) => {
+    const temps = [
+      `Enc: ${num(c.tempEncendidoC, 1)}°C`,
+      `Mín: ${num(c.tempMinimaAireC, 1)}°C`,
+      c.tempBulboHumedoC !== undefined ? `BH: ${num(c.tempBulboHumedoC, 1)}°C` : null,
+      c.tempApagadoC !== undefined ? `Apag: ${num(c.tempApagadoC, 1)}°C` : null,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+
+    const recursos: string[] = [];
+    if (c.volumenAguaM3 !== undefined && c.volumenAguaM3 > 0) {
+      recursos.push(`Agua: ${num(c.volumenAguaM3, 1)} m³`);
+    }
+    if (c.caudalimetroInicialM3 !== undefined || c.caudalimetroFinalM3 !== undefined) {
+      recursos.push(
+        `Caud: ${c.caudalimetroInicialM3 ?? '—'} -> ${c.caudalimetroFinalM3 ?? '—'} m³`
+      );
+    }
+    if (c.presionOperacionBar !== undefined) {
+      recursos.push(`Presión: ${num(c.presionOperacionBar, 1)} bar`);
+    }
+    if (c.horasEquipo !== undefined && c.horasEquipo > 0) {
+      recursos.push(`Hrs eq: ${num(c.horasEquipo, 1)} h`);
+    }
+    if (c.litrosCombustible !== undefined && c.litrosCombustible > 0) {
+      recursos.push(`Comb: ${num(c.litrosCombustible, 1)} L`);
+    }
+
+    return [
+      `${c.fecha} (${c.temporada})\n${c.horaInicio}${c.horaTermino ? ` - ${c.horaTermino}` : ''} (${num(c.duracionHoras, 1)} hrs)`,
+      `${c.tipoHelada}\n${c.metodoControl}`,
+      temps,
+      `${c.vientoKmH !== undefined ? `${num(c.vientoKmH, 1)} km/h` : '—'}\n${c.humedadRelativaPct !== undefined ? `HR ${num(c.humedadRelativaPct, 0)}%` : '—'}`,
+      recursos.length > 0 ? recursos.join('\n') : '—',
+      `${c.parcelasNombres?.length ? c.parcelasNombres.join(', ') : 'Todo el predio'} (${num(c.superficieProtegidaHa, 1)} ha)\n${str(c.estadoFenologico)}`,
+      `${c.danioEstimadoPct !== undefined ? `Daño: ${num(c.danioEstimadoPct, 0)}%` : 'Sin daño est.'}${c.tratamientoPostHelada ? `\n${c.tratamientoPostHelada}` : ''}`,
+      `${str(c.operadorResponsable)}\n[${c.estadoTurno}]${c.observaciones ? `\n${c.observaciones}` : ''}`,
+    ];
+  });
+
+  y = renderTable(
+    doc,
+    y,
+    headH,
+    bodyH,
+    'No hay turnos de control activo de heladas registrados.',
+    [14, 116, 144]
   );
 
   return y;
@@ -1748,7 +1888,7 @@ export function exportRiegoPDF(
   const startY = drawDocumentHeader(
     doc,
     'CONTROL DE TURNOS DE RIEGO, PARÁMETROS ESTÁNDAR & FERTIRRIEGO',
-    'Caudalímetro (Ini/Fin), Caudal (L/s), Lámina Bruta/Neta, Presiones, CE/pH, Suelo y Fertirriego',
+    'Caudalímetro (Ini/Fin), Caudal (L/s), Lámina Bruta/Neta, Presiones y Fertirriego (Sol. Madre & Inyección)',
     explotacion,
     `${turnos.length} turnos`
   );
@@ -1809,6 +1949,28 @@ export function exportEventualidadesPDF(
   );
   applyFooters(doc, explotacion?.nombreFundo || 'Eventualidades Climáticas');
   doc.save(`eventualidades_heladas_${sanitizeFileName(explotacion?.nombreFundo || 'huerto')}.pdf`);
+}
+
+export function exportControlHeladasPDF(
+  controles: ControlHeladaRegistro[],
+  config?: ConfigControlHeladas,
+  explotacion?: ExplotacionAgricola,
+  filtroLabel?: string
+): void {
+  const doc = createLandscapeDoc();
+  const sub = filtroLabel
+    ? `Registro Operacional de Defensa Antiheladas, Umbrales Térmicos y Consumo Hídrico/Energético · ${filtroLabel}`
+    : 'Registro Operacional de Defensa Antiheladas, Umbrales Térmicos, Caudalímetros y Evaluación Post-Evento';
+  const startY = drawDocumentHeader(
+    doc,
+    'CONTROL ACTIVO DE HELADAS EN KIWI HAYWARD',
+    sub,
+    explotacion,
+    `${controles.length} turnos`
+  );
+  renderControlHeladasSection(doc, startY, controles, config);
+  applyFooters(doc, explotacion?.nombreFundo || 'Control de Heladas');
+  doc.save(`control_heladas_${sanitizeFileName(explotacion?.nombreFundo || 'huerto')}.pdf`);
 }
 
 export function exportOrdenesTrabajoPDF(
@@ -1930,6 +2092,14 @@ export function exportLibroCompletoPDF(
         break;
       case 'clima_frio':
         y = renderClimaFrioSection(doc, y, data);
+        break;
+      case 'control_heladas':
+        y = renderControlHeladasSection(
+          doc,
+          y,
+          data.controlesHelada || [],
+          data.configControlHeladas
+        );
         break;
       case 'fenologia':
         y = renderFenologiaSection(doc, y, data);

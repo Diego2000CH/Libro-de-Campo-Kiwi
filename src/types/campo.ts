@@ -136,14 +136,17 @@ export interface TurnoRiego {
   conFertirriego: boolean;
   fertilizanteInyectado?: string;
   dosisFertilizanteKg?: number;
+  solucionMadreFertilizanteKg?: number; // Kg de fertilizante disuelto en solución madre
+  solucionMadreVolumenLitros?: number; // Litros de solución madre preparada (ej. 100 L)
+  inyeccionLitrosPorMin?: number; // Caudal de inyección en Litros/minuto (L/min)
   presionPreFiltroBar?: number;
   presionCabezalBar: number;
   presionFinLineaBar: number;
   estadoFiltros?: 'Limpios' | 'Requiere Retrolavado' | 'Mantención';
-  ceAguaDsM?: number; // Conductividad Eléctrica (dS/m)
+  ceAguaDsM?: number;
   phAgua?: number;
-  tensionSueloCb?: number; // Tensiómetro / Sensor matriz (cb o kPa)
-  humedadSueloPct?: number; // Humedad volumétrica (%)
+  tensionSueloCb?: number;
+  humedadSueloPct?: number;
   etoReferenciaMm?: number;
   kcAplicado?: number;
   operadorRiego: string;
@@ -251,11 +254,19 @@ export interface RegistroLabor {
   // Específico para fitosanitarios y fertilizantes
   insumoId?: string;
   nombreInsumo?: string;
+  ingredienteActivo?: string; // Ingrediente activo (fitosanitarios)
+  composicionQuimica?: string; // Composición química N-P-K (fertilización)
   dosisPorHa?: number;
+  dosisPorPlanta?: number;
+  unidadDosisPlanta?: 'g/planta' | 'kg/planta' | 'cc/planta' | 'ml/planta' | string;
+  plantasPorHaReferencia?: number;
+  superficieTratadaHa?: number;
   volumenCaldoLHa?: number;
+  totalAguaAplicadaL?: number; // Total litros de agua aplicados (superficie * mojamiento)
   totalInsumoUtilizado?: number;
   unidadMedida?: 'kg' | 'L' | 'unidades' | 'metros' | 'rollos' | 'pares' | string;
-  metodoAplicacion?: string; // 'Turbo Pulverizador', 'Bomba de Espalda', 'Fertirriego', 'Manual'
+  metodoAplicacion?: string; // 'Turbo Pulverizador', 'Al Voleo Manual', 'Al Voleo Abonadora', etc.
+  aplicadorNombre?: string; // Persona que ejecuta la aplicación
   tractoristaMaquinaria?: string;
   eppUtilizado?: string[];
   periodoCarenciaDias?: number;
@@ -392,6 +403,7 @@ export interface OrdenTrabajoFitosanitaria {
   numeroRegistroSAG: string;
   dosisPorHa: number;
   volumenCaldoLHa: number;
+  totalAguaAplicadaL?: number;
   totalProductoRequerido: number;
   unidad: 'kg' | 'L' | 'unidades';
   
@@ -867,6 +879,76 @@ export interface EstadoFenologicoCatalogo {
   descripcion?: string;
 }
 
+export type MetodoControlHelada =
+  | 'Aspersión Antihelada Sobre-Copa'
+  | 'Microaspersión Sub-Copa'
+  | 'Torres de Viento / Ventiladores'
+  | 'Calefactores / Estufas'
+  | 'Riego Nocturno / Suelo Húmedo'
+  | 'Barreras / Manejo Cobertura'
+  | 'Combinado';
+
+export type EstadoTurnoHelada =
+  | 'En Alerta'
+  | 'Activo en Operación'
+  | 'Finalizado'
+  | 'Evaluado Post-Evento';
+
+export interface ChecklistControlHeladas {
+  aspersoresLimpiosDestapados: boolean;
+  bombaPresionVerificada: boolean;
+  caudalimetroOperativo: boolean;
+  combustibleEnergiaRespaldo: boolean;
+  sensoresTermicosCalibrados: boolean;
+  sueloHumedoSinMalezaAlta: boolean;
+  fechaUltimaVerificacion?: string;
+  responsableChecklist?: string;
+}
+
+export interface ConfigControlHeladas {
+  umbralAlertaC: number;
+  umbralEncendidoC: number;
+  umbralApagadoC: number;
+  estadoFenologicoReferencia: string;
+  metodoPrincipalPredio: MetodoControlHelada;
+  tasaPrecipitacionMmHora?: number;
+  checklist: ChecklistControlHeladas;
+  protocoloEmergenciaNotas?: string;
+}
+
+export interface ControlHeladaRegistro {
+  id: string;
+  fecha: string;
+  anio: number;
+  temporada: string;
+  tipoHelada: 'Helada Radiativa' | 'Helada Advectiva' | 'Mixta / Preventivo';
+  metodoControl: MetodoControlHelada;
+  estadoTurno: EstadoTurnoHelada;
+  horaInicio: string;
+  horaTermino?: string;
+  duracionHoras: number;
+  tempEncendidoC: number;
+  tempMinimaAireC: number;
+  tempBulboHumedoC?: number;
+  tempApagadoC?: number;
+  vientoKmH?: number;
+  humedadRelativaPct?: number;
+  presionOperacionBar?: number;
+  caudalimetroInicialM3?: number;
+  caudalimetroFinalM3?: number;
+  volumenAguaM3?: number;
+  horasEquipo?: number;
+  litrosCombustible?: number;
+  parcelasIds: string[];
+  parcelasNombres: string[];
+  superficieProtegidaHa: number;
+  estadoFenologico: string;
+  danioEstimadoPct?: number;
+  tratamientoPostHelada?: string;
+  operadorResponsable: string;
+  observaciones?: string;
+}
+
 export interface AppStateData {
   explotacion: ExplotacionAgricola;
   parcelas: Parcela[];
@@ -895,6 +977,8 @@ export interface AppStateData {
   turnosRiego?: TurnoRiego[];
   clima?: ClimaCondiciones;
   eventualidades?: EventualidadHuerto[];
+  controlesHelada?: ControlHeladaRegistro[];
+  configControlHeladas?: ConfigControlHeladas;
   liquidacionesPacking?: LiquidacionPacking[];
   analisisLaboratorio?: AnalisisLaboratorio[];
   registrosEnvases?: RegistroEnvaseLimpio[];
@@ -905,6 +989,7 @@ export interface AppStateData {
   resumenesTemporada?: ResumenTemporada[];
   ultimaActualizacion?: string;
 }
+
 
 
 

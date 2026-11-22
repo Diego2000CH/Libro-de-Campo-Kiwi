@@ -336,14 +336,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          <div className="text-[11px] text-stone-500 flex items-center justify-between border-t border-stone-100 pt-3">
+          <div className="text-[11px] text-stone-500 flex items-center justify-between gap-2 border-t border-stone-100 pt-3">
             <span>Viento: {clima?.velocidadVientoKmH ?? 11} km/h ({clima?.direccionViento ?? 'Sur-Oeste'})</span>
-            <button 
-              onClick={() => onNavigateTab('clima')}
-              className="text-emerald-700 font-bold hover:underline"
-            >
-              Ver Sensores →
-            </button>
+            <div className="flex items-center gap-2.5 shrink-0">
+              <button 
+                type="button"
+                onClick={() => onNavigateTab('heladas')}
+                className={`font-bold hover:underline cursor-pointer ${
+                  clima?.alertaHelada ? 'text-rose-700' : 'text-cyan-800'
+                }`}
+              >
+                {clima?.alertaHelada ? 'Alerta Heladas →' : 'Control Heladas →'}
+              </button>
+              <button 
+                type="button"
+                onClick={() => onNavigateTab('clima')}
+                className="text-emerald-700 font-bold hover:underline cursor-pointer"
+              >
+                Sensores →
+              </button>
+            </div>
           </div>
         </div>
 

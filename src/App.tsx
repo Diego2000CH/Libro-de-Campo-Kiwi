@@ -13,6 +13,7 @@ import { PozoView } from './components/PozoView';
 import { RiegoView } from './components/RiegoView';
 import { MaquinariasView } from './components/MaquinariasView';
 import { ClimaView } from './components/ClimaView';
+import { ControlHeladasView } from './components/ControlHeladasView';
 import { MonitoreoView } from './components/MonitoreoView';
 import { CalculadoraView } from './components/CalculadoraView';
 import { InformeOficialView } from './components/InformeOficialView';
@@ -50,6 +51,10 @@ import {
   getStoredPolinizacion, 
   getStoredTurnosRiego,
   getStoredEventualidades,
+  getStoredControlesHelada,
+  getStoredConfigControlHeladas,
+  getDefaultConfigControlHeladas,
+  normalizeConfigControlHeladas,
   getStoredMuestreosBrotacion,
   getStoredConteosBotones,
   getStoredSincroniasFlorales,
@@ -107,6 +112,8 @@ import {
   EvaluacionCuajaSemillas,
   TurnoRiego,
   EventualidadHuerto,
+  ControlHeladaRegistro,
+  ConfigControlHeladas,
   LiquidacionPacking,
   AnalisisLaboratorio,
   RegistroEnvaseLimpio,
@@ -161,6 +168,10 @@ export default function App() {
   const [polinizacion, setPolinizacion] = useState<RegistroPolinizacion[]>(getStoredPolinizacion);
   const [turnosRiego, setTurnosRiego] = useState<TurnoRiego[]>(getStoredTurnosRiego);
   const [eventualidades, setEventualidades] = useState<EventualidadHuerto[]>(getStoredEventualidades);
+  const [controlesHelada, setControlesHelada] = useState<ControlHeladaRegistro[]>(getStoredControlesHelada);
+  const [configControlHeladas, setConfigControlHeladas] = useState<ConfigControlHeladas>(
+    getStoredConfigControlHeladas
+  );
   const [muestreosBrotacion, setMuestreosBrotacion] = useState<MuestreoBrotacion[]>(getStoredMuestreosBrotacion);
   const [conteosBotones, setConteosBotones] = useState<ConteoBotonesFlorales[]>(getStoredConteosBotones);
   const [sincroniasFlorales, setSincroniasFlorales] = useState<SincroniaFloral[]>(getStoredSincroniasFlorales);
@@ -258,6 +269,8 @@ export default function App() {
     turnosRiego,
     clima,
     eventualidades,
+    controlesHelada,
+    configControlHeladas,
     liquidacionesPacking,
     analisisLaboratorio,
     registrosEnvases,
@@ -298,6 +311,10 @@ export default function App() {
     if (Array.isArray(d.turnosRiego)) setTurnosRiego(d.turnosRiego);
     if (d.clima) setClima(d.clima);
     if (Array.isArray(d.eventualidades)) setEventualidades(d.eventualidades);
+    if (Array.isArray(d.controlesHelada)) setControlesHelada(d.controlesHelada);
+    if (d.configControlHeladas && typeof d.configControlHeladas === 'object') {
+      setConfigControlHeladas(normalizeConfigControlHeladas(d.configControlHeladas));
+    }
     if (Array.isArray(d.liquidacionesPacking)) setLiquidacionesPacking(d.liquidacionesPacking);
     if (Array.isArray(d.analisisLaboratorio)) setAnalisisLaboratorio(d.analisisLaboratorio);
     if (Array.isArray(d.registrosEnvases)) setRegistrosEnvases(d.registrosEnvases);
@@ -799,6 +816,8 @@ export default function App() {
     turnosRiego,
     clima,
     eventualidades,
+    controlesHelada,
+    configControlHeladas,
     liquidacionesPacking,
     analisisLaboratorio,
     registrosEnvases,
@@ -1137,6 +1156,8 @@ export default function App() {
     setEvaluacionesCuajaSemillas(defaults.evaluacionesCuajaSemillas || []);
     setTurnosRiego(defaults.turnosRiego || []);
     setEventualidades([]);
+    setControlesHelada([]);
+    setConfigControlHeladas(getDefaultConfigControlHeladas());
     setLiquidacionesPacking([]);
     setAnalisisLaboratorio([]);
     setRegistrosEnvases([]);
@@ -1166,6 +1187,8 @@ export default function App() {
     setRegistrosPozo([]);
     setTurnosRiego([]);
     setEventualidades([]);
+    setControlesHelada([]);
+    setConfigControlHeladas(getDefaultConfigControlHeladas());
     setHorasFrio(blank.horasFrio);
     setRegistrosTermicos([]);
     setFenologia([]);
@@ -1307,6 +1330,7 @@ export default function App() {
         onForceSync={handleForceSync}
         onOpenResetModal={guardAdmin(() => setIsResetConfirmOpen(true))}
         alertasProactivasCount={alertasProactivas.length}
+        alertaHeladaActiva={Boolean(clima?.alertaHelada || clima.tempMinima <= configControlHeladas.umbralAlertaC)}
       />
 
       {permissionErrorToast && (
@@ -1572,6 +1596,7 @@ export default function App() {
             explotacion={explotacion}
             canEdit={canEdit}
             onOpenNewLabor={handleOpenNewLabor}
+            onOpenNewFertilizacion={() => handleOpenNewLaborWithDefaults(undefined, 'fertilizacion')}
             onEditLabor={handleEditLabor}
             onDeleteLabor={handleDeleteLabor}
           />
@@ -1593,6 +1618,31 @@ export default function App() {
               setEventualidades((prev) => prev.filter((item) => item.id !== id))
             )}
             canEdit={canEdit}
+            onNavigateControlHeladas={() => setActiveTab('heladas')}
+          />
+        )}
+
+        {activeTab === 'heladas' && (
+          <ControlHeladasView
+            controles={controlesHelada}
+            onAddControl={guardEdit((c) => setControlesHelada((prev) => [c, ...prev]))}
+            onUpdateControl={guardEdit((c) =>
+              setControlesHelada((prev) => prev.map((item) => (item.id === c.id ? c : item)))
+            )}
+            onDeleteControl={guardEdit((id) =>
+              setControlesHelada((prev) => prev.filter((item) => item.id !== id))
+            )}
+            config={configControlHeladas}
+            onUpdateConfig={guardEdit(setConfigControlHeladas)}
+            clima={clima}
+            parcelas={parcelas}
+            explotacion={explotacion}
+            eventualidades={eventualidades}
+            fenologia={fenologia}
+            estadosFenologicosPersonalizados={estadosFenologicosCustom}
+            activeUserName={activeUser?.nombre}
+            canEdit={canEdit}
+            onNavigateTab={setActiveTab}
           />
         )}
 
@@ -1720,6 +1770,10 @@ export default function App() {
                     if (parsed.polinizacion) setPolinizacion(parsed.polinizacion);
                     if (Array.isArray(parsed.turnosRiego)) setTurnosRiego(parsed.turnosRiego);
                     if (Array.isArray(parsed.eventualidades)) setEventualidades(parsed.eventualidades);
+                    if (Array.isArray(parsed.controlesHelada)) setControlesHelada(parsed.controlesHelada);
+                    if (parsed.configControlHeladas && typeof parsed.configControlHeladas === 'object') {
+                      setConfigControlHeladas(normalizeConfigControlHeladas(parsed.configControlHeladas));
+                    }
                     if (Array.isArray(parsed.liquidacionesPacking)) setLiquidacionesPacking(parsed.liquidacionesPacking);
                     if (Array.isArray(parsed.analisisLaboratorio)) setAnalisisLaboratorio(parsed.analisisLaboratorio);
                     if (Array.isArray(parsed.registrosEnvases)) setRegistrosEnvases(parsed.registrosEnvases);

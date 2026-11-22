@@ -31,7 +31,8 @@ import {
   KeyRound,
   Lock,
   ShieldCheck,
-  CalendarClock
+  CalendarClock,
+  ThermometerSnowflake
 } from 'lucide-react';
 import { UsuarioPredio } from '../types/campo';
 import { SyncStatusBadge } from './SyncStatusBadge';
@@ -57,6 +58,7 @@ export type ActiveTab =
   | 'cuaja_semillas'
   | 'labores' 
   | 'clima' 
+  | 'heladas'
   | 'monitoreo' 
   | 'calculadora' 
   | 'laboratorio'
@@ -84,6 +86,7 @@ interface NavbarProps {
   onForceSync: () => Promise<void>;
   onOpenResetModal?: () => void;
   alertasProactivasCount?: number;
+  alertaHeladaActiva?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -104,7 +107,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   lastSyncTime,
   onForceSync,
   onOpenResetModal,
-  alertasProactivasCount = 0
+  alertasProactivasCount = 0,
+  alertaHeladaActiva = false
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -130,6 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'cuaja_semillas', label: 'Cuaja & Semillas', icon: CircleDot },
     { id: 'labores', label: 'Cuaderno Labores', icon: Sprout },
     { id: 'clima', label: 'Clima', icon: CloudSun },
+    { id: 'heladas', label: 'Control Heladas', icon: ThermometerSnowflake, badgeText: alertaHeladaActiva ? 'ALERTA' : undefined },
     { id: 'monitoreo', label: 'Plagas & Psa', icon: Bug },
     { id: 'calculadora', label: 'Calculadora', icon: Calculator },
     { id: 'laboratorio', label: 'Laboratorio', icon: FlaskConical },

@@ -75,6 +75,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
     usuarios.find((u) => u.rol === 'aplicador_sag')?.nombre || activeUser?.nombre || ''
   );
   const [firmaDigital, setFirmaDigital] = useState('Aplicador Autorizado SAG');
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Filtrar solo los productos aptos para recetas (Fitosanitarios y Fertilizantes)
   const productosFitoDisponibles = inventario.filter((item) => {
@@ -91,6 +92,9 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
   const [superficieNoKiwiHa, setSuperficieNoKiwiHa] = useState<number>(1.0);
   const [objetivoFitosanitario, setObjetivoFitosanitario] = useState<string>('');
   const [volumenCaldoLHa, setVolumenCaldoLHa] = useState<number>(1000);
+  const [aplicadorOrdenNuevo, setAplicadorOrdenNuevo] = useState<string>(
+    usuarios.find((u) => u.rol === 'aplicador_sag')?.nombre || ''
+  );
   const [observacionesTecnicas, setObservacionesTecnicas] = useState<string>('');
 
   // Lista de Productos en la Mezcla (múltiples productos por aplicación)
@@ -159,17 +163,19 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
   // Apertura modal nuevo con reseteo
   const handleOpenNewOrden = () => {
+    setFormError(null);
     setDestinoSeleccionado('kiwi');
     setSelectedCuartelIds(parcelas[0]?.id ? [parcelas[0].id] : []);
     setNombreSectorNoKiwi('');
-    setSuperficieNoKiwiHa(0);
+    setSuperficieNoKiwiHa(1.0);
     setObjetivoFitosanitario('');
     setVolumenCaldoLHa(1000);
+    setAplicadorOrdenNuevo(usuarios.find((u) => u.rol === 'aplicador_sag')?.nombre || '');
     setObservacionesTecnicas('');
     setProductosMezcla([
       {
         insumoId: productosFitoDisponibles[0]?.id || inventario[0]?.id || '',
-        dosisPorHa: 0
+        dosisPorHa: 1.0
       }
     ]);
     setIsNewOrdenOpen(true);
@@ -178,14 +184,15 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
   // Creación de la Orden
   const handleCrearOrden = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
 
     if (destinoSeleccionado === 'kiwi' && selectedCuartelIds.length === 0) {
-      alert('Debe seleccionar al menos 1 cuartel de Kiwi para la aplicación.');
+      setFormError('Debe seleccionar al menos 1 cuartel de Kiwi para la aplicación.');
       return;
     }
 
     if (productosMezcla.length === 0) {
-      alert('Debe agregar al menos un producto a la mezcla fitosanitaria.');
+      setFormError('Debe agregar al menos un producto a la mezcla fitosanitaria.');
       return;
     }
 
@@ -211,13 +218,14 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
       .filter((x): x is ProductoItemOrden => x !== null);
 
     if (productosOrden.length === 0) {
-      alert('No hay productos válidos disponibles en Bodega Fitosanitaria.');
+      setFormError('No hay productos válidos disponibles en Bodega Fitosanitaria.');
       return;
     }
 
     const primerProd = productosOrden[0];
     const maxCarencia = Math.max(...productosOrden.map((p) => p.carenciaDias), 0);
     const maxReingreso = Math.max(...productosOrden.map((p) => p.tiempoReingresoHoras), 0);
+    const totalAguaCalculadaL = Number((superficieTotalCalculada * (Number(volumenCaldoLHa) || 0)).toFixed(0));
 
     const nombresCuarteles = destinoSeleccionado === 'kiwi'
       ? selectedCuartelIds.map((id) => parcelas.find((p) => p.id === id)?.nombre || id)
@@ -242,6 +250,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
       numeroRegistroSAG: productosOrden.map((p) => p.numeroRegistroSAG).join(' / '),
       dosisPorHa: primerProd.dosisPorHa,
       volumenCaldoLHa: Number(volumenCaldoLHa),
+      totalAguaAplicadaL: totalAguaCalculadaL,
       totalProductoRequerido: primerProd.totalProductoRequerido,
       unidad: primerProd.unidad,
       eppRequerido: [
@@ -254,6 +263,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
       tiempoReingresoHoras: maxReingreso,
       carenciaDias: maxCarencia,
       ingenieroAgronomoNombre: activeUser?.nombre || 'Responsable Técnico',
+      aplicadorNombre: aplicadorOrdenNuevo.trim() || undefined,
       estado: 'en_proceso',
       descontadoInventario: true, // Se descuentan todos los productos al emitir la orden
       fechaDescuentoBodega: new Date().toISOString().split('T')[0],
@@ -411,15 +421,25 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                 {/* Acciones de la orden */}
                 <div className="flex items-center gap-2 self-start sm:self-center">
                   {!isCompletada ? (
-                    canEdit ? (
-                      <button
-                        onClick={() => setExecutingOrdenId(orden.id)}
-                        className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
-                        Finalizar Aplicación
-                      </button>
-                    ) : null
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {orden.aplicadorNombre && (
+                        <span className="text-[11px] text-stone-600">
+                          Aplicador: <strong className="text-stone-900">{orden.aplicadorNombre}</strong>
+                        </span>
+                      )}
+                      {canEdit && (
+                        <button
+                          onClick={() => {
+                            if (orden.aplicadorNombre) setAplicadorSeleccionado(orden.aplicadorNombre);
+                            setExecutingOrdenId(orden.id);
+                          }}
+                          className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          Finalizar Aplicación
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <div className="text-right text-[11px] text-stone-500">
                       <div>Aplicador: <strong className="text-emerald-950">{orden.aplicadorNombre}</strong></div>
@@ -460,26 +480,39 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                   <div className="font-bold text-stone-900 mt-0.5">
                     {(orden.parcelasNombres || []).join(', ') || 'Cuarteles de Kiwi'}
                   </div>
-                  <div className="text-[11px] text-emerald-800 font-bold mt-0.5">
+                  <div className="text-[11px] text-emerald-800 font-bold mt-0.5 font-mono tabular-nums">
                     Superficie Total: {orden.superficieTotalHa} ha
                   </div>
                 </div>
 
                 <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80">
-                  <div className="text-[10px] text-stone-400 font-bold uppercase">Objetivo Fitosanitario</div>
+                  <div className="text-[10px] text-stone-400 font-bold uppercase">Objetivo & Agua Aplicada</div>
                   <div className="font-bold text-stone-900 mt-0.5">{orden.objetivoFitosanitario}</div>
-                  <div className="text-[11px] text-stone-500 mt-0.5">
-                    Mojamiento: {orden.volumenCaldoLHa || 1000} L caldo/ha
+                  <div className="text-[11px] text-cyan-950 font-bold font-mono tabular-nums mt-0.5">
+                    Total Agua:{' '}
+                    {(
+                      orden.totalAguaAplicadaL ??
+                      Number((orden.superficieTotalHa * (orden.volumenCaldoLHa || 1000)).toFixed(0))
+                    ).toLocaleString('es-CL')}{' '}
+                    L{' '}
+                    <span className="font-normal text-stone-500">
+                      ({orden.volumenCaldoLHa || 1000} L/ha)
+                    </span>
                   </div>
+                  {orden.ingredienteActivo && (
+                    <div className="text-[11px] text-purple-900 font-semibold mt-0.5 truncate" title={orden.ingredienteActivo}>
+                      Ing. Activo: {orden.ingredienteActivo}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80">
-                  <div className="text-[10px] text-stone-400 font-bold uppercase">Carencia y Reingreso Máximos</div>
-                  <div className="font-bold text-amber-900 mt-0.5">
-                    Carencia LMR: {orden.carenciaDias} días
+                  <div className="text-[10px] text-stone-400 font-bold uppercase">Carencia, Reingreso & Aplicador</div>
+                  <div className="font-bold text-amber-900 mt-0.5 font-mono tabular-nums">
+                    Carencia LMR: {orden.carenciaDias} días · REI: {orden.tiempoReingresoHoras}h
                   </div>
-                  <div className="text-[11px] text-stone-600 mt-0.5">
-                    Reingreso (REI): {orden.tiempoReingresoHoras} horas
+                  <div className="text-[11px] text-stone-700 mt-0.5">
+                    Aplicador: <strong>{orden.aplicadorNombre || 'Por confirmar al ejecutar'}</strong>
                   </div>
                 </div>
               </div>
@@ -583,6 +616,13 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
             </div>
 
             <form onSubmit={handleCrearOrden} className="p-5 space-y-4 text-xs max-h-[85vh] overflow-y-auto">
+              {formError && (
+                <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 font-semibold flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
+
               {/* Alerta de Descuento Inmediato */}
               <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl text-purple-950 text-[11px] flex items-center gap-2">
                 <Package className="w-4 h-4 text-purple-700 shrink-0" />
@@ -852,7 +892,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                 </div>
               </div>
 
-              {/* 4. OBJETIVO, MOJAMIENTO Y MAQUINARIA */}
+              {/* 4. OBJETIVO, MOJAMIENTO, TOTAL AGUA Y APLICADOR */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Objetivo Fitosanitario:</label>
@@ -867,15 +907,40 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                 </div>
 
                 <div>
+                  <label className="block font-bold text-stone-700 mb-1">Aplicador Asignado (Opcional):</label>
+                  <select
+                    value={aplicadorOrdenNuevo}
+                    onChange={(e) => setAplicadorOrdenNuevo(e.target.value)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-semibold"
+                  >
+                    <option value="">Asignar al finalizar en terreno</option>
+                    {usuarios.map((u) => (
+                      <option key={u.id} value={u.nombre}>
+                        {u.nombre} {u.carnetSAGVigente ? '(Carnet SAG Vigente)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
                   <label className="block font-bold text-stone-700 mb-1">Volumen Mojamiento (L/ha):</label>
                   <input
                     type="number"
                     step="50"
                     value={volumenCaldoLHa}
-                    onChange={(e) => setVolumenCaldoLHa(parseInt(e.target.value) || 1000)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    onChange={(e) => setVolumenCaldoLHa(parseInt(e.target.value) || 0)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold font-mono tabular-nums"
                     required
                   />
+                </div>
+
+                <div className="p-2.5 bg-cyan-50/60 border border-cyan-200 rounded-lg flex flex-col justify-center">
+                  <span className="text-[10px] font-bold uppercase text-cyan-800">Total Agua a Aplicar ({superficieTotalCalculada} ha)</span>
+                  <strong className="text-sm font-black font-mono text-cyan-950 tabular-nums">
+                    {Number((superficieTotalCalculada * (Number(volumenCaldoLHa) || 0)).toFixed(0)).toLocaleString('es-CL')} Litros totales
+                  </strong>
                 </div>
               </div>
 
@@ -992,26 +1057,68 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Ingrediente Activo:</label>
+                <input
+                  type="text"
+                  value={editingOrden.ingredienteActivo || ''}
+                  onChange={(e) => setEditingOrden({ ...editingOrden, ingredienteActivo: e.target.value })}
+                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                  placeholder="Ingrediente activo principal o mezcla"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Superficie Total (ha):</label>
                   <input
                     type="number"
                     step="0.1"
                     value={editingOrden.superficieTotalHa}
-                    onChange={(e) => setEditingOrden({ ...editingOrden, superficieTotalHa: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    onChange={(e) => {
+                      const sup = parseFloat(e.target.value) || 0;
+                      setEditingOrden({
+                        ...editingOrden,
+                        superficieTotalHa: sup,
+                        totalAguaAplicadaL: Number((sup * (editingOrden.volumenCaldoLHa || 0)).toFixed(0))
+                      });
+                    }}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold font-mono tabular-nums"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Volumen Caldo (L/ha):</label>
+                  <label className="block font-bold text-stone-700 mb-1">Mojamiento (L/ha):</label>
                   <input
                     type="number"
                     value={editingOrden.volumenCaldoLHa}
-                    onChange={(e) => setEditingOrden({ ...editingOrden, volumenCaldoLHa: parseInt(e.target.value) || 1000 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    onChange={(e) => {
+                      const caldo = parseInt(e.target.value) || 0;
+                      setEditingOrden({
+                        ...editingOrden,
+                        volumenCaldoLHa: caldo,
+                        totalAguaAplicadaL: Number(((editingOrden.superficieTotalHa || 0) * caldo).toFixed(0))
+                      });
+                    }}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
                     required
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Total Agua (L):</label>
+                  <input
+                    type="number"
+                    value={
+                      editingOrden.totalAguaAplicadaL ??
+                      Number(((editingOrden.superficieTotalHa || 0) * (editingOrden.volumenCaldoLHa || 0)).toFixed(0))
+                    }
+                    onChange={(e) =>
+                      setEditingOrden({
+                        ...editingOrden,
+                        totalAguaAplicadaL: parseFloat(e.target.value) || 0
+                      })
+                    }
+                    className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-bold font-mono tabular-nums text-cyan-950"
                   />
                 </div>
               </div>
@@ -1039,18 +1146,30 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-stone-700 mb-1">Estado de la Aplicación:</label>
-                <select
-                  value={editingOrden.estado}
-                  onChange={(e) => setEditingOrden({ ...editingOrden, estado: e.target.value as any })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
-                >
-                  <option value="pendiente">Pendiente</option>
-                  <option value="en_proceso">En Proceso / Emitida</option>
-                  <option value="completada">Completada / Aplicada</option>
-                  <option value="cancelada">Cancelada</option>
-                </select>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Aplicador Responsable:</label>
+                  <input
+                    type="text"
+                    value={editingOrden.aplicadorNombre || ''}
+                    onChange={(e) => setEditingOrden({ ...editingOrden, aplicadorNombre: e.target.value })}
+                    placeholder="Nombre del aplicador"
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Estado de la Aplicación:</label>
+                  <select
+                    value={editingOrden.estado}
+                    onChange={(e) => setEditingOrden({ ...editingOrden, estado: e.target.value as any })}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                  >
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_proceso">En Proceso / Emitida</option>
+                    <option value="completada">Completada / Aplicada</option>
+                    <option value="cancelada">Cancelada</option>
+                  </select>
+                </div>
               </div>
 
               <div>

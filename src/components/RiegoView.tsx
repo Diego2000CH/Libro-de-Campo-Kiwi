@@ -25,7 +25,6 @@ import {
   Download,
   Gauge,
   Filter,
-  FlaskConical,
   CheckSquare,
   Square
 } from 'lucide-react';
@@ -184,14 +183,13 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
     conFertirriego: false,
     fertilizanteInyectado: '',
     dosisFertilizanteKg: 0,
+    solucionMadreFertilizanteKg: 0,
+    solucionMadreVolumenLitros: 100,
+    inyeccionLitrosPorMin: 0,
     presionPreFiltroBar: undefined,
     presionCabezalBar: 0,
     presionFinLineaBar: 0,
     estadoFiltros: 'Limpios',
-    ceAguaDsM: undefined,
-    phAgua: undefined,
-    tensionSueloCb: undefined,
-    humedadSueloPct: undefined,
     etoReferenciaMm: etoActual || undefined,
     kcAplicado: kcEstimado,
     operadorRiego: '',
@@ -288,14 +286,13 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
       conFertirriego: false,
       fertilizanteInyectado: '',
       dosisFertilizanteKg: 0,
+      solucionMadreFertilizanteKg: 0,
+      solucionMadreVolumenLitros: 100,
+      inyeccionLitrosPorMin: 0,
       presionPreFiltroBar: undefined,
       presionCabezalBar: 0,
       presionFinLineaBar: 0,
       estadoFiltros: 'Limpios',
-      ceAguaDsM: undefined,
-      phAgua: undefined,
-      tensionSueloCb: undefined,
-      humedadSueloPct: undefined,
       etoReferenciaMm: etoActual || undefined,
       kcAplicado: kcEstimado,
       operadorRiego: '',
@@ -330,7 +327,10 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
         eficienciaRiegoPct: ef,
         estadoFiltros: turno.estadoFiltros || 'Limpios',
         caudalimetroInicialM3: turno.caudalimetroInicialM3 ?? 0,
-        caudalimetroFinalM3: turno.caudalimetroFinalM3 ?? 0
+        caudalimetroFinalM3: turno.caudalimetroFinalM3 ?? 0,
+        solucionMadreFertilizanteKg: turno.solucionMadreFertilizanteKg ?? turno.dosisFertilizanteKg ?? 0,
+        solucionMadreVolumenLitros: turno.solucionMadreVolumenLitros ?? 100,
+        inyeccionLitrosPorMin: turno.inyeccionLitrosPorMin ?? 0
       })
     );
     setIsEditTurnoOpen(true);
@@ -502,15 +502,22 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
       caudalMedidoLs: qMedido,
       conFertirriego: !!formTurno.conFertirriego,
       fertilizanteInyectado: formTurno.conFertirriego ? formTurno.fertilizanteInyectado : '',
-      dosisFertilizanteKg: formTurno.conFertirriego ? formTurno.dosisFertilizanteKg : 0,
+      dosisFertilizanteKg: formTurno.conFertirriego
+        ? Number(formTurno.solucionMadreFertilizanteKg ?? formTurno.dosisFertilizanteKg ?? 0)
+        : 0,
+      solucionMadreFertilizanteKg: formTurno.conFertirriego
+        ? Number(formTurno.solucionMadreFertilizanteKg ?? formTurno.dosisFertilizanteKg ?? 0)
+        : 0,
+      solucionMadreVolumenLitros: formTurno.conFertirriego
+        ? Number(formTurno.solucionMadreVolumenLitros ?? 0)
+        : 0,
+      inyeccionLitrosPorMin: formTurno.conFertirriego
+        ? Number(formTurno.inyeccionLitrosPorMin ?? 0)
+        : 0,
       presionPreFiltroBar: formTurno.presionPreFiltroBar,
       presionCabezalBar: Number(formTurno.presionCabezalBar ?? 0),
       presionFinLineaBar: Number(formTurno.presionFinLineaBar ?? 0),
       estadoFiltros: formTurno.estadoFiltros || 'Limpios',
-      ceAguaDsM: formTurno.ceAguaDsM,
-      phAgua: formTurno.phAgua,
-      tensionSueloCb: formTurno.tensionSueloCb,
-      humedadSueloPct: formTurno.humedadSueloPct,
       etoReferenciaMm: formTurno.etoReferenciaMm,
       kcAplicado: formTurno.kcAplicado,
       operadorRiego: formTurno.operadorRiego || 'Operador de Riego',
@@ -610,7 +617,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
             Control de Riego, Caudalímetros y Parámetros Hidráulicos
           </h1>
           <p className="text-xs text-stone-500">
-            Registro por caudalímetro (inicial/final m³), caudal L/s, lámina bruta/neta, eficiencia, presiones de filtros/línea, CE/pH y humedad de suelo.
+            Registro por caudalímetro (inicial/final m³), caudal L/s, lámina bruta/neta, eficiencia, presiones de filtros/línea y fertirriego (solución madre e inyección).
           </p>
         </div>
 
@@ -816,7 +823,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
             <span className="text-xs text-stone-400 font-mono tabular-nums">({turnosRiego.length} registros)</span>
           </div>
           <div className="text-[11px] text-stone-500">
-            Trazabilidad hidráulica estándar: caudalímetros, caudales, láminas bruta/neta, presiones y suelo
+            Trazabilidad hidráulica estándar: caudalímetros, caudales, láminas bruta/neta, presiones y fertirriego
           </div>
         </div>
 
@@ -848,8 +855,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                   <th className="p-3">Volumen (m³)</th>
                   <th className="p-3">Lámina Bruta / Neta</th>
                   <th className="p-3">Presiones & Filtros</th>
-                  <th className="p-3">Agua & Suelo</th>
-                  <th className="p-3">Fertirriego</th>
+                  <th className="p-3">Fertirriego (Sol. Madre & Inyección)</th>
                   <th className="p-3">Operador</th>
                   {canEdit && <th className="p-3 text-right">Acciones</th>}
                 </tr>
@@ -938,29 +944,27 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           Filtros: {turno.estadoFiltros || 'Limpios'}
                         </div>
                       </td>
-                      <td className="p-3 font-mono text-[11px] text-stone-600 whitespace-nowrap">
-                        {turno.ceAguaDsM !== undefined ||
-                        turno.phAgua !== undefined ||
-                        turno.tensionSueloCb !== undefined ||
-                        turno.humedadSueloPct !== undefined ? (
-                          <div className="space-y-0.5">
-                            {turno.ceAguaDsM !== undefined && <div>CE: {turno.ceAguaDsM} dS/m</div>}
-                            {turno.phAgua !== undefined && <div>pH: {turno.phAgua}</div>}
-                            {turno.tensionSueloCb !== undefined && <div>Tens: {turno.tensionSueloCb} cb</div>}
-                            {turno.humedadSueloPct !== undefined && <div>Hum: {turno.humedadSueloPct}%</div>}
-                          </div>
-                        ) : (
-                          <span className="text-stone-400 font-sans">—</span>
-                        )}
-                      </td>
                       <td className="p-3">
                         {turno.conFertirriego ? (
-                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold">
-                            <Zap className="w-3 h-3 text-emerald-600 shrink-0" />
-                            <span>
-                              {turno.fertilizanteInyectado || 'Fertirriego'}{' '}
-                              {turno.dosisFertilizanteKg ? `(${turno.dosisFertilizanteKg} kg)` : ''}
-                            </span>
+                          <div className="space-y-0.5 text-[11px]">
+                            <div className="font-bold text-emerald-900 flex items-center gap-1">
+                              <Zap className="w-3 h-3 text-emerald-600 shrink-0" />
+                              <span>{turno.fertilizanteInyectado || 'Fertirriego'}</span>
+                            </div>
+                            <div className="font-mono text-[10px] text-stone-700 tabular-nums">
+                              Sol. Madre:{' '}
+                              <strong>
+                                {turno.solucionMadreFertilizanteKg ?? turno.dosisFertilizanteKg ?? 0} kg
+                              </strong>
+                              {turno.solucionMadreVolumenLitros
+                                ? ` / ${turno.solucionMadreVolumenLitros} L`
+                                : ''}
+                            </div>
+                            {(turno.inyeccionLitrosPorMin ?? 0) > 0 && (
+                              <div className="font-mono text-[10px] text-cyan-800 font-semibold tabular-nums">
+                                Inyección: {turno.inyeccionLitrosPorMin} L/min
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <span className="text-stone-400 text-[11px]">Agua pura</span>
@@ -1429,88 +1433,8 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                 </div>
               </div>
 
-              {/* 5. Calidad de Agua (CE / pH) y Humedad de Suelo (Tensiómetro) */}
-              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
-                <div className="font-bold text-stone-800 flex items-center gap-1.5 text-xs">
-                  <FlaskConical className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Parámetros Estándar de Agua y Suelo (Opcional)</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <div>
-                    <label className="block font-semibold text-stone-600 mb-1">CE Agua (dS/m):</label>
-                    <input
-                      type="number"
-                      step="0.05"
-                      min="0"
-                      placeholder="ej. 0.45"
-                      value={formTurno.ceAguaDsM ?? ''}
-                      onChange={(e) =>
-                        setFormTurno({
-                          ...formTurno,
-                          ceAguaDsM: e.target.value === '' ? undefined : parseFloat(e.target.value)
-                        })
-                      }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-stone-600 mb-1">pH Agua / Solución:</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="14"
-                      placeholder="ej. 6.5"
-                      value={formTurno.phAgua ?? ''}
-                      onChange={(e) =>
-                        setFormTurno({
-                          ...formTurno,
-                          phAgua: e.target.value === '' ? undefined : parseFloat(e.target.value)
-                        })
-                      }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-stone-600 mb-1">Tensiómetro Suelo (cb):</label>
-                    <input
-                      type="number"
-                      step="1"
-                      min="0"
-                      placeholder="ej. 18"
-                      value={formTurno.tensionSueloCb ?? ''}
-                      onChange={(e) =>
-                        setFormTurno({
-                          ...formTurno,
-                          tensionSueloCb: e.target.value === '' ? undefined : parseFloat(e.target.value)
-                        })
-                      }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-stone-600 mb-1">Humedad Suelo (%):</label>
-                    <input
-                      type="number"
-                      step="0.5"
-                      min="0"
-                      max="100"
-                      placeholder="ej. 28"
-                      value={formTurno.humedadSueloPct ?? ''}
-                      onChange={(e) =>
-                        setFormTurno({
-                          ...formTurno,
-                          humedadSueloPct: e.target.value === '' ? undefined : parseFloat(e.target.value)
-                        })
-                      }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 6. Fertirriego */}
-              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+              {/* 5. Fertirriego: Solución Madre e Inyección (L/min) */}
+              <div className="p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl space-y-3">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -1518,35 +1442,122 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                     onChange={(e) => setFormTurno({ ...formTurno, conFertirriego: e.target.checked })}
                     className="w-4 h-4 text-emerald-600 rounded"
                   />
-                  <span className="font-bold text-stone-800 text-xs">
-                    Inyección de Fertilizante en este Turno (Fertirriego)
+                  <span className="font-bold text-stone-800 text-xs flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Inyección de Fertilizante en este Turno (Fertirriego · Solución Madre & Inyección)</span>
                   </span>
                 </label>
 
                 {formTurno.conFertirriego && (
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <div>
-                      <label className="block font-semibold text-stone-600 mb-1">Fertilizante Inyectado:</label>
-                      <input
-                        type="text"
-                        placeholder="ej. Nitrato de Calcio / Ácido Fosfórico"
-                        value={formTurno.fertilizanteInyectado || ''}
-                        onChange={(e) => setFormTurno({ ...formTurno, fertilizanteInyectado: e.target.value })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg"
-                      />
+                  <div className="space-y-2.5 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                      <div className="sm:col-span-2">
+                        <label className="block font-semibold text-stone-700 mb-1">Fertilizante Inyectado:</label>
+                        <input
+                          type="text"
+                          placeholder="ej. Nitrato de Calcio / Sulfato de Potasio"
+                          value={formTurno.fertilizanteInyectado || ''}
+                          onChange={(e) => setFormTurno({ ...formTurno, fertilizanteInyectado: e.target.value })}
+                          className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-stone-700 mb-1">Sol. Madre — Fertilizante (kg):</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          placeholder="ej. 25"
+                          value={formTurno.solucionMadreFertilizanteKg ?? formTurno.dosisFertilizanteKg ?? ''}
+                          onChange={(e) => {
+                            const kg = e.target.value === '' ? 0 : parseFloat(e.target.value) || 0;
+                            setFormTurno({
+                              ...formTurno,
+                              solucionMadreFertilizanteKg: kg,
+                              dosisFertilizanteKg: kg
+                            });
+                          }}
+                          className="w-full p-2 bg-white border border-emerald-300 rounded-lg font-mono font-bold tabular-nums"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-stone-700 mb-1">Sol. Madre — Agua / Estanque (L):</label>
+                        <input
+                          type="number"
+                          step="1"
+                          min="1"
+                          placeholder="ej. 100"
+                          value={formTurno.solucionMadreVolumenLitros ?? ''}
+                          onChange={(e) =>
+                            setFormTurno({
+                              ...formTurno,
+                              solucionMadreVolumenLitros: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0
+                            })
+                          }
+                          className="w-full p-2 bg-white border border-emerald-300 rounded-lg font-mono font-bold tabular-nums"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block font-semibold text-stone-600 mb-1">Dosis Total (kg):</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        placeholder="ej. 50"
-                        value={formTurno.dosisFertilizanteKg || ''}
-                        onChange={(e) =>
-                          setFormTurno({ ...formTurno, dosisFertilizanteKg: parseFloat(e.target.value) || 0 })
-                        }
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold tabular-nums"
-                      />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
+                      <div>
+                        <label className="block font-semibold text-stone-700 mb-1">Caudal de Inyección (Litros/min):</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          placeholder="ej. 2.5"
+                          value={formTurno.inyeccionLitrosPorMin ?? ''}
+                          onChange={(e) =>
+                            setFormTurno({
+                              ...formTurno,
+                              inyeccionLitrosPorMin: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0
+                            })
+                          }
+                          className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-mono font-bold text-cyan-950 tabular-nums"
+                        />
+                      </div>
+
+                      <div className="p-2 bg-white border border-emerald-200 rounded-lg text-[11px] font-mono tabular-nums text-emerald-950">
+                        <span className="block text-[10px] font-sans font-bold uppercase text-stone-500">
+                          Concentración Sol. Madre
+                        </span>
+                        {(formTurno.solucionMadreVolumenLitros ?? 0) > 0 &&
+                        (formTurno.solucionMadreFertilizanteKg ?? formTurno.dosisFertilizanteKg ?? 0) > 0 ? (
+                          <strong>
+                            {(
+                              ((formTurno.solucionMadreFertilizanteKg ?? formTurno.dosisFertilizanteKg ?? 0) * 1000) /
+                              (formTurno.solucionMadreVolumenLitros || 1)
+                            ).toFixed(0)}{' '}
+                            g/L (
+                            {(
+                              (formTurno.solucionMadreFertilizanteKg ?? formTurno.dosisFertilizanteKg ?? 0) /
+                              (formTurno.solucionMadreVolumenLitros || 1)
+                            ).toFixed(3)}{' '}
+                            kg/L)
+                          </strong>
+                        ) : (
+                          <span className="text-stone-400">Ingresa kg y litros</span>
+                        )}
+                      </div>
+
+                      <div className="p-2 bg-white border border-cyan-200 rounded-lg text-[11px] font-mono tabular-nums text-cyan-950">
+                        <span className="block text-[10px] font-sans font-bold uppercase text-stone-500">
+                          Tiempo Estimado Inyección
+                        </span>
+                        {(formTurno.inyeccionLitrosPorMin ?? 0) > 0 &&
+                        (formTurno.solucionMadreVolumenLitros ?? 0) > 0 ? (
+                          <strong>
+                            {(
+                              (formTurno.solucionMadreVolumenLitros || 0) /
+                              (formTurno.inyeccionLitrosPorMin || 1)
+                            ).toFixed(1)}{' '}
+                            min ({formTurno.solucionMadreVolumenLitros} L)
+                          </strong>
+                        ) : (
+                          <span className="text-stone-400">Ingresa L/min</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

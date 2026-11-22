@@ -43,6 +43,7 @@ interface ClimaViewProps {
   onUpdateEventualidad?: (ev: EventualidadHuerto) => void;
   onDeleteEventualidad?: (id: string) => void;
   canEdit?: boolean;
+  onNavigateControlHeladas?: () => void;
 }
 
 const TIPOS_EVENTUALIDAD: TipoEventualidad[] = [
@@ -123,7 +124,8 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
   onAddEventualidad,
   onUpdateEventualidad,
   onDeleteEventualidad,
-  canEdit = true
+  canEdit = true,
+  onNavigateControlHeladas
 }) => {
   const [localClima, setLocalClima] = useState<ClimaCondiciones>(climaProp);
   const clima = canEdit ? climaProp : localClima;
@@ -737,23 +739,35 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
               </p>
             </div>
           </div>
-          {canEdit && onAddEventualidad && (
-            <button
-              type="button"
-              onClick={() =>
-                handleOpenNewEvento({
-                  tipo: 'Helada Radiativa',
-                  tempMinimaC: clima.tempMinima,
-                  severidad: clima.tempMinima <= -2 ? 'Crítica' : clima.tempMinima <= 0 ? 'Severa' : 'Moderada',
-                  medidaMitigacion: 'Aspersión antiheladas / Monitoreo térmico'
-                })
-              }
-              className="px-3.5 py-2 bg-cyan-900 hover:bg-cyan-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap"
-            >
-              <Snowflake className="w-3.5 h-3.5" />
-              <span>Registrar Helada en Bitácora</span>
-            </button>
-          )}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {onNavigateControlHeladas && (
+              <button
+                type="button"
+                onClick={onNavigateControlHeladas}
+                className="px-3.5 py-2 bg-white hover:bg-cyan-100 text-cyan-950 border border-cyan-400 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap"
+              >
+                <Snowflake className="w-3.5 h-3.5 text-cyan-700" />
+                <span>Abrir Control de Heladas</span>
+              </button>
+            )}
+            {canEdit && onAddEventualidad && (
+              <button
+                type="button"
+                onClick={() =>
+                  handleOpenNewEvento({
+                    tipo: 'Helada Radiativa',
+                    tempMinimaC: clima.tempMinima,
+                    severidad: clima.tempMinima <= -2 ? 'Crítica' : clima.tempMinima <= 0 ? 'Severa' : 'Moderada',
+                    medidaMitigacion: 'Aspersión antiheladas / Monitoreo térmico'
+                  })
+                }
+                className="px-3.5 py-2 bg-cyan-900 hover:bg-cyan-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap"
+              >
+                <Snowflake className="w-3.5 h-3.5" />
+                <span>Registrar Helada en Bitácora</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
 

@@ -51,6 +51,16 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
   defaultTipoLabor
 }) => {
   const activeUser = usuarios.find((u) => u.id === activeUserId) || usuarios[0];
+  const defaultAplicadorUser =
+    usuarios.find((u) => u.rol === 'aplicador_sag') || activeUser || usuarios[0];
+
+  const fitoFertProductos = inventario.filter((i) => i.categoriaBodega !== 'material_riego');
+  const fertProductos = fitoFertProductos.filter(
+    (i) =>
+      i.tipo?.includes('fertilizante') ||
+      i.categoria === 'fertilizante' ||
+      i.categoriaFito === 'fertilizante'
+  );
 
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
   const [hora, setHora] = useState(getCurrentHHMM);
@@ -59,15 +69,23 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
   const [superficieManualHa, setSuperficieManualHa] = useState(1.0);
   const [tipoLabor, setTipoLabor] = useState<TipoLabor>('fitosanitario');
   const [descripcion, setDescripcion] = useState('');
-  
+
   // Fitosanitario / Fertilizante
-  const [insumoId, setInsumoId] = useState(inventario[0]?.id || '');
+  const [insumoId, setInsumoId] = useState(fitoFertProductos[0]?.id || '');
   const [nombreInsumoManual, setNombreInsumoManual] = useState('');
   const [unidadManual, setUnidadManual] = useState('Litros');
+  const [ingredienteActivo, setIngredienteActivo] = useState('');
+  const [composicionQuimica, setComposicionQuimica] = useState('');
   const [dosisPorHa, setDosisPorHa] = useState(1.0);
+  const [dosisPorPlanta, setDosisPorPlanta] = useState(0);
+  const [unidadDosisPlanta, setUnidadDosisPlanta] = useState('g/planta');
+  const [plantasPorHaRef, setPlantasPorHaRef] = useState(555);
   const [volumenCaldoLHa, setVolumenCaldoLHa] = useState(1000);
+  const [totalAguaAplicadaL, setTotalAguaAplicadaL] = useState(1000);
   const [metodoAplicacion, setMetodoAplicacion] = useState('Turbo Pulverizador');
   const [tractoristaMaquinaria, setTractoristaMaquinaria] = useState('');
+  const [aplicadorSelect, setAplicadorSelect] = useState(defaultAplicadorUser?.nombre || '');
+  const [aplicadorManual, setAplicadorManual] = useState('');
   const [objetivoPlaga, setObjetivoPlaga] = useState('Control preventivo Psa / Botrytis');
 
   // Riego
@@ -79,47 +97,121 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
+
+    const getSup = (pId: string) => {
+      const p = parcelas.find((x) => x.id === pId);
+      return p ? p.superficieHa : 1.0;
+    };
+    const getPlantas = (pId: string) => {
+      const p = parcelas.find((x) => x.id === pId);
+      return p?.plantasPorHa && p.plantasPorHa > 0 ? p.plantasPorHa : 555;
+    };
+
     if (initialLabor) {
+      const pId = initialLabor.parcelaId || '';
+      const sup = initialLabor.superficieTratadaHa || getSup(pId);
+      const plantas = initialLabor.plantasPorHaReferencia || getPlantas(pId);
+      const ins = inventario.find((i) => i.id === initialLabor.insumoId);
+      const caldo = initialLabor.volumenCaldoLHa ?? 1000;
+      const appNombre = initialLabor.aplicadorNombre || '';
+      const matchedUser = usuarios.find((u) => u.nombre === appNombre);
+
       setFecha(initialLabor.fecha || new Date().toISOString().split('T')[0]);
       setHora(initialLabor.hora || '08:00');
-      setParcelaId(initialLabor.parcelaId || '');
+      setParcelaId(pId);
       setSectorGeneralNombre(initialLabor.parcelaNombre || 'Huerto General');
+      setSuperficieManualHa(initialLabor.superficieTratadaHa ?? 1.0);
       setTipoLabor(initialLabor.tipoLabor || 'fitosanitario');
       setDescripcion(initialLabor.descripcion || '');
       setInsumoId(initialLabor.insumoId || '');
       setNombreInsumoManual(initialLabor.insumoId ? '' : (initialLabor.nombreInsumo || ''));
-      setUnidadManual(initialLabor.unidadMedida || 'Litros');
-      setDosisPorHa(initialLabor.dosisPorHa ?? 1.0);
-      setVolumenCaldoLHa(initialLabor.volumenCaldoLHa ?? 1000);
-      setMetodoAplicacion(initialLabor.metodoAplicacion || 'Turbo Pulverizador');
+      setUnidadManual(initialLabor.unidadMedida || (initialLabor.tipoLabor === 'fertilizacion' ? 'Kg' : 'Litros'));
+      setIngredienteActivo(initialLabor.ingredienteActivo || ins?.ingredienteActivo || '');
+      setComposicionQuimica(initialLabor.composicionQuimica || ins?.composicionFertilizante || '');
+      const dosisHaVal = initialLabor.dosisPorHa ?? 1.0;
+      setDosisPorHa(dosisHaVal);
+      setPlantasPorHaRef(plantas);
+      setUnidadDosisPlanta(initialLabor.unidadDosisPlanta || 'g/planta');
+      setDosisPorPlanta(
+        initialLabor.dosisPorPlanta !== undefined
+          ? initialLabor.dosisPorPlanta
+          : Number(((dosisHaVal * 1000) / plantas).toFixed(1))
+      );
+      setVolumenCaldoLHa(caldo);
+      setTotalAguaAplicadaL(
+        initialLabor.totalAguaAplicadaL !== undefined
+          ? initialLabor.totalAguaAplicadaL
+          : Number((sup * caldo).toFixed(0))
+      );
+      setMetodoAplicacion(
+        initialLabor.metodoAplicacion ||
+          (initialLabor.tipoLabor === 'fertilizacion' ? 'Al Voleo Manual' : 'Turbo Pulverizador')
+      );
       setTractoristaMaquinaria(initialLabor.tractoristaMaquinaria || '');
-      setObjetivoPlaga(initialLabor.objetivoPlagaEnfermedad || 'Control preventivo Psa / Botrytis');
+      if (matchedUser) {
+        setAplicadorSelect(matchedUser.nombre);
+        setAplicadorManual('');
+      } else if (appNombre) {
+        setAplicadorSelect('__manual__');
+        setAplicadorManual(appNombre);
+      } else {
+        setAplicadorSelect(defaultAplicadorUser?.nombre || '__manual__');
+        setAplicadorManual('');
+      }
+      setObjetivoPlaga(
+        initialLabor.objetivoPlagaEnfermedad ||
+          (initialLabor.tipoLabor === 'fertilizacion'
+            ? 'Nutrición mineral al voleo'
+            : 'Control preventivo Psa / Botrytis')
+      );
       setVolumenM3(initialLabor.volumenM3 ?? 480);
       setDuracionRiegoHoras(initialLabor.duracionRiegoHoras ?? 6.5);
       setRegistradoPor(initialLabor.registradoPor || activeUser?.nombre || 'Administrador');
       setObservaciones(initialLabor.observaciones || '');
     } else {
+      const targetTipo = defaultTipoLabor || 'fitosanitario';
+      const pId = defaultParcelaId || parcelas[0]?.id || '';
+      const sup = getSup(pId);
+      const plantas = getPlantas(pId);
+      const initialProd =
+        targetTipo === 'fertilizacion'
+          ? fertProductos[0] || fitoFertProductos[0]
+          : fitoFertProductos[0];
+      const dosisInit = targetTipo === 'fertilizacion' ? 150 : 1.0;
+
       setFecha(new Date().toISOString().split('T')[0]);
       setHora(getCurrentHHMM());
-      setParcelaId(defaultParcelaId || parcelas[0]?.id || '');
+      setParcelaId(pId);
       setSectorGeneralNombre('Huerto General');
       setSuperficieManualHa(1.0);
-      setTipoLabor(defaultTipoLabor || 'fitosanitario');
+      setTipoLabor(targetTipo);
       setDescripcion('');
-      setInsumoId(inventario[0]?.id || '');
+      setInsumoId(initialProd?.id || '');
       setNombreInsumoManual('');
-      setUnidadManual('Litros');
-      setDosisPorHa(1.0);
+      setUnidadManual(targetTipo === 'fertilizacion' ? 'Kg' : 'Litros');
+      setIngredienteActivo(initialProd?.ingredienteActivo || '');
+      setComposicionQuimica(initialProd?.composicionFertilizante || '');
+      setDosisPorHa(dosisInit);
+      setPlantasPorHaRef(plantas);
+      setUnidadDosisPlanta('g/planta');
+      setDosisPorPlanta(Number(((dosisInit * 1000) / plantas).toFixed(1)));
       setVolumenCaldoLHa(1000);
-      setMetodoAplicacion('Turbo Pulverizador');
+      setTotalAguaAplicadaL(Number((sup * 1000).toFixed(0)));
+      setMetodoAplicacion(targetTipo === 'fertilizacion' ? 'Al Voleo Manual' : 'Turbo Pulverizador');
       setTractoristaMaquinaria('');
-      setObjetivoPlaga('Control preventivo Psa / Botrytis');
+      setAplicadorSelect(defaultAplicadorUser?.nombre || '__manual__');
+      setAplicadorManual('');
+      setObjetivoPlaga(
+        targetTipo === 'fertilizacion'
+          ? 'Nutrición mineral / Fertilización al voleo'
+          : 'Control preventivo Psa / Botrytis'
+      );
       setVolumenM3(480);
       setDuracionRiegoHoras(6.5);
       setRegistradoPor(activeUser?.nombre || 'Administrador');
       setObservaciones('');
     }
-  }, [initialLabor, defaultParcelaId, defaultTipoLabor, isOpen, activeUser, parcelas, inventario]);
+  }, [initialLabor, defaultParcelaId, defaultTipoLabor, isOpen]);
 
   if (!isOpen) return null;
 
@@ -128,13 +220,104 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
   const superficieBase = selectedParcela ? selectedParcela.superficieHa : (Number(superficieManualHa) || 1);
   const totalInsumoCalculado = Number((superficieBase * (Number(dosisPorHa) || 0)).toFixed(2));
-  const unidadMostrada = selectedInsumo?.unidad || unidadManual || 'Litros';
+  const unidadMostrada =
+    selectedInsumo?.unidad || unidadManual || (tipoLabor === 'fertilizacion' ? 'Kg' : 'Litros');
   const carenciaMostrada = selectedInsumo?.periodoCarenciaDias ?? 0;
+
+  const aplicadorNombreFinal =
+    aplicadorSelect === '__manual__' ? aplicadorManual.trim() : aplicadorSelect.trim();
+  const resolvedAplicadorUser = usuarios.find((u) => u.nombre === aplicadorNombreFinal);
+
+  const productosSelectorList =
+    tipoLabor === 'fertilizacion'
+      ? [
+          ...fertProductos,
+          ...fitoFertProductos.filter((p) => !fertProductos.some((f) => f.id === p.id))
+        ]
+      : fitoFertProductos;
+
+  const convertHaToPlanta = (haVal: number, plantas: number, unitPlanta: string) => {
+    if (plantas <= 0) return 0;
+    const isSubUnit = unitPlanta === 'g/planta' || unitPlanta === 'ml/planta' || unitPlanta === 'cc/planta';
+    return Number((isSubUnit ? (haVal * 1000) / plantas : haVal / plantas).toFixed(isSubUnit ? 1 : 3));
+  };
+
+  const convertPlantaToHa = (plantaVal: number, plantas: number, unitPlanta: string) => {
+    if (plantas <= 0) return 0;
+    const isSubUnit = unitPlanta === 'g/planta' || unitPlanta === 'ml/planta' || unitPlanta === 'cc/planta';
+    return Number((isSubUnit ? (plantaVal * plantas) / 1000 : plantaVal * plantas).toFixed(2));
+  };
+
+  const handleParcelaChange = (newParcelaId: string) => {
+    setParcelaId(newParcelaId);
+    const p = parcelas.find((x) => x.id === newParcelaId);
+    const sup = p ? p.superficieHa : Number(superficieManualHa) || 1;
+    const plantas = p?.plantasPorHa && p.plantasPorHa > 0 ? p.plantasPorHa : 555;
+    setPlantasPorHaRef(plantas);
+    setTotalAguaAplicadaL(Number((sup * (Number(volumenCaldoLHa) || 0)).toFixed(0)));
+    if (tipoLabor === 'fertilizacion') {
+      setDosisPorPlanta(convertHaToPlanta(dosisPorHa, plantas, unidadDosisPlanta));
+    }
+  };
+
+  const handleSuperficieManualChange = (sup: number) => {
+    setSuperficieManualHa(sup);
+    setTotalAguaAplicadaL(Number((sup * (Number(volumenCaldoLHa) || 0)).toFixed(0)));
+  };
+
+  const handleVolumenCaldoChange = (caldo: number) => {
+    setVolumenCaldoLHa(caldo);
+    setTotalAguaAplicadaL(Number((superficieBase * caldo).toFixed(0)));
+  };
+
+  const handleInsumoChange = (newInsumoId: string) => {
+    setInsumoId(newInsumoId);
+    const ins = inventario.find((i) => i.id === newInsumoId);
+    if (ins) {
+      setIngredienteActivo(ins.ingredienteActivo || '');
+      setComposicionQuimica(ins.composicionFertilizante || '');
+    } else {
+      setIngredienteActivo('');
+      setComposicionQuimica('');
+    }
+  };
+
+  const handleTipoLaborSwitch = (nextTipo: TipoLabor) => {
+    setTipoLabor(nextTipo);
+    if (!initialLabor) {
+      if (nextTipo === 'fertilizacion') {
+        if (metodoAplicacion === 'Turbo Pulverizador' || !metodoAplicacion) {
+          setMetodoAplicacion('Al Voleo Manual');
+        }
+        setUnidadManual('Kg');
+        if (objetivoPlaga === 'Control preventivo Psa / Botrytis') {
+          setObjetivoPlaga('Nutrición mineral al voleo');
+        }
+        if (fertProductos.length > 0 && (!selectedInsumo || !fertProductos.some((f) => f.id === selectedInsumo.id))) {
+          const fert = fertProductos[0];
+          setInsumoId(fert.id);
+          setComposicionQuimica(fert.composicionFertilizante || '');
+        }
+        setDosisPorPlanta(convertHaToPlanta(dosisPorHa, plantasPorHaRef, unidadDosisPlanta));
+      } else if (nextTipo === 'fitosanitario') {
+        if (metodoAplicacion.toLowerCase().includes('voleo')) {
+          setMetodoAplicacion('Turbo Pulverizador');
+        }
+        setUnidadManual('Litros');
+        if (objetivoPlaga === 'Nutrición mineral al voleo' || objetivoPlaga === 'Nutrición mineral / Fertilización al voleo') {
+          setObjetivoPlaga('Control preventivo Psa / Botrytis');
+        }
+        setTotalAguaAplicadaL(Number((superficieBase * (Number(volumenCaldoLHa) || 0)).toFixed(0)));
+      }
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const isFitoOrFert = tipoLabor === 'fitosanitario' || tipoLabor === 'fertilizacion';
+    const isFito = tipoLabor === 'fitosanitario';
+    const isFert = tipoLabor === 'fertilizacion';
+    const isFitoOrFert = isFito || isFert;
     const isRiego = tipoLabor === 'riego';
 
     const parcelaNombreFinal = selectedParcela?.nombre || sectorGeneralNombre.trim() || 'Huerto General';
@@ -150,30 +333,38 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
       tipoLabor,
       descripcion:
         descripcion.trim() ||
-        `${tipoLabor.toUpperCase()}: ${
-          isFitoOrFert
-            ? insumoNombreFinal || 'Aplicación agrícola'
-            : isRiego
-            ? `${volumenM3} m³ de agua`
-            : 'Labor agronómica general'
-        }`,
+        (isFert
+          ? `FERTILIZACIÓN (${metodoAplicacion}): ${insumoNombreFinal || 'Fertilizante'} · ${dosisPorHa} ${unidadMostrada}/ha (${dosisPorPlanta} ${unidadDosisPlanta})`
+          : isFito
+          ? `FITOSANITARIO: ${insumoNombreFinal || 'Aplicación agrícola'}${ingredienteActivo ? ` (${ingredienteActivo})` : ''} · ${totalAguaAplicadaL} L de agua`
+          : isRiego
+          ? `RIEGO: ${volumenM3} m³ de agua`
+          : `${tipoLabor.toUpperCase()}: Labor agronómica general`),
       insumoId: isFitoOrFert && selectedInsumo ? selectedInsumo.id : undefined,
       nombreInsumo: isFitoOrFert ? insumoNombreFinal : undefined,
+      ingredienteActivo: isFito ? (ingredienteActivo.trim() || selectedInsumo?.ingredienteActivo || undefined) : undefined,
+      composicionQuimica: isFert ? (composicionQuimica.trim() || selectedInsumo?.composicionFertilizante || undefined) : undefined,
       dosisPorHa: isFitoOrFert ? Number(dosisPorHa) || 0 : undefined,
-      volumenCaldoLHa: isFitoOrFert ? Number(volumenCaldoLHa) || 0 : undefined,
+      dosisPorPlanta: isFert ? Number(dosisPorPlanta) || 0 : undefined,
+      unidadDosisPlanta: isFert ? unidadDosisPlanta : undefined,
+      plantasPorHaReferencia: isFert ? Number(plantasPorHaRef) || 555 : undefined,
+      superficieTratadaHa: isFitoOrFert ? superficieBase : undefined,
+      volumenCaldoLHa: isFito ? Number(volumenCaldoLHa) || 0 : undefined,
+      totalAguaAplicadaL: isFito ? Number(totalAguaAplicadaL) || 0 : undefined,
       totalInsumoUtilizado: isFitoOrFert && insumoNombreFinal ? totalInsumoCalculado : undefined,
       unidadMedida: isFitoOrFert && insumoNombreFinal ? unidadMostrada : undefined,
       metodoAplicacion: isFitoOrFert ? metodoAplicacion : undefined,
       tractoristaMaquinaria: isFitoOrFert ? tractoristaMaquinaria : undefined,
-      periodoCarenciaDias: isFitoOrFert ? carenciaMostrada : 0,
-      reingresoHoras: isFitoOrFert ? (selectedInsumo?.tiempoReingresoHoras ?? 0) : 0,
+      aplicadorNombre: isFitoOrFert ? (aplicadorNombreFinal || registradoPor.trim() || undefined) : undefined,
+      periodoCarenciaDias: isFito ? carenciaMostrada : 0,
+      reingresoHoras: isFito ? (selectedInsumo?.tiempoReingresoHoras ?? 0) : 0,
       objetivoPlagaEnfermedad: isFitoOrFert ? objetivoPlaga : undefined,
       volumenM3: isRiego ? Number(volumenM3) || 0 : undefined,
       litrosAgua: isRiego ? (Number(volumenM3) || 0) * 1000 : undefined,
       duracionRiegoHoras: isRiego ? Number(duracionRiegoHoras) || 0 : undefined,
       sectorRiego: isRiego ? parcelaNombreFinal : undefined,
-      registradoPor: registradoPor.trim() || activeUser?.nombre || 'Administrador',
-      numeroCarnetSAG: activeUser?.numeroCarnetSAG,
+      registradoPor: registradoPor.trim() || aplicadorNombreFinal || activeUser?.nombre || 'Administrador',
+      numeroCarnetSAG: resolvedAplicadorUser?.numeroCarnetSAG || activeUser?.numeroCarnetSAG,
       condicionesClimaticas: {
         temperaturaC: climaActual?.temperaturaActual ?? 20,
         humedadRelativa: climaActual?.humedadRelativa ?? 60,
@@ -238,7 +429,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
               {parcelas.length > 0 ? (
                 <select
                   value={parcelaId}
-                  onChange={(e) => setParcelaId(e.target.value)}
+                  onChange={(e) => handleParcelaChange(e.target.value)}
                   className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-medium text-xs"
                 >
                   {parcelas.map((p) => (
@@ -278,8 +469,8 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                   step="0.1"
                   min="0.1"
                   value={superficieManualHa}
-                  onChange={(e) => setSuperficieManualHa(parseFloat(e.target.value) || 1)}
-                  className="w-20 p-1 bg-white border border-amber-300 rounded text-xs font-bold"
+                  onChange={(e) => handleSuperficieManualChange(parseFloat(e.target.value) || 1)}
+                  className="w-20 p-1 bg-white border border-amber-300 rounded text-xs font-bold font-mono tabular-nums"
                 />
               </div>
             </div>
@@ -291,7 +482,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
                 { id: 'fitosanitario', label: 'Fitosanitario' },
-                { id: 'fertilizacion', label: 'Fertilización' },
+                { id: 'fertilizacion', label: 'Fertilización / Voleo' },
                 { id: 'riego', label: 'Riego Pozo' },
                 { id: 'poda', label: 'Poda Canopia' },
                 { id: 'polinizacion', label: 'Polinización' },
@@ -302,7 +493,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                 <button
                   type="button"
                   key={t.id}
-                  onClick={() => setTipoLabor(t.id as TipoLabor)}
+                  onClick={() => handleTipoLaborSwitch(t.id as TipoLabor)}
                   className={`p-2 rounded-lg font-bold text-xs border transition-all cursor-pointer ${
                     tipoLabor === t.id
                       ? 'bg-emerald-800 text-white border-emerald-900 shadow-2xs'
@@ -315,23 +506,23 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
             </div>
           </div>
 
-          {/* Campos condicionales para Fitosanitarios / Fertilizantes */}
-          {(tipoLabor === 'fitosanitario' || tipoLabor === 'fertilizacion') && (
+          {/* Campos específicos para APLICACIÓN FITOSANITARIA */}
+          {tipoLabor === 'fitosanitario' && (
             <div className="p-3.5 bg-purple-50/70 border border-purple-200 rounded-xl space-y-3">
               <div className="font-bold text-purple-950 text-xs flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-purple-700" />
-                Parámetros del Agroquímico / Fertilizante
+                <span>Parámetros de Aplicación Fitosanitaria (Producto, Ingrediente Activo, Agua & Aplicador)</span>
               </div>
 
-              {inventario.length > 0 ? (
+              {productosSelectorList.length > 0 ? (
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Producto en Bodega:</label>
                   <select
                     value={insumoId}
-                    onChange={(e) => setInsumoId(e.target.value)}
+                    onChange={(e) => handleInsumoChange(e.target.value)}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
                   >
-                    {inventario.map((i) => (
+                    {productosSelectorList.map((i) => (
                       <option key={i.id} value={i.id}>
                         {i.nombreComercial} ({i.numeroRegistroSAG || 'Sin Reg.'}) · Stock: {i.stockActual} {i.unidad} · Carencia: {i.periodoCarenciaDias ?? 0}d
                       </option>
@@ -348,13 +539,13 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
               {!selectedInsumo && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="sm:col-span-2">
-                    <label className="block font-bold text-stone-700 mb-1">Nombre del Producto (Manual):</label>
+                    <label className="block font-bold text-stone-700 mb-1">Producto Comercial (Nombre):</label>
                     <input
                       type="text"
                       value={nombreInsumoManual}
                       onChange={(e) => setNombreInsumoManual(e.target.value)}
-                      placeholder="Ej. Oxicloruro de Cobre / Aminoácidos"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                      placeholder="Ej. Oxicloruro de Cobre / Nordox 75 WG"
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-medium"
                     />
                   </div>
                   <div>
@@ -374,7 +565,20 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {/* Ingrediente Activo */}
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Ingrediente Activo:</label>
+                <input
+                  type="text"
+                  value={ingredienteActivo}
+                  onChange={(e) => setIngredienteActivo(e.target.value)}
+                  placeholder="Ej. Óxido Cuproso 75% / Ciprodinil + Fludioxonil"
+                  className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-medium"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Dosis por Ha:</label>
                   <input
@@ -383,10 +587,12 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                     min="0"
                     value={dosisPorHa}
                     onChange={(e) => setDosisPorHa(parseFloat(e.target.value) || 0)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-xs"
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold font-mono tabular-nums text-xs"
                     required
                   />
-                  <span className="text-[10px] text-stone-500">Total: {totalInsumoCalculado} {unidadMostrada}</span>
+                  <span className="text-[10px] text-stone-500 font-mono tabular-nums">
+                    Total: {totalInsumoCalculado} {unidadMostrada}
+                  </span>
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Mojamiento (L/ha):</label>
@@ -394,10 +600,25 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                     type="number"
                     min="0"
                     value={volumenCaldoLHa}
-                    onChange={(e) => setVolumenCaldoLHa(parseInt(e.target.value) || 0)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                    onChange={(e) => handleVolumenCaldoChange(parseInt(e.target.value) || 0)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums text-xs"
                     placeholder="1000"
                   />
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Total Agua Aplicada (L):</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={totalAguaAplicadaL}
+                    onChange={(e) => setTotalAguaAplicadaL(parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 bg-white border border-purple-300 rounded-lg font-bold font-mono text-purple-950 tabular-nums text-xs"
+                    required
+                  />
+                  <span className="text-[10px] text-stone-500 font-mono tabular-nums">
+                    Base {superficieBase} ha
+                  </span>
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Carencia SAG:</label>
@@ -418,7 +639,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Maquinaria / Pulverizador:</label>
                   <input
@@ -429,12 +650,232 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Tractorista / Operador:</label>
+                  <label className="block font-bold text-stone-700 mb-1">Aplicador Responsable:</label>
+                  <select
+                    value={aplicadorSelect}
+                    onChange={(e) => setAplicadorSelect(e.target.value)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-semibold"
+                  >
+                    {usuarios.map((u) => (
+                      <option key={u.id} value={u.nombre}>
+                        {u.nombre} {u.carnetSAGVigente ? '(SAG Vigente)' : ''}
+                      </option>
+                    ))}
+                    <option value="__manual__">Otro aplicador (escribir nombre)</option>
+                  </select>
+                  {aplicadorSelect === '__manual__' && (
+                    <input
+                      type="text"
+                      value={aplicadorManual}
+                      onChange={(e) => setAplicadorManual(e.target.value)}
+                      placeholder="Nombre completo del aplicador"
+                      className="w-full mt-1.5 p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                      required
+                    />
+                  )}
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Tractor / Equipo:</label>
                   <input
                     type="text"
                     value={tractoristaMaquinaria}
                     onChange={(e) => setTractoristaMaquinaria(e.target.value)}
-                    placeholder="Nombre operador / equipo"
+                    placeholder="Ej. Tractor + Nebulizador"
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Campos específicos para FERTILIZACIÓN (AL VOLEO / LOCALIZADA / FOLIAR) */}
+          {tipoLabor === 'fertilizacion' && (
+            <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-3">
+              <div className="font-bold text-emerald-950 text-xs flex items-center gap-1.5">
+                <Sprout className="w-4 h-4 text-emerald-700" />
+                <span>Fertilización al Voleo / Suelo (Método, Dosis/ha, Dosis/planta & Composición Química)</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Método de Fertilización:</label>
+                  <select
+                    value={metodoAplicacion}
+                    onChange={(e) => setMetodoAplicacion(e.target.value)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-xs"
+                  >
+                    <option value="Al Voleo Manual">Al Voleo Manual</option>
+                    <option value="Al Voleo con Trompo / Abonadora">Al Voleo con Trompo / Abonadora</option>
+                    <option value="Localizada en Banda / Taza">Localizada en Banda / Taza</option>
+                    <option value="Foliar">Foliar</option>
+                    <option value="Fertirriego">Fertirriego</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Producto Comercial (Bodega o Manual):</label>
+                  <select
+                    value={insumoId}
+                    onChange={(e) => handleInsumoChange(e.target.value)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                  >
+                    {productosSelectorList.map((i) => (
+                      <option key={i.id} value={i.id}>
+                        {i.nombreComercial} {i.composicionFertilizante ? `(${i.composicionFertilizante})` : ''} · Stock: {i.stockActual} {i.unidad}
+                      </option>
+                    ))}
+                    <option value="">Ingresar producto comercial manualmente</option>
+                  </select>
+                </div>
+              </div>
+
+              {!selectedInsumo && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="sm:col-span-2">
+                    <label className="block font-bold text-stone-700 mb-1">Nombre del Producto Comercial:</label>
+                    <input
+                      type="text"
+                      value={nombreInsumoManual}
+                      onChange={(e) => setNombreInsumoManual(e.target.value)}
+                      placeholder="Ej. Urea Granulada 46% / Nitrato de Amonio / Basacote"
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-medium"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">Unidad:</label>
+                    <select
+                      value={unidadManual}
+                      onChange={(e) => setUnidadManual(e.target.value)}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                    >
+                      <option value="Kg">Kg</option>
+                      <option value="Litros">Litros</option>
+                      <option value="gramos">gramos</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Composición Química (N-P-K / Nutrientes):</label>
+                <input
+                  type="text"
+                  value={composicionQuimica}
+                  onChange={(e) => setComposicionQuimica(e.target.value)}
+                  placeholder="Ej. 46-0-0 (46% N) o N 15.5% - CaO 26% - B 0.3%"
+                  className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-mono"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">
+                    Dosis / Hectárea ({unidadMostrada}/ha):
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={dosisPorHa}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0;
+                      setDosisPorHa(val);
+                      setDosisPorPlanta(convertHaToPlanta(val, plantasPorHaRef, unidadDosisPlanta));
+                    }}
+                    className="w-full p-2 bg-white border border-emerald-300 rounded-lg font-bold font-mono tabular-nums text-xs"
+                    required
+                  />
+                  <span className="text-[10px] text-emerald-900 font-bold font-mono tabular-nums">
+                    Total ({superficieBase} ha): {totalInsumoCalculado} {unidadMostrada}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Dosis por Planta:</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={dosisPorPlanta}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0;
+                      setDosisPorPlanta(val);
+                      setDosisPorHa(convertPlantaToHa(val, plantasPorHaRef, unidadDosisPlanta));
+                    }}
+                    className="w-full p-2 bg-white border border-emerald-300 rounded-lg font-bold font-mono tabular-nums text-xs"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Unidad / Planta:</label>
+                  <select
+                    value={unidadDosisPlanta}
+                    onChange={(e) => {
+                      const nextUnit = e.target.value;
+                      setUnidadDosisPlanta(nextUnit);
+                      setDosisPorPlanta(convertHaToPlanta(dosisPorHa, plantasPorHaRef, nextUnit));
+                    }}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-medium"
+                  >
+                    <option value="g/planta">g / planta</option>
+                    <option value="kg/planta">kg / planta</option>
+                    <option value="ml/planta">ml / planta</option>
+                    <option value="L/planta">L / planta</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Plantas / Ha Ref.:</label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={plantasPorHaRef}
+                    onChange={(e) => {
+                      const pHa = parseInt(e.target.value) || 555;
+                      setPlantasPorHaRef(pHa);
+                      setDosisPorPlanta(convertHaToPlanta(dosisPorHa, pHa, unidadDosisPlanta));
+                    }}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Aplicador / Operador:</label>
+                  <select
+                    value={aplicadorSelect}
+                    onChange={(e) => setAplicadorSelect(e.target.value)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-semibold"
+                  >
+                    {usuarios.map((u) => (
+                      <option key={u.id} value={u.nombre}>
+                        {u.nombre} ({u.cargo})
+                      </option>
+                    ))}
+                    <option value="__manual__">Otro aplicador (escribir nombre)</option>
+                  </select>
+                  {aplicadorSelect === '__manual__' && (
+                    <input
+                      type="text"
+                      value={aplicadorManual}
+                      onChange={(e) => setAplicadorManual(e.target.value)}
+                      placeholder="Nombre del aplicador"
+                      className="w-full mt-1.5 p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                    />
+                  )}
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Objetivo Nutricional / Equipo:</label>
+                  <input
+                    type="text"
+                    value={objetivoPlaga}
+                    onChange={(e) => setObjetivoPlaga(e.target.value)}
+                    placeholder="Ej. Corrección de N y K en brotación"
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
                   />
                 </div>

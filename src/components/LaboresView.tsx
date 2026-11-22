@@ -20,6 +20,7 @@ interface LaboresViewProps {
   labores: RegistroLabor[];
   parcelas: Parcela[];
   onOpenNewLabor: () => void;
+  onOpenNewFertilizacion?: () => void;
   onEditLabor: (labor: RegistroLabor) => void;
   onDeleteLabor: (id: string) => void;
   explotacion?: ExplotacionAgricola;
@@ -30,6 +31,7 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
   labores,
   parcelas,
   onOpenNewLabor,
+  onOpenNewFertilizacion,
   onEditLabor,
   onDeleteLabor,
   explotacion,
@@ -43,7 +45,7 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
   const laboresFiltradas = labores.filter((l) => {
     const matchesTipo = selectedTipo === 'todos' || l.tipoLabor === selectedTipo;
     const matchesParcela = selectedParcelaId === 'todas' || l.parcelaId === selectedParcelaId;
-    const textSearch = `${l.parcelaNombre} ${l.nombreInsumo || ''} ${l.descripcion} ${l.registradoPor} ${l.objetivoPlagaEnfermedad || ''}`.toLowerCase();
+    const textSearch = `${l.parcelaNombre} ${l.nombreInsumo || ''} ${l.ingredienteActivo || ''} ${l.composicionQuimica || ''} ${l.aplicadorNombre || ''} ${l.metodoAplicacion || ''} ${l.descripcion} ${l.registradoPor} ${l.objetivoPlagaEnfermedad || ''}`.toLowerCase();
     const matchesSearch = textSearch.includes(searchTerm.toLowerCase());
     return matchesTipo && matchesParcela && matchesSearch;
   });
@@ -85,13 +87,26 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
           </button>
 
           {canEdit && (
-            <button
-              onClick={onOpenNewLabor}
-              className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Nueva Labor</span>
-            </button>
+            <>
+              {onOpenNewFertilizacion && (
+                <button
+                  type="button"
+                  onClick={onOpenNewFertilizacion}
+                  className="px-3.5 py-2 bg-amber-700 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Fertilización al Voleo</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onOpenNewLabor}
+                className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Nueva Labor</span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -168,7 +183,15 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
         ) : (
           laboresFiltradas.map((labor) => {
             const isFito = labor.tipoLabor === 'fitosanitario';
+            const isFert = labor.tipoLabor === 'fertilizacion';
             const isRiego = labor.tipoLabor === 'riego';
+            const supMatch = parcelas.find((p) => p.id === labor.parcelaId)?.superficieHa;
+            const totalAguaMostrar =
+              labor.totalAguaAplicadaL !== undefined
+                ? labor.totalAguaAplicadaL
+                : labor.volumenCaldoLHa && (labor.superficieTratadaHa || supMatch)
+                ? Number((labor.volumenCaldoLHa * (labor.superficieTratadaHa || supMatch || 1)).toFixed(0))
+                : undefined;
 
             return (
               <div
@@ -176,7 +199,7 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
                 className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs hover:border-emerald-300 transition-colors space-y-3"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-2.5">
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2.5 flex-wrap">
                     <span className="font-mono font-bold text-xs text-stone-500 bg-stone-100 px-2.5 py-1 rounded-lg">
                       {labor.fecha} {labor.hora && <span className="text-stone-400">· {labor.hora}</span>}
                     </span>
@@ -184,11 +207,13 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                       isFito 
                         ? 'bg-purple-100 text-purple-900' 
+                        : isFert
+                        ? 'bg-amber-100 text-amber-900'
                         : isRiego 
                         ? 'bg-blue-100 text-blue-900' 
                         : 'bg-emerald-100 text-emerald-900'
                     }`}>
-                      {labor.tipoLabor}
+                      {isFert ? `Fertilización${labor.metodoAplicacion ? ` · ${labor.metodoAplicacion}` : ''}` : labor.tipoLabor}
                     </span>
                   </div>
 
@@ -218,24 +243,83 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
                   {labor.descripcion}
                 </p>
 
-                {/* Detalles técnicos específicos */}
-                {isFito && labor.nombreInsumo && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] p-2.5 bg-stone-50 rounded-xl border border-stone-200">
+                {/* Detalles técnicos específicos: FITOSANITARIO */}
+                {isFito && (labor.nombreInsumo || labor.ingredienteActivo || totalAguaMostrar) && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px] p-2.5 bg-purple-50/50 rounded-xl border border-purple-200/80">
                     <div>
-                      <span className="text-stone-400 block text-[10px] uppercase font-bold">Insumo Utilizado</span>
-                      <strong className="text-emerald-950 font-semibold">{labor.nombreInsumo}</strong>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Producto Comercial</span>
+                      <strong className="text-stone-950 font-semibold">{labor.nombreInsumo || '—'}</strong>
                     </div>
                     <div>
-                      <span className="text-stone-400 block text-[10px] uppercase font-bold">Dosis / Ha</span>
-                      <span className="font-mono">{labor.dosisPorHa} {labor.unidadMedida}/ha</span>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Ingrediente Activo</span>
+                      <span className="font-semibold text-purple-950">{labor.ingredienteActivo || 'No especificado'}</span>
                     </div>
                     <div>
-                      <span className="text-stone-400 block text-[10px] uppercase font-bold">Total Insumo</span>
-                      <span className="font-bold text-emerald-900 font-mono">{labor.totalInsumoUtilizado} {labor.unidadMedida}</span>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Dosis / Total</span>
+                      <span className="font-mono tabular-nums">
+                        {labor.dosisPorHa ?? 0} {labor.unidadMedida}/ha
+                        {labor.totalInsumoUtilizado ? ` (${labor.totalInsumoUtilizado} ${labor.unidadMedida})` : ''}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-stone-400 block text-[10px] uppercase font-bold">Carencia SAG</span>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Total Agua Aplicada</span>
+                      <strong className="font-mono text-cyan-950 tabular-nums">
+                        {totalAguaMostrar !== undefined ? `${totalAguaMostrar.toLocaleString('es-CL')} L` : '—'}
+                      </strong>
+                      {labor.volumenCaldoLHa && (
+                        <span className="block text-[10px] text-stone-500 font-mono tabular-nums">
+                          ({labor.volumenCaldoLHa} L/ha)
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Carencia SAG</span>
                       <span className="font-bold text-amber-800">{labor.periodoCarenciaDias || 0} días LMR</span>
+                    </div>
+                    <div>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Aplicador</span>
+                      <strong className="text-stone-900">{labor.aplicadorNombre || labor.registradoPor}</strong>
+                    </div>
+                  </div>
+                )}
+
+                {/* Detalles técnicos específicos: FERTILIZACIÓN (AL VOLEO / SUELO / FOLIAR) */}
+                {isFert && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px] p-2.5 bg-amber-50/50 rounded-xl border border-amber-200/80">
+                    <div>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Producto Comercial</span>
+                      <strong className="text-stone-950 font-semibold">{labor.nombreInsumo || '—'}</strong>
+                    </div>
+                    <div>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Composición Química</span>
+                      <span className="font-mono font-semibold text-emerald-950">
+                        {labor.composicionQuimica || 'No especificada'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Método</span>
+                      <strong className="text-amber-950">{labor.metodoAplicacion || 'Al Voleo Manual'}</strong>
+                    </div>
+                    <div>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Dosis / Hectárea</span>
+                      <span className="font-mono font-bold tabular-nums">
+                        {labor.dosisPorHa ?? 0} {labor.unidadMedida || 'Kg'}/ha
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Dosis / Planta</span>
+                      <span className="font-mono font-bold text-emerald-900 tabular-nums">
+                        {labor.dosisPorPlanta !== undefined
+                          ? `${labor.dosisPorPlanta} ${labor.unidadDosisPlanta || 'g/planta'}`
+                          : '—'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Total & Aplicador</span>
+                      <span className="font-mono font-bold tabular-nums block">
+                        {labor.totalInsumoUtilizado ? `${labor.totalInsumoUtilizado} ${labor.unidadMedida || 'Kg'}` : '—'}
+                      </span>
+                      <span className="text-[10px] text-stone-600">{labor.aplicadorNombre || labor.registradoPor}</span>
                     </div>
                   </div>
                 )}
@@ -259,8 +343,11 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
 
                 {/* Footer del registro */}
                 <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-400 pt-1 border-t border-stone-100">
-                  <div className="flex items-center gap-3">
-                    <span>Responsable: <strong className="text-stone-600">{labor.registradoPor}</strong></span>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {labor.aplicadorNombre && (
+                      <span>Aplicador: <strong className="text-stone-700">{labor.aplicadorNombre}</strong></span>
+                    )}
+                    <span>Registrado por: <strong className="text-stone-600">{labor.registradoPor}</strong></span>
                     {labor.numeroCarnetSAG && (
                       <span className="text-emerald-700 font-mono font-semibold">Carnet: {labor.numeroCarnetSAG}</span>
                     )}
