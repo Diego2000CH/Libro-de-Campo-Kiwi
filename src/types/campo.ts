@@ -230,6 +230,7 @@ export interface InsumoInventario {
   tipo: string;
   stockActual: number;
   stockMinimo: number;
+  alertaStockOculta?: boolean;
   unidad: 'Kg' | 'Litros' | 'cc' | 'ml' | 'gramos' | 'kg' | 'L' | 'unidades' | 'metros' | 'rollos' | 'pares';
   costoUnitarioCLP: number;
   lote?: string;

@@ -36,10 +36,11 @@ import {
   FlaskConical,
   ShieldCheck,
   QrCode,
-  CalendarClock
+  CalendarClock,
+  BellOff
 } from 'lucide-react';
 import { ActiveTab } from './Navbar';
-import { AlertaProactivaHuerto } from '../utils/alertasHuerto';
+import { AlertaProactivaHuerto, isInsumoStockBajoActivo } from '../utils/alertasHuerto';
 import {
   calcularGradosDiaPeriodo,
   estimarEtapaKiwiPorFrioYGradosDia,
@@ -66,6 +67,7 @@ interface DashboardViewProps {
   canEdit?: boolean;
   isAdmin?: boolean;
   alertasProactivas?: AlertaProactivaHuerto[];
+  onDismissLowStockAlert?: (insumoId: string) => void;
   fenologia?: SeguimientoFenologico[];
 }
 
@@ -88,10 +90,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   canEdit = true,
   isAdmin = true,
   alertasProactivas = [],
+  onDismissLowStockAlert,
   fenologia = []
 }) => {
   const totalHectareas = parcelas.reduce((acc, p) => acc + p.superficieHa, 0);
-  const lowStockItems = inventario.filter((i) => (i.stockMinimo || 0) > 0 && (i.stockActual || 0) <= (i.stockMinimo || 0));
+  const lowStockItems = inventario.filter(isInsumoStockBajoActivo);
   const parcelasEnCarencia = parcelas.filter((p) => p.estadoActual === 'En Carencia SAG');
   const hfNorm = normalizarCondicionHorasFrio(horasFrio);
   const hfAcumuladas = hfNorm.totalAcumuladoHF ?? 0;
@@ -492,25 +495,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           ) : (
             <div className="space-y-2">
               {alertasProactivas.slice(0, 4).map((al) => (
-                <button
+                <div
                   key={al.id}
-                  type="button"
-                  onClick={() => onNavigateTab(al.tabDestino)}
-                  className="w-full text-left p-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between gap-2 text-xs cursor-pointer transition-colors"
+                  className="w-full rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between gap-2 text-xs transition-colors pr-2"
                 >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`w-2 h-2 rounded-full shrink-0 ${
-                          al.severidad === 'critica' ? 'bg-rose-600' : al.severidad === 'advertencia' ? 'bg-amber-500' : 'bg-sky-500'
-                        }`}
-                      />
-                      <span className="font-bold text-stone-900 truncate">{al.titulo}</span>
+                  <button
+                    type="button"
+                    onClick={() => onNavigateTab(al.tabDestino)}
+                    className="flex-1 text-left p-2.5 flex items-center justify-between gap-2 min-w-0 cursor-pointer"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`w-2 h-2 rounded-full shrink-0 ${
+                            al.severidad === 'critica' ? 'bg-rose-600' : al.severidad === 'advertencia' ? 'bg-amber-500' : 'bg-sky-500'
+                          }`}
+                        />
+                        <span className="font-bold text-stone-900 truncate">{al.titulo}</span>
+                      </div>
+                      <p className="text-[11px] text-stone-500 truncate pl-3.5">{al.detalle}</p>
                     </div>
-                    <p className="text-[11px] text-stone-500 truncate pl-3.5">{al.detalle}</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-stone-400 shrink-0" />
-                </button>
+                    <ChevronRight className="w-4 h-4 text-stone-400 shrink-0" />
+                  </button>
+                  {al.insumoId && canEdit && onDismissLowStockAlert && (
+                    <button
+                      type="button"
+                      onClick={() => onDismissLowStockAlert(al.insumoId!)}
+                      className="p-1.5 rounded-lg text-stone-400 hover:text-stone-800 hover:bg-stone-200/70 shrink-0 cursor-pointer"
+                      title="Eliminar notificación de stock bajo (mantiene el producto en bodega)"
+                    >
+                      <BellOff className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}

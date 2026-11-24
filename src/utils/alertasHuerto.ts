@@ -20,6 +20,15 @@ export interface AlertaProactivaHuerto {
   titulo: string;
   detalle: string;
   tabDestino: ActiveTab;
+  insumoId?: string;
+}
+
+export function isInsumoStockBajoActivo(ins: InsumoInventario): boolean {
+  return (ins.stockMinimo || 0) > 0 && (ins.stockActual || 0) <= (ins.stockMinimo || 0) && !ins.alertaStockOculta;
+}
+
+export function isInsumoStockBajoOculto(ins: InsumoInventario): boolean {
+  return (ins.stockMinimo || 0) > 0 && (ins.stockActual || 0) <= (ins.stockMinimo || 0) && Boolean(ins.alertaStockOculta);
 }
 
 function diasHasta(fechaIso?: string): number | null {
@@ -77,7 +86,7 @@ export function generarAlertasProactivasHuerto(params: {
       });
     }
 
-    if ((ins.stockMinimo || 0) > 0 && (ins.stockActual || 0) <= (ins.stockMinimo || 0)) {
+    if (isInsumoStockBajoActivo(ins)) {
       alertas.push({
         id: `ins-stock-${ins.id}`,
         severidad: 'advertencia',
@@ -85,6 +94,7 @@ export function generarAlertasProactivasHuerto(params: {
         titulo: `Stock bajo mínimo: ${ins.nombreComercial}`,
         detalle: `Disponible ${ins.stockActual} ${ins.unidad} (mínimo ${ins.stockMinimo} ${ins.unidad}).`,
         tabDestino: ins.categoriaBodega === 'material_riego' ? 'materiales' : 'fitosanitarios',
+        insumoId: ins.id,
       });
     }
   }

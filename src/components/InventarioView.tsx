@@ -15,8 +15,11 @@ import {
   Layers,
   Shield,
   Scissors,
-  Check
+  Check,
+  BellOff,
+  RotateCcw
 } from 'lucide-react';
+import { isInsumoStockBajoActivo } from '../utils/alertasHuerto';
 import {
   diasHastaVencimientoProducto,
   formatProductDateLabel,
@@ -120,8 +123,8 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
     return matchesCat && matchesText;
   });
 
-  const lowStockCount = inventario.filter((i) => i.stockActual <= i.stockMinimo).length;
-  const stockOptimoCount = inventario.filter((i) => i.stockActual > i.stockMinimo).length;
+  const lowStockCount = inventario.filter(isInsumoStockBajoActivo).length;
+  const stockOptimoCount = inventario.filter((i) => (i.stockMinimo || 0) === 0 || i.stockActual > (i.stockMinimo || 0)).length;
 
   // Apertura de modal de edición
   const handleOpenEdit = (insumo: InsumoInventario) => {
@@ -245,9 +248,11 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
     const item = inventario.find((i) => i.id === insumoId);
     if (!item) return;
 
+    const nuevoStock = Number((item.stockActual + Number(cantidadReponer)).toFixed(2));
     onUpdateInsumo({
       ...item,
-      stockActual: Number((item.stockActual + Number(cantidadReponer)).toFixed(2))
+      stockActual: nuevoStock,
+      alertaStockOculta: nuevoStock > (item.stockMinimo || 0) ? false : item.alertaStockOculta
     });
     setReponiendoId(null);
   };
@@ -389,7 +394,8 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
       {/* Grid de Productos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {insumosFiltrados.map((item) => {
-          const isLow = item.stockActual <= item.stockMinimo;
+          const isStockBajo = (item.stockMinimo || 0) > 0 && item.stockActual <= (item.stockMinimo || 0);
+          const isLow = isStockBajo && !item.alertaStockOculta;
           const isQuimico = item.categoria === 'fitosanitario' || item.categoria === 'fertilizante' || 
             ['fungicida', 'bactericida', 'insecticida_acaricida', 'fertilizante_foliar', 'fertilizante_suelo'].includes(item.tipo);
 
@@ -420,11 +426,37 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                     </div>
                   </div>
 
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${
-                    isLow ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'
-                  }`}>
-                    {isLow ? 'STOCK BAJO' : 'OK'}
-                  </span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                      isLow
+                        ? 'bg-rose-100 text-rose-800'
+                        : isStockBajo
+                        ? 'bg-stone-100 text-stone-600'
+                        : 'bg-emerald-100 text-emerald-800'
+                    }`}>
+                      {isLow ? 'STOCK BAJO' : isStockBajo ? 'AVISO OCULTO' : 'OK'}
+                    </span>
+                    {isLow && (
+                      <button
+                        type="button"
+                        onClick={() => onUpdateInsumo({ ...item, alertaStockOculta: true })}
+                        className="p-1 rounded-lg text-stone-400 hover:text-stone-800 hover:bg-stone-100 cursor-pointer"
+                        title="Eliminar notificación de stock bajo"
+                      >
+                        <BellOff className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {isStockBajo && item.alertaStockOculta && (
+                      <button
+                        type="button"
+                        onClick={() => onUpdateInsumo({ ...item, alertaStockOculta: false })}
+                        className="p-1 rounded-lg text-stone-400 hover:text-emerald-800 hover:bg-emerald-50 cursor-pointer"
+                        title="Reactivar notificación de stock bajo"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Stock Actual y Mínimo */}

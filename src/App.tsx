@@ -28,7 +28,10 @@ import { CumplimientoAuditoriaView } from './components/CumplimientoAuditoriaVie
 import { PlanificacionTemporadasView } from './components/PlanificacionTemporadasView';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { generarAlertasProactivasHuerto } from './utils/alertasHuerto';
+import {
+  generarAlertasProactivasHuerto,
+  isInsumoStockBajoActivo,
+} from './utils/alertasHuerto';
 
 import { 
   getStoredExplotacion, 
@@ -1259,18 +1262,56 @@ export default function App() {
     }
   };
 
-  const lowStockCount = inventario.filter((i) => (i.stockMinimo || 0) > 0 && i.stockActual <= (i.stockMinimo || 0)).length;
-  
+  const handleUpdateInsumoSafe = guardEdit((updated: InsumoInventario) => {
+    const normalized: InsumoInventario =
+      (updated.stockMinimo || 0) > 0 && (updated.stockActual || 0) > (updated.stockMinimo || 0)
+        ? { ...updated, alertaStockOculta: false }
+        : updated;
+    setInventario((prev) => prev.map((i) => (i.id === normalized.id ? normalized : i)));
+  });
+
+  const handleDismissLowStockAlert = guardEdit((insumoId: string) => {
+    setInventario((prev) =>
+      prev.map((i) => (i.id === insumoId ? { ...i, alertaStockOculta: true } : i))
+    );
+  });
+
+  const handleDismissAllLowStockAlerts = guardEdit((insumoIds: string[]) => {
+    const idSet = new Set(insumoIds);
+    setInventario((prev) =>
+      prev.map((i) => (idSet.has(i.id) ? { ...i, alertaStockOculta: true } : i))
+    );
+  });
+
+  const handleRestoreLowStockAlert = guardEdit((insumoId: string) => {
+    setInventario((prev) =>
+      prev.map((i) => (i.id === insumoId ? { ...i, alertaStockOculta: false } : i))
+    );
+  });
+
+  const handleRestoreAllLowStockAlerts = guardEdit(() => {
+    setInventario((prev) =>
+      prev.map((i) => (i.alertaStockOculta ? { ...i, alertaStockOculta: false } : i))
+    );
+  });
+
+  const lowStockCount = inventario.filter(isInsumoStockBajoActivo).length;
+
   const lowStockFitoCount = inventario.filter((i) => {
     if (i.categoriaBodega === 'material_riego') return false;
-    const isFito = i.categoriaBodega === 'fitosanitario' || i.categoria === 'fitosanitario' || i.categoria === 'fertilizante';
-    return isFito && (i.stockMinimo || 0) > 0 && i.stockActual <= (i.stockMinimo || 0);
+    const isFito =
+      i.categoriaBodega === 'fitosanitario' ||
+      i.categoria === 'fitosanitario' ||
+      i.categoria === 'fertilizante';
+    return isFito && isInsumoStockBajoActivo(i);
   }).length;
 
   const lowStockMaterialesCount = inventario.filter((i) => {
     if (i.categoriaBodega === 'fitosanitario') return false;
-    const isMat = i.categoriaBodega === 'material_riego' || (i.categoria && i.categoria !== 'fitosanitario' && i.categoria !== 'fertilizante');
-    return isMat && (i.stockMinimo || 0) > 0 && i.stockActual <= (i.stockMinimo || 0);
+    const isMat =
+      i.categoriaBodega === 'material_riego' ||
+      (i.categoria && i.categoria !== 'fitosanitario' && i.categoria !== 'fertilizante');
+    return Boolean(isMat) && isInsumoStockBajoActivo(i);
   }).length;
 
   const quotaBanner = mapsQuotaExceeded ? (
@@ -1527,6 +1568,7 @@ export default function App() {
             onEditLabor={handleEditLabor}
             onDeleteLabor={handleDeleteLabor}
             alertasProactivas={alertasProactivas}
+            onDismissLowStockAlert={handleDismissLowStockAlert}
             fenologia={fenologia}
           />
         )}
@@ -1608,8 +1650,9 @@ export default function App() {
             explotacion={explotacion}
             canEdit={canEdit}
             onAddInsumo={guardEdit((i) => setInventario((prev) => [...prev, i]))}
-            onUpdateInsumo={guardEdit((i) => setInventario((prev) => prev.map((item) => item.id === i.id ? i : item)))}
+            onUpdateInsumo={handleUpdateInsumoSafe}
             onDeleteInsumo={guardEdit((id) => setInventario((prev) => prev.filter((item) => item.id !== id)))}
+            onOpenAlertsModal={() => setIsAlertsModalOpen(true)}
           />
         )}
 
@@ -1619,8 +1662,9 @@ export default function App() {
             explotacion={explotacion}
             canEdit={canEdit}
             onAddInsumo={guardEdit((i) => setInventario((prev) => [...prev, i]))}
-            onUpdateInsumo={guardEdit((i) => setInventario((prev) => prev.map((item) => item.id === i.id ? i : item)))}
+            onUpdateInsumo={handleUpdateInsumoSafe}
             onDeleteInsumo={guardEdit((id) => setInventario((prev) => prev.filter((item) => item.id !== id)))}
+            onOpenAlertsModal={() => setIsAlertsModalOpen(true)}
           />
         )}
 
@@ -1878,6 +1922,7 @@ export default function App() {
             onAddResumenTemporada={guardEdit((r) => setResumenesTemporada((prev) => [r, ...prev]))}
             onDeleteResumenTemporada={guardEdit((id) => setResumenesTemporada((prev) => prev.filter((r) => r.id !== id)))}
             alertasProactivas={alertasProactivas}
+            onDismissLowStockAlert={handleDismissLowStockAlert}
             onNavigateTab={setActiveTab}
             fenologia={fenologia}
             onAddFenologia={guardEdit((f) => setFenologia((prev) => [f, ...prev]))}
@@ -2000,11 +2045,11 @@ export default function App() {
         inventario={inventario}
         canEdit={canEdit}
         isAdmin={isAdmin}
-        onUpdateInsumo={guardEdit((updated) => {
-          setInventario((prev) =>
-            prev.map((i) => (i.id === updated.id ? updated : i))
-          );
-        })}
+        onUpdateInsumo={handleUpdateInsumoSafe}
+        onDismissAlert={handleDismissLowStockAlert}
+        onDismissAllAlerts={handleDismissAllLowStockAlerts}
+        onRestoreAlert={handleRestoreLowStockAlert}
+        onRestoreAllAlerts={handleRestoreAllLowStockAlerts}
         onDeleteInsumo={guardEdit((id) => {
           setInventario((prev) => prev.filter((i) => i.id !== id));
         })}

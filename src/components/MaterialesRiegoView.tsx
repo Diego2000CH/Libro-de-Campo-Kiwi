@@ -26,14 +26,18 @@ import {
   Calendar, 
   Layers,
   Sparkles,
-  Download
+  Download,
+  BellOff,
+  RotateCcw
 } from 'lucide-react';
+import { isInsumoStockBajoActivo } from '../utils/alertasHuerto';
 
 interface MaterialesRiegoViewProps {
   inventario: InsumoInventario[];
   onAddInsumo: (insumo: InsumoInventario) => void;
   onUpdateInsumo: (insumo: InsumoInventario) => void;
   onDeleteInsumo: (id: string) => void;
+  onOpenAlertsModal?: () => void;
   explotacion?: ExplotacionAgricola;
   canEdit?: boolean;
 }
@@ -61,6 +65,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
   onAddInsumo,
   onUpdateInsumo,
   onDeleteInsumo,
+  onOpenAlertsModal,
   explotacion,
   canEdit = true
 }) => {
@@ -143,8 +148,8 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
     return matchesCat && matchesDestino && matchesSearch;
   });
 
-  const lowStockCount = materiales.filter((i) => i.stockActual <= i.stockMinimo).length;
-  const stockOptimoCount = materiales.filter((i) => i.stockActual > i.stockMinimo).length;
+  const lowStockCount = materiales.filter(isInsumoStockBajoActivo).length;
+  const stockOptimoCount = materiales.filter((i) => (i.stockMinimo || 0) === 0 || i.stockActual > (i.stockMinimo || 0)).length;
 
   const handleOpenNew = () => {
     const defaultCat = (selectedCategoria !== 'todos' ? selectedCategoria : 'insumo_riego') as CategoriaMaterial;
@@ -292,9 +297,11 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
   const handleConfirmarReposicion = (id: string) => {
     const item = inventario.find((i) => i.id === id);
     if (!item) return;
+    const nuevoStock = Number((item.stockActual + Number(cantidadReponer)).toFixed(2));
     onUpdateInsumo({
       ...item,
-      stockActual: Number((item.stockActual + Number(cantidadReponer)).toFixed(2))
+      stockActual: nuevoStock,
+      alertaStockOculta: nuevoStock > (item.stockMinimo || 0) ? false : item.alertaStockOculta
     });
     setReponiendoId(null);
   };
@@ -344,7 +351,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
       {/* Alerta de Stock Crítico */}
       {lowStockCount > 0 && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-950 text-xs flex items-center justify-between gap-3">
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-950 text-xs flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
             <div>
@@ -354,9 +361,20 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               </div>
             </div>
           </div>
-          <span className="px-2.5 py-1 rounded-full bg-amber-200 text-amber-900 font-bold text-[10px] uppercase shrink-0">
-            Comprar Repuestos
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            {onOpenAlertsModal && (
+              <button
+                type="button"
+                onClick={onOpenAlertsModal}
+                className="px-2.5 py-1 rounded-lg bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 font-bold text-[11px] cursor-pointer"
+              >
+                Gestionar / Eliminar avisos
+              </button>
+            )}
+            <span className="px-2.5 py-1 rounded-full bg-amber-200 text-amber-900 font-bold text-[10px] uppercase">
+              Comprar Repuestos
+            </span>
+          </div>
         </div>
       )}
 
@@ -454,7 +472,8 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
       {/* Grid de Materiales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {materialesFiltrados.map((item) => {
-          const isLow = item.stockActual <= item.stockMinimo;
+          const isStockBajo = (item.stockMinimo || 0) > 0 && item.stockActual <= (item.stockMinimo || 0);
+          const isLow = isStockBajo && !item.alertaStockOculta;
           const destinos = item.destinosUso || ['kiwi'];
 
           return (
@@ -482,11 +501,37 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                     <div className="text-[11px] text-stone-500">{item.fabricante}</div>
                   </div>
 
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${
-                    isLow ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-800'
-                  }`}>
-                    {isLow ? 'STOCK BAJO' : 'OK'}
-                  </span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                      isLow
+                        ? 'bg-amber-100 text-amber-900'
+                        : isStockBajo
+                        ? 'bg-stone-100 text-stone-600'
+                        : 'bg-emerald-100 text-emerald-800'
+                    }`}>
+                      {isLow ? 'STOCK BAJO' : isStockBajo ? 'AVISO OCULTO' : 'OK'}
+                    </span>
+                    {canEdit && isLow && (
+                      <button
+                        type="button"
+                        onClick={() => onUpdateInsumo({ ...item, alertaStockOculta: true })}
+                        className="p-1 rounded-lg text-stone-400 hover:text-stone-800 hover:bg-stone-100 cursor-pointer"
+                        title="Eliminar notificación de stock bajo"
+                      >
+                        <BellOff className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {canEdit && isStockBajo && item.alertaStockOculta && (
+                      <button
+                        type="button"
+                        onClick={() => onUpdateInsumo({ ...item, alertaStockOculta: false })}
+                        className="p-1 rounded-lg text-stone-400 hover:text-emerald-800 hover:bg-emerald-50 cursor-pointer"
+                        title="Reactivar notificación de stock bajo"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Especificación Técnica */}

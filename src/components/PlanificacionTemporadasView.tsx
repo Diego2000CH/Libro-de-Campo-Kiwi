@@ -38,6 +38,7 @@ import {
   Save,
   Sprout,
   X,
+  BellOff,
 } from 'lucide-react';
 
 interface PlanificacionTemporadasViewProps {
@@ -57,6 +58,7 @@ interface PlanificacionTemporadasViewProps {
   onAddResumenTemporada: (r: ResumenTemporada) => void;
   onDeleteResumenTemporada: (id: string) => void;
   alertasProactivas: AlertaProactivaHuerto[];
+  onDismissLowStockAlert?: (insumoId: string) => void;
   onNavigateTab: (tab: ActiveTab) => void;
   fenologia?: SeguimientoFenologico[];
   onAddFenologia?: (f: SeguimientoFenologico) => void;
@@ -87,6 +89,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
   onAddResumenTemporada,
   onDeleteResumenTemporada,
   alertasProactivas,
+  onDismissLowStockAlert,
   onNavigateTab,
   fenologia = [],
   onAddFenologia,
@@ -1210,14 +1213,27 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                       <p className="text-[11px] text-stone-600 mt-0.5">{a.detalle}</p>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => onNavigateTab(a.tabDestino)}
-                    className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 self-start sm:self-center cursor-pointer shrink-0"
-                  >
-                    <span>Resolver</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
+                  <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                    {a.insumoId && canEdit && onDismissLowStockAlert && (
+                      <button
+                        type="button"
+                        onClick={() => onDismissLowStockAlert(a.insumoId!)}
+                        className="px-2.5 py-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                        title="Eliminar esta notificación de stock bajo (mantiene el producto en bodega)"
+                      >
+                        <BellOff className="w-3 h-3" />
+                        <span>Eliminar aviso</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onNavigateTab(a.tabDestino)}
+                      className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Resolver</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
