@@ -17,6 +17,16 @@ import {
   Scissors,
   Check
 } from 'lucide-react';
+import {
+  diasHastaVencimientoProducto,
+  formatProductDateLabel,
+  getCurrentYearMonth,
+  isCategoriaSinVencimientoDefault,
+  isFullDayDate,
+  isProductoSinVencimiento,
+  toDayValue,
+  toMonthValue,
+} from '../utils/productDates';
 
 interface InventarioViewProps {
   inventario: InsumoInventario[];
@@ -55,6 +65,8 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
   const [reponiendoId, setReponiendoId] = useState<string | null>(null);
   const [cantidadReponer, setCantidadReponer] = useState<number>(10);
 
+  const [usarDiaExacto, setUsarDiaExacto] = useState<boolean>(false);
+
   // Formulario Base (usado para Crear y Editar)
   const [formData, setFormData] = useState<Partial<InsumoInventario>>({
     nombreComercial: '',
@@ -68,7 +80,9 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
     unidad: 'unidades',
     costoUnitarioCLP: 0,
     lote: `LT-${new Date().getFullYear()}`,
-    fechaVencimiento: '2028-12-31',
+    fechaElaboracion: getCurrentYearMonth(),
+    sinVencimiento: true,
+    fechaVencimiento: '',
     periodoCarenciaDias: 0,
     tiempoReingresoHoras: 0,
     dosisRecomendadaHa: '',
@@ -112,13 +126,22 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
   // Apertura de modal de edición
   const handleOpenEdit = (insumo: InsumoInventario) => {
     setEditingInsumo(insumo);
-    setFormData({ ...insumo });
+    const hasExactDay = isFullDayDate(insumo.fechaElaboracion) || isFullDayDate(insumo.fechaVencimiento);
+    setUsarDiaExacto(hasExactDay);
+    const sinVenc = isProductoSinVencimiento(insumo);
+    setFormData({
+      ...insumo,
+      fechaElaboracion: hasExactDay ? (insumo.fechaElaboracion || '') : toMonthValue(insumo.fechaElaboracion),
+      sinVencimiento: sinVenc,
+      fechaVencimiento: sinVenc ? '' : (hasExactDay ? (insumo.fechaVencimiento || '') : toMonthValue(insumo.fechaVencimiento)),
+    });
     setIsEditModalOpen(true);
   };
 
   // Apertura de modal de creación
   const handleOpenNew = () => {
     const defaultCat = (selectedCategoria !== 'todos' ? selectedCategoria : 'insumo_riego') as CategoriaInventario;
+    setUsarDiaExacto(false);
     setFormData({
       nombreComercial: '',
       categoria: defaultCat,
@@ -131,7 +154,9 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
       unidad: defaultCat === 'fitosanitario' || defaultCat === 'fertilizante' ? 'kg' : defaultCat === 'alambre_estructura' ? 'rollos' : defaultCat === 'polin_madera' ? 'unidades' : defaultCat === 'malla_cobertor' ? 'rollos' : defaultCat === 'herramienta_equipo' ? 'unidades' : 'unidades',
       costoUnitarioCLP: 0,
       lote: `LT-${new Date().getFullYear()}`,
-      fechaVencimiento: '2028-12-31',
+      fechaElaboracion: getCurrentYearMonth(),
+      sinVencimiento: isCategoriaSinVencimientoDefault(defaultCat),
+      fechaVencimiento: '',
       periodoCarenciaDias: 0,
       tiempoReingresoHoras: 0,
       dosisRecomendadaHa: '',
@@ -160,6 +185,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
       otro: 'otro'
     };
 
+    const sinVenc = Boolean(formData.sinVencimiento) || !formData.fechaVencimiento?.trim();
     const nuevo: InsumoInventario = {
       id: `ins-${Date.now()}`,
       nombreComercial: formData.nombreComercial,
@@ -174,7 +200,9 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
       unidad: (formData.unidad as any) || 'unidades',
       costoUnitarioCLP: 0,
       lote: formData.lote || `LT-${Date.now().toString().slice(-4)}`,
-      fechaVencimiento: formData.fechaVencimiento || '2028-12-31',
+      fechaElaboracion: formData.fechaElaboracion?.trim() || undefined,
+      sinVencimiento: sinVenc,
+      fechaVencimiento: sinVenc ? undefined : formData.fechaVencimiento?.trim(),
       periodoCarenciaDias: Number(formData.periodoCarenciaDias) || 0,
       tiempoReingresoHoras: Number(formData.tiempoReingresoHoras) || 0,
       dosisRecomendadaHa: formData.dosisRecomendadaHa || '',
@@ -193,9 +221,13 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
     e.preventDefault();
     if (!editingInsumo || !formData.nombreComercial) return;
 
+    const sinVenc = Boolean(formData.sinVencimiento) || !formData.fechaVencimiento?.trim();
     const actualizado: InsumoInventario = {
       ...editingInsumo,
       ...formData as InsumoInventario,
+      fechaElaboracion: formData.fechaElaboracion?.trim() || undefined,
+      sinVencimiento: sinVenc,
+      fechaVencimiento: sinVenc ? undefined : formData.fechaVencimiento?.trim(),
       stockActual: Number(formData.stockActual) || 0,
       stockMinimo: Number(formData.stockMinimo) || 0,
       costoUnitarioCLP: 0,
@@ -435,12 +467,30 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                     </>
                   )}
                   <div className="p-1.5 bg-stone-50 rounded-lg">
-                    <span className="text-stone-400 block text-[10px]">Lote / Proveedor:</span>
-                    <span className="font-mono text-stone-700 truncate block">{item.lote || item.fabricante}</span>
+                    <span className="text-stone-400 block text-[10px]">Fabricación:</span>
+                    <span className="font-mono text-stone-700 truncate block">
+                      {formatProductDateLabel(item.fechaElaboracion, 'No registrada')}
+                    </span>
                   </div>
                   <div className="p-1.5 bg-stone-50 rounded-lg">
                     <span className="text-stone-400 block text-[10px]">Vencimiento:</span>
-                    <span className="font-mono text-stone-700">{item.fechaVencimiento || 'N/A'}</span>
+                    {(() => {
+                      if (isProductoSinVencimiento(item)) {
+                        return <span className="font-mono text-stone-600">Sin vencimiento</span>;
+                      }
+                      const dVenc = diasHastaVencimientoProducto(item);
+                      const cls =
+                        dVenc !== null && dVenc < 0
+                          ? 'text-rose-700 font-bold'
+                          : dVenc !== null && dVenc <= 30
+                          ? 'text-amber-800 font-bold'
+                          : 'text-stone-700';
+                      return (
+                        <span className={`font-mono ${cls}`}>
+                          {formatProductDateLabel(item.fechaVencimiento, 'Sin vencimiento')}
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -542,7 +592,17 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                   <label className="block font-bold text-stone-700 mb-1">Categoría del Producto:</label>
                   <select
                     value={formData.categoria}
-                    onChange={(e) => setFormData({ ...formData, categoria: e.target.value as any })}
+                    onChange={(e) => {
+                      const nextCat = e.target.value as CategoriaInventario;
+                      setFormData({
+                        ...formData,
+                        categoria: nextCat,
+                        sinVencimiento: isCategoriaSinVencimientoDefault(nextCat),
+                        fechaVencimiento: isCategoriaSinVencimientoDefault(nextCat)
+                          ? ''
+                          : formData.fechaVencimiento,
+                      });
+                    }}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
                   >
                     <option value="fitosanitario">Fitosanitarios & Químicos (SAG)</option>
@@ -652,6 +712,80 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
                     placeholder="SAG 1234 o N/A"
                   />
+                </div>
+              </div>
+
+              {/* Fechas de Fabricación y Vencimiento (Mes/Año por defecto + opción Sin vencimiento) */}
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(formData.sinVencimiento)}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          sinVencimiento: e.target.checked,
+                          fechaVencimiento: e.target.checked ? '' : formData.fechaVencimiento,
+                        })
+                      }
+                      className="rounded border-stone-300 text-emerald-800"
+                    />
+                    <span>Sin fecha de vencimiento (ej. martillos, herramientas, materiales)</span>
+                  </label>
+
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={usarDiaExacto}
+                      onChange={(e) => {
+                        const exact = e.target.checked;
+                        setUsarDiaExacto(exact);
+                        setFormData((prev) => ({
+                          ...prev,
+                          fechaElaboracion: exact
+                            ? toDayValue(prev.fechaElaboracion)
+                            : toMonthValue(prev.fechaElaboracion),
+                          fechaVencimiento: exact
+                            ? toDayValue(prev.fechaVencimiento)
+                            : toMonthValue(prev.fechaVencimiento),
+                        }));
+                      }}
+                      className="rounded border-stone-300 text-emerald-800"
+                    />
+                    <span>Incluir día exacto</span>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha Fabricación {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    <input
+                      type={usarDiaExacto ? 'date' : 'month'}
+                      value={formData.fechaElaboracion || ''}
+                      onChange={(e) => setFormData({ ...formData, fechaElaboracion: e.target.value })}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    {formData.sinVencimiento ? (
+                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                        Sin vencimiento (No aplica)
+                      </div>
+                    ) : (
+                      <input
+                        type={usarDiaExacto ? 'date' : 'month'}
+                        value={formData.fechaVencimiento || ''}
+                        onChange={(e) => setFormData({ ...formData, fechaVencimiento: e.target.value })}
+                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -832,6 +966,80 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                     onChange={(e) => setFormData({ ...formData, numeroRegistroSAG: e.target.value })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
                   />
+                </div>
+              </div>
+
+              {/* Fechas de Fabricación y Vencimiento (Mes/Año por defecto + opción Sin vencimiento) */}
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(formData.sinVencimiento)}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          sinVencimiento: e.target.checked,
+                          fechaVencimiento: e.target.checked ? '' : formData.fechaVencimiento,
+                        })
+                      }
+                      className="rounded border-stone-300 text-emerald-800"
+                    />
+                    <span>Sin fecha de vencimiento (solo fabricación)</span>
+                  </label>
+
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={usarDiaExacto}
+                      onChange={(e) => {
+                        const exact = e.target.checked;
+                        setUsarDiaExacto(exact);
+                        setFormData((prev) => ({
+                          ...prev,
+                          fechaElaboracion: exact
+                            ? toDayValue(prev.fechaElaboracion)
+                            : toMonthValue(prev.fechaElaboracion),
+                          fechaVencimiento: exact
+                            ? toDayValue(prev.fechaVencimiento)
+                            : toMonthValue(prev.fechaVencimiento),
+                        }));
+                      }}
+                      className="rounded border-stone-300 text-emerald-800"
+                    />
+                    <span>Incluir día exacto</span>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha Fabricación {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    <input
+                      type={usarDiaExacto ? 'date' : 'month'}
+                      value={formData.fechaElaboracion || ''}
+                      onChange={(e) => setFormData({ ...formData, fechaElaboracion: e.target.value })}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    {formData.sinVencimiento ? (
+                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                        Sin vencimiento (No aplica)
+                      </div>
+                    ) : (
+                      <input
+                        type={usarDiaExacto ? 'date' : 'month'}
+                        value={formData.fechaVencimiento || ''}
+                        onChange={(e) => setFormData({ ...formData, fechaVencimiento: e.target.value })}
+                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 

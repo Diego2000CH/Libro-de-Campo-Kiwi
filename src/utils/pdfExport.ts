@@ -16,6 +16,10 @@ import {
   TurnoRiego,
 } from '../types/campo';
 import { normalizarCondicionHorasFrio } from './agroClimaCalculos';
+import {
+  formatProductDateLabel,
+  isProductoSinVencimiento,
+} from './productDates';
 
 export type PdfSectionKey =
   | 'cuarteles'
@@ -489,37 +493,40 @@ function renderBodegaFitoSection(
     'Ingrediente Activo / Composición',
     'Reg. SAG / Lote',
     'Stock Actual / Mín.',
-    'Carencia / REI',
-    'Elab. / Venc.',
-    'Destinos / Ubicación',
-    'Dosis & Obs.',
-  ];
+      'Carencia / REI',
+      'Fab. / Venc.',
+      'Destinos / Ubicación',
+      'Dosis & Obs.',
+    ];
 
-  const body = items.map((item) => {
-    const catKey = item.categoriaFito || item.tipo || 'fitosanitario';
-    const catTxt = CAT_FITO_LABEL[catKey] || str(catKey);
-    const composicion =
-      catKey === 'fertilizante'
-        ? [
-            item.composicionFertilizante,
-            item.estadoFertilizante,
-            item.solubilidadFertilizante,
-          ]
-            .filter(Boolean)
-            .join(' · ') || '—'
-        : str(item.ingredienteActivo || item.especificacionTecnica);
+    const body = items.map((item) => {
+      const catKey = item.categoriaFito || item.tipo || 'fitosanitario';
+      const catTxt = CAT_FITO_LABEL[catKey] || str(catKey);
+      const composicion =
+        catKey === 'fertilizante'
+          ? [
+              item.composicionFertilizante,
+              item.estadoFertilizante,
+              item.solubilidadFertilizante,
+            ]
+              .filter(Boolean)
+              .join(' · ') || '—'
+          : str(item.ingredienteActivo || item.especificacionTecnica);
 
-    const sagLote = `${str(item.numeroRegistroSAG, 'S/R')}\nLote: ${str(item.lote)}\nFab: ${str(item.fabricante)}`;
-    const bajoMin = (item.stockMinimo || 0) > 0 && item.stockActual <= item.stockMinimo;
-    const stockTxt = `${num(item.stockActual, 2)} ${item.unidad}\nMín: ${num(
-      item.stockMinimo,
-      2
-    )} ${item.unidad}${bajoMin ? ' (BAJO)' : ''}`;
-    const carenciaTxt =
-      item.tieneCarencia === false
-        ? `Exento\nREI: ${item.tiempoReingresoHoras ?? 0}h`
-        : `${item.periodoCarenciaDias ?? 0} días\nREI: ${item.tiempoReingresoHoras ?? 0}h`;
-    const fechasTxt = `Elab: ${str(item.fechaElaboracion)}\nVenc: ${str(item.fechaVencimiento)}`;
+      const sagLote = `${str(item.numeroRegistroSAG, 'S/R')}\nLote: ${str(item.lote)}\nFab: ${str(item.fabricante)}`;
+      const bajoMin = (item.stockMinimo || 0) > 0 && item.stockActual <= item.stockMinimo;
+      const stockTxt = `${num(item.stockActual, 2)} ${item.unidad}\nMín: ${num(
+        item.stockMinimo,
+        2
+      )} ${item.unidad}${bajoMin ? ' (BAJO)' : ''}`;
+      const carenciaTxt =
+        item.tieneCarencia === false
+          ? `Exento\nREI: ${item.tiempoReingresoHoras ?? 0}h`
+          : `${item.periodoCarenciaDias ?? 0} días\nREI: ${item.tiempoReingresoHoras ?? 0}h`;
+      const vencTxt = isProductoSinVencimiento(item)
+        ? 'Sin vencimiento'
+        : formatProductDateLabel(item.fechaVencimiento, 'Sin vencimiento');
+      const fechasTxt = `Fab: ${formatProductDateLabel(item.fechaElaboracion)}\nVenc: ${vencTxt}`;
     const destinosTxt = (item.destinosUso?.length ? item.destinosUso : ['kiwi'])
       .map((d) => DESTINO_LABEL[d] || d)
       .join(', ');
@@ -578,7 +585,7 @@ function renderBodegaMaterialesSection(
     'Marca / Proveedor',
     'Stock Actual / Mín.',
     'Consumo Acum.',
-    'Elab. / Venc.',
+    'Fab. / Venc.',
     'Destinos / Ubicación',
     'Observaciones',
   ];
@@ -594,6 +601,9 @@ function renderBodegaMaterialesSection(
     const destinosTxt = (item.destinosUso?.length ? item.destinosUso : ['kiwi'])
       .map((d) => DESTINO_LABEL[d] || d)
       .join(', ');
+    const vencTxt = isProductoSinVencimiento(item)
+      ? 'Sin vencimiento'
+      : formatProductDateLabel(item.fechaVencimiento, 'Sin vencimiento');
 
     return [
       item.nombreComercial,
@@ -602,7 +612,7 @@ function renderBodegaMaterialesSection(
       str(item.fabricante),
       stockTxt,
       `${num(item.consumoHistoricoAcumulado || 0, 2)} ${item.unidad}`,
-      `Elab: ${str(item.fechaElaboracion)}\nVenc: ${str(item.fechaVencimiento)}`,
+      `Fab: ${formatProductDateLabel(item.fechaElaboracion)}\nVenc: ${vencTxt}`,
       `${destinosTxt}\n${str(item.ubicacionBodega)}`,
       str(item.observaciones),
     ];

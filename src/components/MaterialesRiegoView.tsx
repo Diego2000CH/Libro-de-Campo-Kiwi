@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { InsumoInventario, CategoriaMaterial, DestinoProducto, ExplotacionAgricola } from '../types/campo';
 import { exportBodegaRiegoMaterialesPDF } from '../utils/pdfExport';
+import {
+  diasHastaVencimientoProducto,
+  formatProductDateLabel,
+  getCurrentYearMonth,
+  isFullDayDate,
+  isProductoSinVencimiento,
+  toDayValue,
+  toMonthValue,
+} from '../utils/productDates';
 import { 
   Wrench, 
   Search, 
@@ -67,6 +76,9 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
   const [reponiendoId, setReponiendoId] = useState<string | null>(null);
   const [cantidadReponer, setCantidadReponer] = useState<number>(10);
 
+  // Estado para alternar Mes/Año vs Día exacto en formulario
+  const [usarDiaExacto, setUsarDiaExacto] = useState<boolean>(false);
+
   // Formulario Materiales
   const [formMaterial, setFormMaterial] = useState<{
     nombreComercial: string;
@@ -78,6 +90,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
     unidad: InsumoInventario['unidad'];
     costoUnitarioCLP: number;
     fechaElaboracion: string;
+    sinVencimiento: boolean;
     fechaVencimiento: string;
     destinosUso: DestinoProducto[];
     ubicacionBodega: string;
@@ -91,8 +104,9 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
     stockMinimo: 5,
     unidad: 'unidades',
     costoUnitarioCLP: 0,
-    fechaElaboracion: new Date().toISOString().split('T')[0],
-    fechaVencimiento: '2030-12-31',
+    fechaElaboracion: getCurrentYearMonth(),
+    sinVencimiento: true,
+    fechaVencimiento: '',
     destinosUso: ['kiwi'],
     ubicacionBodega: 'Bodega de Materiales y Riego',
     observaciones: ''
@@ -134,6 +148,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
   const handleOpenNew = () => {
     const defaultCat = (selectedCategoria !== 'todos' ? selectedCategoria : 'insumo_riego') as CategoriaMaterial;
+    setUsarDiaExacto(false);
     setFormMaterial({
       nombreComercial: '',
       categoriaMaterial: defaultCat,
@@ -143,8 +158,9 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
       stockMinimo: 5,
       unidad: defaultCat === 'insumo_riego' ? 'unidades' : defaultCat === 'alambre_estructura' ? 'rollos' : defaultCat === 'polin_madera' ? 'unidades' : defaultCat === 'malla_cobertor' ? 'rollos' : 'unidades',
       costoUnitarioCLP: 0,
-      fechaElaboracion: new Date().toISOString().split('T')[0],
-      fechaVencimiento: '2030-12-31',
+      fechaElaboracion: getCurrentYearMonth(),
+      sinVencimiento: true,
+      fechaVencimiento: '',
       destinosUso: ['kiwi'],
       ubicacionBodega: 'Bodega Materiales - Pañol Central',
       observaciones: ''
@@ -154,6 +170,9 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
   const handleOpenEdit = (item: InsumoInventario) => {
     setEditingItem(item);
+    const hasExactDay = isFullDayDate(item.fechaElaboracion) || isFullDayDate(item.fechaVencimiento);
+    setUsarDiaExacto(hasExactDay);
+    const sinVenc = isProductoSinVencimiento(item);
     setFormMaterial({
       nombreComercial: item.nombreComercial,
       categoriaMaterial: (item.categoriaMaterial || (item.tipo === 'riego' ? 'insumo_riego' : item.tipo === 'alambre' ? 'alambre_estructura' : item.tipo === 'polin' ? 'polin_madera' : item.tipo === 'malla' ? 'malla_cobertor' : item.tipo === 'herramienta' ? 'herramienta_equipo' : item.tipo === 'epp' ? 'epp_seguridad' : 'otro')) as CategoriaMaterial,
@@ -163,8 +182,9 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
       stockMinimo: item.stockMinimo,
       unidad: item.unidad,
       costoUnitarioCLP: 0,
-      fechaElaboracion: item.fechaElaboracion || '2024-01-01',
-      fechaVencimiento: item.fechaVencimiento || '2030-12-31',
+      fechaElaboracion: hasExactDay ? (item.fechaElaboracion || '') : toMonthValue(item.fechaElaboracion),
+      sinVencimiento: sinVenc,
+      fechaVencimiento: sinVenc ? '' : (hasExactDay ? (item.fechaVencimiento || '') : toMonthValue(item.fechaVencimiento)),
       destinosUso: item.destinosUso && item.destinosUso.length > 0 ? item.destinosUso : ['kiwi'],
       ubicacionBodega: item.ubicacionBodega || 'Bodega de Materiales',
       observaciones: item.observaciones || ''
@@ -210,8 +230,12 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
       stockMinimo: Number(formMaterial.stockMinimo) || 0,
       unidad: formMaterial.unidad,
       costoUnitarioCLP: 0,
-      fechaElaboracion: formMaterial.fechaElaboracion,
-      fechaVencimiento: formMaterial.fechaVencimiento,
+      fechaElaboracion: formMaterial.fechaElaboracion.trim() || undefined,
+      sinVencimiento: formMaterial.sinVencimiento || !formMaterial.fechaVencimiento.trim(),
+      fechaVencimiento:
+        formMaterial.sinVencimiento || !formMaterial.fechaVencimiento.trim()
+          ? undefined
+          : formMaterial.fechaVencimiento.trim(),
       destinosUso: formMaterial.destinosUso,
       ubicacionBodega: formMaterial.ubicacionBodega,
       observaciones: formMaterial.observaciones,
@@ -249,8 +273,12 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
       stockMinimo: Number(formMaterial.stockMinimo) || 0,
       unidad: formMaterial.unidad,
       costoUnitarioCLP: 0,
-      fechaElaboracion: formMaterial.fechaElaboracion,
-      fechaVencimiento: formMaterial.fechaVencimiento,
+      fechaElaboracion: formMaterial.fechaElaboracion.trim() || undefined,
+      sinVencimiento: formMaterial.sinVencimiento || !formMaterial.fechaVencimiento.trim(),
+      fechaVencimiento:
+        formMaterial.sinVencimiento || !formMaterial.fechaVencimiento.trim()
+          ? undefined
+          : formMaterial.fechaVencimiento.trim(),
       destinosUso: formMaterial.destinosUso,
       ubicacionBodega: formMaterial.ubicacionBodega,
       observaciones: formMaterial.observaciones
@@ -487,13 +515,31 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 <div className="grid grid-cols-2 gap-1.5 text-[11px] text-stone-600 mt-2.5">
                   <div className="p-1.5 bg-stone-50 rounded-lg">
                     <span className="text-stone-400 block text-[10px] flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-stone-400" /> F. Elaboración:
+                      <Calendar className="w-3 h-3 text-stone-400" /> F. Fabricación:
                     </span>
-                    <strong className="font-mono text-stone-800">{item.fechaElaboracion || 'N/A'}</strong>
+                    <strong className="font-mono text-stone-800">
+                      {formatProductDateLabel(item.fechaElaboracion, 'No registrada')}
+                    </strong>
                   </div>
                   <div className="p-1.5 bg-stone-50 rounded-lg">
-                    <span className="text-stone-400 block text-[10px]">F. Vencimiento / Garantía:</span>
-                    <strong className="font-mono text-stone-900">{item.fechaVencimiento || 'N/A'}</strong>
+                    <span className="text-stone-400 block text-[10px]">F. Vencimiento:</span>
+                    {(() => {
+                      if (isProductoSinVencimiento(item)) {
+                        return <strong className="font-mono text-stone-600">Sin vencimiento</strong>;
+                      }
+                      const dVenc = diasHastaVencimientoProducto(item);
+                      const cls =
+                        dVenc !== null && dVenc < 0
+                          ? 'text-rose-700'
+                          : dVenc !== null && dVenc <= 30
+                          ? 'text-amber-800'
+                          : 'text-stone-900';
+                      return (
+                        <strong className={`font-mono ${cls}`}>
+                          {formatProductDateLabel(item.fechaVencimiento, 'Sin vencimiento')}
+                        </strong>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -662,27 +708,77 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 </div>
               </div>
 
-              {/* Fechas de Elaboración / Adquisición y Vencimiento */}
-              <div className="grid grid-cols-2 gap-3 p-3 bg-stone-50 rounded-xl border border-stone-200">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha de Elaboración / Adquisición:</label>
-                  <input
-                    type="date"
-                    value={formMaterial.fechaElaboracion}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, fechaElaboracion: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
-                    required
-                  />
+              {/* Fechas de Fabricación y Vencimiento (Mes/Año por defecto + opción Sin vencimiento) */}
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formMaterial.sinVencimiento}
+                      onChange={(e) =>
+                        setFormMaterial({
+                          ...formMaterial,
+                          sinVencimiento: e.target.checked,
+                          fechaVencimiento: e.target.checked ? '' : formMaterial.fechaVencimiento,
+                        })
+                      }
+                      className="rounded border-stone-300 text-blue-900"
+                    />
+                    <span>Sin fecha de vencimiento (herramientas, ferretería, materiales durables)</span>
+                  </label>
+
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={usarDiaExacto}
+                      onChange={(e) => {
+                        const exact = e.target.checked;
+                        setUsarDiaExacto(exact);
+                        setFormMaterial((prev) => ({
+                          ...prev,
+                          fechaElaboracion: exact
+                            ? toDayValue(prev.fechaElaboracion)
+                            : toMonthValue(prev.fechaElaboracion),
+                          fechaVencimiento: exact
+                            ? toDayValue(prev.fechaVencimiento)
+                            : toMonthValue(prev.fechaVencimiento),
+                        }));
+                      }}
+                      className="rounded border-stone-300 text-blue-900"
+                    />
+                    <span>Incluir día exacto</span>
+                  </label>
                 </div>
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha de Vencimiento / Garantía:</label>
-                  <input
-                    type="date"
-                    value={formMaterial.fechaVencimiento}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, fechaVencimiento: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-blue-900"
-                    required
-                  />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha de Fabricación / Elaboración {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    <input
+                      type={usarDiaExacto ? 'date' : 'month'}
+                      value={formMaterial.fechaElaboracion}
+                      onChange={(e) => setFormMaterial({ ...formMaterial, fechaElaboracion: e.target.value })}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha de Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    {formMaterial.sinVencimiento ? (
+                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                        Sin vencimiento (No aplica)
+                      </div>
+                    ) : (
+                      <input
+                        type={usarDiaExacto ? 'date' : 'month'}
+                        value={formMaterial.fechaVencimiento}
+                        onChange={(e) => setFormMaterial({ ...formMaterial, fechaVencimiento: e.target.value })}
+                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-blue-900"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -858,26 +954,76 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               </div>
 
               {/* Fechas */}
-              <div className="grid grid-cols-2 gap-3 p-3 bg-stone-50 rounded-xl border border-stone-200">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Elaboración / Adquisición:</label>
-                  <input
-                    type="date"
-                    value={formMaterial.fechaElaboracion}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, fechaElaboracion: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
-                    required
-                  />
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formMaterial.sinVencimiento}
+                      onChange={(e) =>
+                        setFormMaterial({
+                          ...formMaterial,
+                          sinVencimiento: e.target.checked,
+                          fechaVencimiento: e.target.checked ? '' : formMaterial.fechaVencimiento,
+                        })
+                      }
+                      className="rounded border-stone-300 text-blue-900"
+                    />
+                    <span>Sin fecha de vencimiento (solo fabricación)</span>
+                  </label>
+
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={usarDiaExacto}
+                      onChange={(e) => {
+                        const exact = e.target.checked;
+                        setUsarDiaExacto(exact);
+                        setFormMaterial((prev) => ({
+                          ...prev,
+                          fechaElaboracion: exact
+                            ? toDayValue(prev.fechaElaboracion)
+                            : toMonthValue(prev.fechaElaboracion),
+                          fechaVencimiento: exact
+                            ? toDayValue(prev.fechaVencimiento)
+                            : toMonthValue(prev.fechaVencimiento),
+                        }));
+                      }}
+                      className="rounded border-stone-300 text-blue-900"
+                    />
+                    <span>Incluir día exacto</span>
+                  </label>
                 </div>
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Vencimiento / Garantía:</label>
-                  <input
-                    type="date"
-                    value={formMaterial.fechaVencimiento}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, fechaVencimiento: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-blue-900"
-                    required
-                  />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha Fabricación {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    <input
+                      type={usarDiaExacto ? 'date' : 'month'}
+                      value={formMaterial.fechaElaboracion}
+                      onChange={(e) => setFormMaterial({ ...formMaterial, fechaElaboracion: e.target.value })}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    {formMaterial.sinVencimiento ? (
+                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                        Sin vencimiento (No aplica)
+                      </div>
+                    ) : (
+                      <input
+                        type={usarDiaExacto ? 'date' : 'month'}
+                        value={formMaterial.fechaVencimiento}
+                        onChange={(e) => setFormMaterial({ ...formMaterial, fechaVencimiento: e.target.value })}
+                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-blue-900"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 

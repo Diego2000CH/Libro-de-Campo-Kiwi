@@ -217,8 +217,9 @@ export interface InsumoInventario {
   solubilidadFertilizante?: SolubilidadFertilizante; // Soluble o No soluble
   composicionFertilizante?: string; // Composición N-P-K y microelementos
   
-  // Fechas obligatorias de trazabilidad
+  // Fechas de fabricación / elaboración y vencimiento (soporta YYYY-MM o YYYY-MM-DD)
   fechaElaboracion?: string;
+  sinVencimiento?: boolean;
   fechaVencimiento?: string;
   
   // Destino autorizado del producto

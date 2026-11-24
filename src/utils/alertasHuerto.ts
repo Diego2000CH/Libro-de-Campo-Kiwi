@@ -8,6 +8,10 @@ import {
   UsuarioPredio,
 } from '../types/campo';
 import type { ActiveTab } from '../components/Navbar';
+import {
+  diasHastaVencimientoProducto,
+  formatProductDateLabel,
+} from './productDates';
 
 export interface AlertaProactivaHuerto {
   id: string;
@@ -49,16 +53,17 @@ export function generarAlertasProactivasHuerto(params: {
 
   const alertas: AlertaProactivaHuerto[] = [];
 
-  // 1. Insumos vencidos o por vencer en 30 días + stock crítico
+  // 1. Insumos vencidos o por vencer en 30 días + stock crítico (omite productos sin vencimiento)
   for (const ins of inventario) {
-    const dVenc = diasHasta(ins.fechaVencimiento);
+    const dVenc = diasHastaVencimientoProducto(ins);
+    const fechaVencFmt = formatProductDateLabel(ins.fechaVencimiento);
     if (dVenc !== null && dVenc < 0) {
       alertas.push({
         id: `ins-venc-${ins.id}`,
         severidad: 'critica',
         categoria: 'Bodega',
         titulo: `Producto vencido: ${ins.nombreComercial}`,
-        detalle: `Venció hace ${Math.abs(dVenc)} días (${ins.fechaVencimiento}). Retirar o segregar en bodega.`,
+        detalle: `Venció hace ${Math.abs(dVenc)} días (${fechaVencFmt}). Retirar o segregar en bodega.`,
         tabDestino: ins.categoriaBodega === 'material_riego' ? 'materiales' : 'fitosanitarios',
       });
     } else if (dVenc !== null && dVenc <= 30) {
@@ -67,7 +72,7 @@ export function generarAlertasProactivasHuerto(params: {
         severidad: 'advertencia',
         categoria: 'Bodega',
         titulo: `Producto próximo a vencer: ${ins.nombreComercial}`,
-        detalle: `Vence en ${dVenc} días (${ins.fechaVencimiento}). Stock: ${ins.stockActual} ${ins.unidad}.`,
+        detalle: `Vence en ${dVenc} días (${fechaVencFmt}). Stock: ${ins.stockActual} ${ins.unidad}.`,
         tabDestino: ins.categoriaBodega === 'material_riego' ? 'materiales' : 'fitosanitarios',
       });
     }

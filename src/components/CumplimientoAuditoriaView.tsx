@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import { compressImageToDataUrl } from '../utils/imageCompress';
 import { createBlankPlanillaBpa, PREFORMED_BPA_TEMPLATE_ITEMS } from '../utils/storage';
+import { diasHastaVencimientoProducto } from '../utils/productDates';
 
 interface CumplimientoAuditoriaViewProps {
   usuarios: UsuarioPredio[];
@@ -168,9 +169,10 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
       (u) => u.fechaVencimientoCarnetSAG && Date.parse(u.fechaVencimientoCarnetSAG) < hoyMs
     );
 
-    const productosVencidos = inventario.filter(
-      (i) => i.fechaVencimiento && Date.parse(i.fechaVencimiento) < hoyMs
-    );
+    const productosVencidos = inventario.filter((i) => {
+      const dias = diasHastaVencimientoProducto(i);
+      return dias !== null && dias < 0;
+    });
 
     const ultimoAgua = analisisLaboratorio
       .filter((a) => a.tipo === 'agua')

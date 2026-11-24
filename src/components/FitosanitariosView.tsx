@@ -8,6 +8,15 @@ import {
   ExplotacionAgricola
 } from '../types/campo';
 import { exportBodegaFitosanitariosPDF } from '../utils/pdfExport';
+import {
+  diasHastaVencimientoProducto,
+  formatProductDateLabel,
+  getCurrentYearMonth,
+  isFullDayDate,
+  isProductoSinVencimiento,
+  toDayValue,
+  toMonthValue,
+} from '../utils/productDates';
 import { 
   FlaskConical, 
   Search, 
@@ -79,6 +88,8 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
   const [reponiendoId, setReponiendoId] = useState<string | null>(null);
   const [cantidadReponer, setCantidadReponer] = useState<number>(10);
 
+  const [usarDiaExacto, setUsarDiaExacto] = useState<boolean>(false);
+
   // Formulario Fitosanitario / Fertilizante
   const [formFito, setFormFito] = useState<{
     nombreComercial: string;
@@ -88,6 +99,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
     solubilidadFertilizante: SolubilidadFertilizante;
     composicionFertilizante: string;
     fechaElaboracion: string;
+    sinVencimiento: boolean;
     fechaVencimiento: string;
     destinosUso: DestinoProducto[];
     fabricante: string;
@@ -110,8 +122,9 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
     estadoFertilizante: 'granulado',
     solubilidadFertilizante: 'soluble',
     composicionFertilizante: '',
-    fechaElaboracion: new Date().toISOString().split('T')[0],
-    fechaVencimiento: '2028-12-31',
+    fechaElaboracion: getCurrentYearMonth(),
+    sinVencimiento: false,
+    fechaVencimiento: '',
     destinosUso: ['kiwi'],
     fabricante: '',
     numeroRegistroSAG: 'SAG ',
@@ -169,6 +182,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
   const handleOpenNew = () => {
     const defaultCat = (selectedCategoria !== 'todos' ? selectedCategoria : 'fungicida') as CategoriaFitosanitario;
     const isExempt = defaultCat === 'fertilizante' || defaultCat === 'coadyuvante' || defaultCat === 'bioestimulante';
+    setUsarDiaExacto(false);
     setFormFito({
       nombreComercial: '',
       categoriaFito: defaultCat,
@@ -176,8 +190,9 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       estadoFertilizante: 'granulado',
       solubilidadFertilizante: 'soluble',
       composicionFertilizante: '',
-      fechaElaboracion: new Date().toISOString().split('T')[0],
-      fechaVencimiento: '2028-12-31',
+      fechaElaboracion: getCurrentYearMonth(),
+      sinVencimiento: false,
+      fechaVencimiento: '',
       destinosUso: ['kiwi'],
       fabricante: '',
       numeroRegistroSAG: defaultCat === 'fertilizante' ? 'SAG F-' : 'SAG ',
@@ -203,6 +218,9 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
     const validUnidad = (['Kg', 'Litros', 'cc', 'ml', 'gramos'].includes(item.unidad as string))
       ? (item.unidad as any)
       : (item.unidad === 'kg' ? 'Kg' : item.unidad === 'L' ? 'Litros' : 'Kg');
+    const hasExactDay = isFullDayDate(item.fechaElaboracion) || isFullDayDate(item.fechaVencimiento);
+    setUsarDiaExacto(hasExactDay);
+    const sinVenc = isProductoSinVencimiento(item);
 
     setFormFito({
       nombreComercial: item.nombreComercial,
@@ -211,8 +229,9 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       estadoFertilizante: item.estadoFertilizante || 'granulado',
       solubilidadFertilizante: item.solubilidadFertilizante || 'soluble',
       composicionFertilizante: item.composicionFertilizante || '',
-      fechaElaboracion: item.fechaElaboracion || '2024-01-01',
-      fechaVencimiento: item.fechaVencimiento || '2028-12-31',
+      fechaElaboracion: hasExactDay ? (item.fechaElaboracion || '') : toMonthValue(item.fechaElaboracion),
+      sinVencimiento: sinVenc,
+      fechaVencimiento: sinVenc ? '' : (hasExactDay ? (item.fechaVencimiento || '') : toMonthValue(item.fechaVencimiento)),
       destinosUso: item.destinosUso && item.destinosUso.length > 0 ? item.destinosUso : ['kiwi'],
       fabricante: item.fabricante,
       numeroRegistroSAG: item.numeroRegistroSAG || 'SAG',
@@ -257,8 +276,12 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       estadoFertilizante: formFito.categoriaFito === 'fertilizante' ? formFito.estadoFertilizante : undefined,
       solubilidadFertilizante: formFito.categoriaFito === 'fertilizante' ? formFito.solubilidadFertilizante : undefined,
       composicionFertilizante: formFito.categoriaFito === 'fertilizante' ? formFito.composicionFertilizante : undefined,
-      fechaElaboracion: formFito.fechaElaboracion,
-      fechaVencimiento: formFito.fechaVencimiento,
+      fechaElaboracion: formFito.fechaElaboracion.trim() || undefined,
+      sinVencimiento: formFito.sinVencimiento || !formFito.fechaVencimiento.trim(),
+      fechaVencimiento:
+        formFito.sinVencimiento || !formFito.fechaVencimiento.trim()
+          ? undefined
+          : formFito.fechaVencimiento.trim(),
       destinosUso: formFito.destinosUso,
       fabricante: formFito.fabricante || 'Fabricante Agroquímico',
       numeroRegistroSAG: formFito.numeroRegistroSAG || 'SAG',
@@ -295,8 +318,12 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       estadoFertilizante: formFito.categoriaFito === 'fertilizante' ? formFito.estadoFertilizante : undefined,
       solubilidadFertilizante: formFito.categoriaFito === 'fertilizante' ? formFito.solubilidadFertilizante : undefined,
       composicionFertilizante: formFito.categoriaFito === 'fertilizante' ? formFito.composicionFertilizante : undefined,
-      fechaElaboracion: formFito.fechaElaboracion,
-      fechaVencimiento: formFito.fechaVencimiento,
+      fechaElaboracion: formFito.fechaElaboracion.trim() || undefined,
+      sinVencimiento: formFito.sinVencimiento || !formFito.fechaVencimiento.trim(),
+      fechaVencimiento:
+        formFito.sinVencimiento || !formFito.fechaVencimiento.trim()
+          ? undefined
+          : formFito.fechaVencimiento.trim(),
       destinosUso: formFito.destinosUso,
       fabricante: formFito.fabricante,
       numeroRegistroSAG: formFito.numeroRegistroSAG,
@@ -587,15 +614,33 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                   <div className="grid grid-cols-2 gap-1.5 text-[11px] text-stone-600 mt-2.5">
                     <div className="p-1.5 bg-stone-50 rounded-lg">
                       <span className="text-stone-400 block text-[10px] flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-stone-400" /> F. Elaboración:
+                        <Calendar className="w-3 h-3 text-stone-400" /> F. Fabricación:
                       </span>
-                      <strong className="font-mono text-stone-800">{item.fechaElaboracion || 'N/A'}</strong>
+                      <strong className="font-mono text-stone-800">
+                        {formatProductDateLabel(item.fechaElaboracion, 'No registrada')}
+                      </strong>
                     </div>
                     <div className="p-1.5 bg-stone-50 rounded-lg">
                       <span className="text-stone-400 block text-[10px] flex items-center gap-1">
                         <Clock className="w-3 h-3 text-stone-400" /> F. Vencimiento:
                       </span>
-                      <strong className="font-mono text-amber-900">{item.fechaVencimiento || '2028-12-31'}</strong>
+                      {(() => {
+                        if (isProductoSinVencimiento(item)) {
+                          return <strong className="font-mono text-stone-600">Sin vencimiento</strong>;
+                        }
+                        const dVenc = diasHastaVencimientoProducto(item);
+                        const cls =
+                          dVenc !== null && dVenc < 0
+                            ? 'text-rose-700'
+                            : dVenc !== null && dVenc <= 30
+                            ? 'text-amber-800'
+                            : 'text-emerald-900';
+                        return (
+                          <strong className={`font-mono ${cls}`}>
+                            {formatProductDateLabel(item.fechaVencimiento, 'Sin vencimiento')}
+                          </strong>
+                        );
+                      })()}
                     </div>
                     <div className="p-1.5 bg-stone-50 rounded-lg">
                       <span className="text-stone-400 block text-[10px]">Carencia SAG:</span>
@@ -815,27 +860,77 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                 </div>
               )}
 
-              {/* Fechas Obligatorias: Elaboración y Vencimiento */}
-              <div className="grid grid-cols-2 gap-3 p-3 bg-stone-50 rounded-xl border border-stone-200">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha de Elaboración:</label>
-                  <input
-                    type="date"
-                    value={formFito.fechaElaboracion}
-                    onChange={(e) => setFormFito({ ...formFito, fechaElaboracion: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
-                    required
-                  />
+              {/* Fechas de Fabricación y Vencimiento (Mes/Año por defecto + opción Sin vencimiento) */}
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formFito.sinVencimiento}
+                      onChange={(e) =>
+                        setFormFito({
+                          ...formFito,
+                          sinVencimiento: e.target.checked,
+                          fechaVencimiento: e.target.checked ? '' : formFito.fechaVencimiento,
+                        })
+                      }
+                      className="rounded border-stone-300 text-emerald-800"
+                    />
+                    <span>Sin fecha de vencimiento (ej. enmiendas minerales / productos que no vencen)</span>
+                  </label>
+
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={usarDiaExacto}
+                      onChange={(e) => {
+                        const exact = e.target.checked;
+                        setUsarDiaExacto(exact);
+                        setFormFito((prev) => ({
+                          ...prev,
+                          fechaElaboracion: exact
+                            ? toDayValue(prev.fechaElaboracion)
+                            : toMonthValue(prev.fechaElaboracion),
+                          fechaVencimiento: exact
+                            ? toDayValue(prev.fechaVencimiento)
+                            : toMonthValue(prev.fechaVencimiento),
+                        }));
+                      }}
+                      className="rounded border-stone-300 text-emerald-800"
+                    />
+                    <span>Incluir día exacto</span>
+                  </label>
                 </div>
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha de Vencimiento:</label>
-                  <input
-                    type="date"
-                    value={formFito.fechaVencimiento}
-                    onChange={(e) => setFormFito({ ...formFito, fechaVencimiento: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
-                    required
-                  />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha de Fabricación / Elaboración {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    <input
+                      type={usarDiaExacto ? 'date' : 'month'}
+                      value={formFito.fechaElaboracion}
+                      onChange={(e) => setFormFito({ ...formFito, fechaElaboracion: e.target.value })}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha de Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    {formFito.sinVencimiento ? (
+                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                        Sin vencimiento (No aplica)
+                      </div>
+                    ) : (
+                      <input
+                        type={usarDiaExacto ? 'date' : 'month'}
+                        value={formFito.fechaVencimiento}
+                        onChange={(e) => setFormFito({ ...formFito, fechaVencimiento: e.target.value })}
+                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1119,27 +1214,77 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                 </div>
               )}
 
-              {/* Fechas de Elaboración y Vencimiento */}
-              <div className="grid grid-cols-2 gap-3 p-3 bg-stone-50 rounded-xl border border-stone-200">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha de Elaboración:</label>
-                  <input
-                    type="date"
-                    value={formFito.fechaElaboracion}
-                    onChange={(e) => setFormFito({ ...formFito, fechaElaboracion: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
-                    required
-                  />
+              {/* Fechas de Fabricación y Vencimiento */}
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formFito.sinVencimiento}
+                      onChange={(e) =>
+                        setFormFito({
+                          ...formFito,
+                          sinVencimiento: e.target.checked,
+                          fechaVencimiento: e.target.checked ? '' : formFito.fechaVencimiento,
+                        })
+                      }
+                      className="rounded border-stone-300 text-emerald-800"
+                    />
+                    <span>Sin fecha de vencimiento (no vence)</span>
+                  </label>
+
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={usarDiaExacto}
+                      onChange={(e) => {
+                        const exact = e.target.checked;
+                        setUsarDiaExacto(exact);
+                        setFormFito((prev) => ({
+                          ...prev,
+                          fechaElaboracion: exact
+                            ? toDayValue(prev.fechaElaboracion)
+                            : toMonthValue(prev.fechaElaboracion),
+                          fechaVencimiento: exact
+                            ? toDayValue(prev.fechaVencimiento)
+                            : toMonthValue(prev.fechaVencimiento),
+                        }));
+                      }}
+                      className="rounded border-stone-300 text-emerald-800"
+                    />
+                    <span>Incluir día exacto</span>
+                  </label>
                 </div>
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha de Vencimiento:</label>
-                  <input
-                    type="date"
-                    value={formFito.fechaVencimiento}
-                    onChange={(e) => setFormFito({ ...formFito, fechaVencimiento: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
-                    required
-                  />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha de Fabricación / Elaboración {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    <input
+                      type={usarDiaExacto ? 'date' : 'month'}
+                      value={formFito.fechaElaboracion}
+                      onChange={(e) => setFormFito({ ...formFito, fechaElaboracion: e.target.value })}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">
+                      Fecha de Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
+                    </label>
+                    {formFito.sinVencimiento ? (
+                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                        Sin vencimiento (No aplica)
+                      </div>
+                    ) : (
+                      <input
+                        type={usarDiaExacto ? 'date' : 'month'}
+                        value={formFito.fechaVencimiento}
+                        onChange={(e) => setFormFito({ ...formFito, fechaVencimiento: e.target.value })}
+                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
