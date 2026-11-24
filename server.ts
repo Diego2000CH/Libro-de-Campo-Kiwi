@@ -10,6 +10,14 @@ import {
   getSqlSummaryByUid,
   saveOrchardSnapshotByUid,
 } from './src/db/orchardRepo.ts';
+import {
+  dispatchUvPushToSubscriptions,
+  getMemorySubscriptionsForUid,
+  getPublicVapidKey,
+  registerPushSubscriptionInMemory,
+  startDailyUvPushScheduler,
+  unregisterPushSubscriptionInMemory,
+} from './src/lib/pushServer.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,6 +99,139 @@ async function startServer() {
     }
   });
 
+  // Web Push VAPID public key para suscripción móvil
+  app.get('/api/push/vapid-public-key', (_req, res) => {
+    try {
+      const publicKey = getPublicVapidKey();
+      res.setHeader('Cache-Control', 'no-store');
+      res.json({ publicKey });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to read VAPID key';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  // Suscribir dispositivo móvil / navegador a alertas UV diarias 08:00 AM
+  app.post('/api/push/subscribe', requireAuth, async (req: AuthRequest, res) => {
+    try {
+      const uid = req.user!.uid;
+      const email = req.user!.email || 'usuario@huerto.cl';
+      const displayName = typeof req.user!.name === 'string' ? req.user!.name : undefined;
+      const { subscription, lat, lng, ubicacionNombre, fundoNombre, horaEnvio, umbralMinimoUv } =
+        req.body || {};
+
+      if (
+        !subscription ||
+        typeof subscription.endpoint !== 'string' ||
+        !subscription.keys?.p256dh ||
+        !subscription.keys?.auth
+      ) {
+        return res.status(400).json({ error: 'Invalid push subscription payload' });
+      }
+
+      registerPushSubscriptionInMemory({
+        uid,
+        subscription,
+        lat: Number(lat),
+        lng: Number(lng),
+        ubicacionNombre: String(ubicacionNombre || 'Predio Georreferenciado'),
+        fundoNombre: String(fundoNombre || 'Mi Huerto de Kiwis'),
+        horaEnvio: typeof horaEnvio === 'string' ? horaEnvio : '08:00',
+        umbralMinimoUv: Number(umbralMinimoUv) || 0,
+      });
+
+      // Persistir también dentro del snapshot en Cloud SQL si existe
+      try {
+        const snapshot = await getOrchardSnapshotByUid(uid, email, displayName);
+        if (snapshot?.stateJson) {
+          const stateJson = snapshot.stateJson as Record<string, any>;
+          const prevCfg = stateJson.alertaUvConfig || {};
+          const prevSubs = Array.isArray(prevCfg.pushSubscriptions)
+            ? prevCfg.pushSubscriptions
+            : [];
+          const nextSubs = [
+            ...prevSubs.filter((s: any) => s.endpoint !== subscription.endpoint),
+            subscription,
+          ].slice(-10);
+
+          await saveOrchardSnapshotByUid(uid, email, displayName, {
+            ...stateJson,
+            alertaUvConfig: {
+              ...prevCfg,
+              habilitada: prevCfg.habilitada !== false,
+              horaEnvio: typeof horaEnvio === 'string' ? horaEnvio : prevCfg.horaEnvio || '08:00',
+              pushCelularHabilitado: true,
+              pushSubscriptions: nextSubs,
+            },
+          });
+        }
+      } catch (sqlErr) {
+        console.warn('Persistencia SQL de suscripción Push diferida:', sqlErr);
+      }
+
+      res.json({ ok: true });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to subscribe push';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  app.post('/api/push/unsubscribe', requireAuth, async (req: AuthRequest, res) => {
+    try {
+      const uid = req.user!.uid;
+      const endpoint = req.body?.endpoint;
+      if (typeof endpoint === 'string' && endpoint) {
+        unregisterPushSubscriptionInMemory(uid, endpoint);
+      }
+      res.json({ ok: true });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to unsubscribe push';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  // Enviar notificación Push UV de prueba inmediata al celular
+  app.post('/api/push/test-uv', requireAuth, async (req: AuthRequest, res) => {
+    try {
+      const uid = req.user!.uid;
+      const email = req.user!.email || 'usuario@huerto.cl';
+      const displayName = typeof req.user!.name === 'string' ? req.user!.name : undefined;
+      const { lat, lng, ubicacionNombre, fundoNombre } = req.body || {};
+
+      let subs = getMemorySubscriptionsForUid(uid);
+      if (subs.length === 0) {
+        try {
+          const snapshot = await getOrchardSnapshotByUid(uid, email, displayName);
+          const uvCfg = (snapshot?.stateJson as any)?.alertaUvConfig;
+          if (Array.isArray(uvCfg?.pushSubscriptions)) {
+            subs = uvCfg.pushSubscriptions;
+          }
+        } catch {
+          // Ignorar si SQL no disponible
+        }
+      }
+
+      if (subs.length === 0) {
+        return res.json({ sentCount: 0, message: 'No hay dispositivos Push suscritos aún.' });
+      }
+
+      const result = await dispatchUvPushToSubscriptions({
+        subscriptions: subs,
+        lat: Number.isFinite(Number(lat)) ? Number(lat) : -39.628593,
+        lng: Number.isFinite(Number(lng)) ? Number(lng) : -72.461085,
+        ubicacionNombre: String(ubicacionNombre || 'Predio Georreferenciado'),
+        fundoNombre: String(fundoNombre || 'Mi Huerto de Kiwis'),
+        horaProgramada: '08:00',
+        isTest: true,
+      });
+
+      res.json({ ok: true, sentCount: result.sentCount, uvMaximoDia: result.uvMaximoDia });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to send test UV push';
+      res.status(500).json({ error: message });
+    }
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: {
@@ -112,6 +253,7 @@ async function startServer() {
 
   httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://0.0.0.0:${PORT}`);
+    startDailyUvPushScheduler();
   });
 }
 

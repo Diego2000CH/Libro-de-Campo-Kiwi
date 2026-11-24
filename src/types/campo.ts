@@ -566,6 +566,8 @@ export interface MaquinariaEquipo {
   observaciones?: string;
 }
 
+export type NivelRiesgoUv = 'Bajo' | 'Moderado' | 'Alto' | 'Muy Alto' | 'Extremo';
+
 export interface ClimaCondiciones {
   temperaturaActual: number;
   tempMinima: number;
@@ -579,6 +581,10 @@ export interface ClimaCondiciones {
   riesgoBotrytis: 'Bajo' | 'Medio' | 'Alto';
   evapotranspiracionEtoMmDia: number;
   estadoCielo: 'Soleado' | 'Parcialmente Nublado' | 'Nublado' | 'Lluvia Moderada';
+  indiceUvActual?: number;
+  indiceUvMaximo?: number;
+  nivelRiesgoUv?: NivelRiesgoUv;
+  horaPicoUv?: string;
 }
 
 export interface MuestreoBrotacion {
@@ -991,6 +997,53 @@ export interface ControlHeladaRegistro {
   observaciones?: string;
 }
 
+export interface PushSubscriptionRecord {
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+  deviceLabel?: string;
+  usuarioId?: string;
+  createdAtIso: string;
+}
+
+export interface NotificacionUv {
+  id: string;
+  fechaLocal: string;
+  fechaHoraIso: string;
+  horaProgramada: string;
+  uvOchoAm: number;
+  uvActual: number;
+  uvMaximoDia: number;
+  horaPicoUv: string;
+  horasRiesgoAlto: string;
+  nivelRiesgo: NivelRiesgoUv;
+  ubicacionNombre: string;
+  latitud: number;
+  longitud: number;
+  zonaHoraria?: string;
+  recomendacion: string;
+  canales: string[];
+  leida?: boolean;
+}
+
+export interface ConfigAlertaUv {
+  habilitada: boolean;
+  horaEnvio: string; // '08:00' por defecto
+  umbralMinimoUv: number; // 0 = enviar todos los días a las 08:00 AM
+  usarUbicacionClima: boolean;
+  latitudPersonalizada?: number;
+  longitudPersonalizada?: number;
+  ubicacionNombre?: string;
+  notificarTodosUsuarios: boolean;
+  pushCelularHabilitado: boolean;
+  ultimaAlertaFecha?: string;
+  ultimaAlertaPushFecha?: string;
+  pushSubscriptions?: PushSubscriptionRecord[];
+  historialUv?: NotificacionUv[];
+}
+
 export interface AppStateData {
   explotacion: ExplotacionAgricola;
   parcelas: Parcela[];
@@ -1018,6 +1071,7 @@ export interface AppStateData {
   evaluacionesCuajaSemillas?: EvaluacionCuajaSemillas[];
   turnosRiego?: TurnoRiego[];
   clima?: ClimaCondiciones;
+  alertaUvConfig?: ConfigAlertaUv;
   eventualidades?: EventualidadHuerto[];
   controlesHelada?: ControlHeladaRegistro[];
   configControlHeladas?: ConfigControlHeladas;

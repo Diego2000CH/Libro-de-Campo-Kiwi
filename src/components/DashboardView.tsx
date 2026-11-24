@@ -37,7 +37,8 @@ import {
   ShieldCheck,
   QrCode,
   CalendarClock,
-  BellOff
+  BellOff,
+  Sun
 } from 'lucide-react';
 import { ActiveTab } from './Navbar';
 import { AlertaProactivaHuerto, isInsumoStockBajoActivo } from '../utils/alertasHuerto';
@@ -47,6 +48,7 @@ import {
   normalizarCondicionHorasFrio,
 } from '../utils/agroClimaCalculos';
 import { obtenerEtapaFenologicaActiva } from '../utils/fenologiaHelper';
+import { clasificarRiesgoUv } from '../utils/uvAlertas';
 
 interface DashboardViewProps {
   explotacion: ExplotacionAgricola;
@@ -322,21 +324,47 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+          <div className="grid grid-cols-3 gap-2 text-xs pt-1">
             <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200/80">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Riesgo Psa</div>
               <div className="font-bold text-emerald-700 mt-0.5 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {clima?.riesgoPsa ?? 'Bajo'}
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{clima?.riesgoPsa ?? 'Bajo'}</span>
               </div>
             </div>
             <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200/80">
-              <div className="text-[10px] text-stone-400 font-bold uppercase">Riesgo Botrytis</div>
+              <div className="text-[10px] text-stone-400 font-bold uppercase">Botrytis</div>
               <div className="font-bold text-emerald-700 mt-0.5 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {clima?.riesgoBotrytis ?? 'Bajo'}
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{clima?.riesgoBotrytis ?? 'Bajo'}</span>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={() => onNavigateTab('clima')}
+              className={`p-2.5 rounded-xl border text-left transition-colors cursor-pointer ${
+                typeof clima?.indiceUvMaximo === 'number'
+                  ? clasificarRiesgoUv(clima.indiceUvMaximo).cardClass
+                  : 'bg-amber-50/60 border-amber-200'
+              }`}
+              title="Ver Alerta UV Georreferenciada 08:00 hrs"
+            >
+              <div className="text-[10px] text-stone-500 font-bold uppercase flex items-center gap-1">
+                <Sun className="w-3 h-3 text-amber-600 shrink-0" />
+                <span>UV Máx</span>
+              </div>
+              <div
+                className={`font-bold mt-0.5 truncate ${
+                  typeof clima?.indiceUvMaximo === 'number'
+                    ? clasificarRiesgoUv(clima.indiceUvMaximo).textClass
+                    : 'text-amber-800'
+                }`}
+              >
+                {typeof clima?.indiceUvMaximo === 'number'
+                  ? `${clima.indiceUvMaximo.toFixed(1)} · ${clima.nivelRiesgoUv || clasificarRiesgoUv(clima.indiceUvMaximo).nivel}`
+                  : '08:00 Activo'}
+              </div>
+            </button>
           </div>
 
           <div className="text-[11px] text-stone-500 flex items-center justify-between gap-2 border-t border-stone-100 pt-3">

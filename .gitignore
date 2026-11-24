@@ -1,8 +1,11 @@
 node_modules/
 build/
 dist/
+dev-dist/
+.gmp_cache/
 coverage/
 .DS_Store
 *.log
 .env*
 !.env.example
+.vapid-keys.json

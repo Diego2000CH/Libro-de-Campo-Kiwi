@@ -27,14 +27,29 @@ import {
   Snowflake,
   Download,
   CheckSquare,
-  Square
+  Square,
+  Smartphone,
+  BellRing,
+  Clock
 } from 'lucide-react';
 import { calcularGradosDiaPeriodo } from '../utils/agroClimaCalculos';
 import { exportEventualidadesPDF } from '../utils/pdfExport';
+import { ConfigAlertaUv } from '../types/campo';
+import {
+  clasificarRiesgoUv,
+  DEFAULT_UV_ALERT_CONFIG,
+  parseUvForecastResponse,
+  PronosticoUvGeorreferenciado,
+} from '../utils/uvAlertas';
+import { getBrowserNotificationPermission } from '../utils/notificacionesHelada';
 
 interface ClimaViewProps {
   clima: ClimaCondiciones;
   onUpdateClima: (clima: ClimaCondiciones) => void;
+  alertaUvConfig?: ConfigAlertaUv;
+  onUpdateAlertaUvConfig?: (cfg: ConfigAlertaUv) => void;
+  onActivateMobileUvPush?: (opts: { lat: number; lng: number; nombre: string }) => Promise<{ ok: boolean; message: string }>;
+  onTriggerTestUvAlert?: (opts: { lat: number; lng: number; nombre: string }) => Promise<{ ok: boolean; message: string }>;
   eventualidades?: EventualidadHuerto[];
   parcelas?: Parcela[];
   explotacion?: ExplotacionAgricola;
@@ -91,6 +106,7 @@ interface DiaPronostico {
   precipitacionMm: number;
   probabilidadLluvia: number;
   eto: number;
+  uvMax?: number;
   codigoClima: number;
   descripcion: string;
 }
@@ -117,6 +133,10 @@ const COMUNAS_RAPIDAS = [
 export const ClimaView: React.FC<ClimaViewProps> = ({
   clima: climaProp,
   onUpdateClima,
+  alertaUvConfig = DEFAULT_UV_ALERT_CONFIG,
+  onUpdateAlertaUvConfig,
+  onActivateMobileUvPush,
+  onTriggerTestUvAlert,
   eventualidades = [],
   parcelas = [],
   explotacion,
@@ -129,6 +149,9 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
 }) => {
   const [localClima, setLocalClima] = useState<ClimaCondiciones>(climaProp);
   const clima = canEdit ? climaProp : localClima;
+  const [uvForecastLive, setUvForecastLive] = useState<PronosticoUvGeorreferenciado | null>(null);
+  const [uvPushFeedback, setUvPushFeedback] = useState<{ ok: boolean; text: string } | null>(null);
+  const [isPushBusy, setIsPushBusy] = useState(false);
   // Ubicación seleccionada (prioriza la Entrada Principal especificada por el usuario)
   const [ubicacionNombre, setUbicacionNombre] = useState<string>(() => {
     const saved = localStorage.getItem('fundo_clima_nombre');
@@ -258,11 +281,13 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
     setIsLoadingClima(true);
     setErrorMensaje(null);
     try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,et0_fao_evapotranspiration,precipitation_sum,precipitation_probability_max,weather_code&timezone=auto`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m,uv_index&hourly=uv_index&daily=temperature_2m_max,temperature_2m_min,et0_fao_evapotranspiration,precipitation_sum,precipitation_probability_max,uv_index_max,weather_code&timezone=auto`;
       
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Error en servidor meteorológico (${res.status})`);
       const data = await res.json();
+      const uvParsed = parseUvForecastResponse(data);
+      setUvForecastLive(uvParsed);
 
       const current = data.current;
       const daily = data.daily;
@@ -314,7 +339,11 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
         riesgoPsa: riesgoPsa,
         riesgoBotrytis: riesgoBotrytis,
         evapotranspiracionEtoMmDia: eto,
-        estadoCielo: estadoCielo
+        estadoCielo: estadoCielo,
+        indiceUvActual: uvParsed.uvActual,
+        indiceUvMaximo: uvParsed.uvMaximoDia,
+        nivelRiesgoUv: uvParsed.nivelRiesgo,
+        horaPicoUv: uvParsed.horaPicoUv,
       };
 
       // Guardar pronóstico de 7 días
@@ -330,6 +359,10 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
             precipitacionMm: Math.round((daily.precipitation_sum?.[i] ?? 0) * 10) / 10,
             probabilidadLluvia: daily.precipitation_probability_max?.[i] ?? 0,
             eto: Math.round((daily.et0_fao_evapotranspiration?.[i] ?? 0) * 10) / 10,
+            uvMax:
+              typeof daily.uv_index_max?.[i] === 'number'
+                ? Math.round(daily.uv_index_max[i] * 10) / 10
+                : undefined,
             codigoClima: wCode,
             descripcion
           });
@@ -772,7 +805,7 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
       )}
 
       {/* Tarjetas Principales de Sensores de Estación */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Temperatura */}
         <div className="p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-2 relative overflow-hidden">
           <div className="flex items-center justify-between text-stone-500">
@@ -855,7 +888,321 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
             Cálculo Penman-Monteith para riego
           </div>
         </div>
+
+        {/* Índice Radiación UV Georreferenciada */}
+        {(() => {
+          const uvActual = uvForecastLive?.uvActual ?? clima.indiceUvActual ?? 0;
+          const uvMax = uvForecastLive?.uvMaximoDia ?? clima.indiceUvMaximo ?? uvActual;
+          const picoHora = uvForecastLive?.horaPicoUv ?? clima.horaPicoUv ?? '13:00 hrs';
+          const clasif = clasificarRiesgoUv(uvMax);
+          return (
+            <div className="p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between text-stone-500">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Radiación UV Solar</span>
+                <Sun className="w-4 h-4 text-orange-600" />
+              </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <div className="text-3xl font-black text-stone-900 font-mono tabular-nums">
+                  {uvMax.toFixed(1)}
+                </div>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${clasif.badgeClass}`}>
+                  {clasif.nivel}
+                </span>
+              </div>
+              <div className="text-[11px] text-stone-700 bg-stone-50 px-2 py-1 rounded flex justify-between font-mono tabular-nums">
+                <span>Actual: <strong>{uvActual.toFixed(1)}</strong></span>
+                <span>Pico: <strong>{picoHora}</strong></span>
+              </div>
+              <div className="text-[10px] text-stone-400">
+                Ley 20.096 · Alerta celular diaria {alertaUvConfig.horaEnvio || '08:00'} hrs
+              </div>
+            </div>
+          );
+        })()}
       </div>
+
+      {/* Panel de Alerta Diaria al Celular de Radiación UV (08:00 AM · Georreferenciada) */}
+      {(() => {
+        const uvActual = uvForecastLive?.uvActual ?? clima.indiceUvActual ?? 0;
+        const uvOcho = uvForecastLive?.uvOchoAm ?? uvActual;
+        const uvMax = uvForecastLive?.uvMaximoDia ?? clima.indiceUvMaximo ?? uvActual;
+        const clasif = clasificarRiesgoUv(uvMax);
+        const perm = getBrowserNotificationPermission();
+        const subsCount = alertaUvConfig.pushSubscriptions?.length ?? 0;
+        const historialUv = alertaUvConfig.historialUv || [];
+        const hourlyBlocks = (uvForecastLive?.hourlyToday || []).filter((h) =>
+          ['08:00', '10:00', '12:00', '13:00', '15:00', '17:00'].includes(h.hora)
+        );
+
+        return (
+          <div className="p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-stone-100 pb-3.5">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-orange-800">
+                  <Smartphone className="w-3.5 h-3.5 text-orange-600" />
+                  <span>Alerta Diaria al Celular · Radiación UV Georreferenciada</span>
+                </div>
+                <h3 className="font-black text-base text-stone-900">
+                  Notificación Automática todos los días a las {alertaUvConfig.horaEnvio || '08:00'} AM
+                </h3>
+                <p className="text-xs text-stone-600">
+                  Calculada para <strong>{ubicacionNombre}</strong> ({coords.lat.toFixed(4)}°, {coords.lng.toFixed(4)}°). Incluye el índice UV de las 08:00, el máximo del día, hora pico y medidas de protección solar para cuadrillas (Ley N° 20.096).
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                {onActivateMobileUvPush && (
+                  <button
+                    type="button"
+                    disabled={isPushBusy}
+                    onClick={async () => {
+                      setIsPushBusy(true);
+                      setUvPushFeedback(null);
+                      try {
+                        const res = await onActivateMobileUvPush({
+                          lat: coords.lat,
+                          lng: coords.lng,
+                          nombre: ubicacionNombre,
+                        });
+                        setUvPushFeedback({ ok: res.ok, text: res.message });
+                      } finally {
+                        setIsPushBusy(false);
+                      }
+                    }}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
+                      perm === 'granted' && subsCount > 0
+                        ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300'
+                        : 'bg-orange-700 hover:bg-orange-800 text-white shadow-xs'
+                    }`}
+                  >
+                    <BellRing className="w-3.5 h-3.5" />
+                    <span>
+                      {perm === 'granted' && subsCount > 0
+                        ? `Celular Vinculado (${subsCount})`
+                        : 'Activar Alertas en este Celular'}
+                    </span>
+                  </button>
+                )}
+
+                {onTriggerTestUvAlert && (
+                  <button
+                    type="button"
+                    disabled={isPushBusy}
+                    onClick={async () => {
+                      setIsPushBusy(true);
+                      setUvPushFeedback(null);
+                      try {
+                        const res = await onTriggerTestUvAlert({
+                          lat: coords.lat,
+                          lng: coords.lng,
+                          nombre: ubicacionNombre,
+                        });
+                        setUvPushFeedback({ ok: res.ok, text: res.message });
+                      } finally {
+                        setIsPushBusy(false);
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Sun className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Probar Alerta UV Ahora</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {uvPushFeedback && (
+              <div
+                className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${
+                  uvPushFeedback.ok
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
+                    : 'bg-amber-50 border-amber-200 text-amber-950'
+                }`}
+              >
+                <span>{uvPushFeedback.text}</span>
+                <button
+                  type="button"
+                  onClick={() => setUvPushFeedback(null)}
+                  className="font-bold underline text-[11px] cursor-pointer"
+                >
+                  Ocultar
+                </button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Estado UV Hoy y Curva Horaria */}
+              <div className={`p-4 rounded-xl border ${clasif.cardClass} space-y-2.5`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-700">
+                    Pronóstico UV Hoy (Georreferenciado)
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${clasif.badgeClass}`}>
+                    Riesgo {clasif.nivel}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center bg-white/80 rounded-xl p-2.5 border border-stone-200/70">
+                  <div>
+                    <div className="text-[10px] text-stone-500 font-bold uppercase">08:00 AM</div>
+                    <div className="text-lg font-black text-stone-900 font-mono tabular-nums">{uvOcho.toFixed(1)}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-stone-500 font-bold uppercase">UV Máx</div>
+                    <div className={`text-lg font-black font-mono tabular-nums ${clasif.textClass}`}>
+                      {uvMax.toFixed(1)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-stone-500 font-bold uppercase">Hora Pico</div>
+                    <div className="text-sm font-black text-stone-900 font-mono tabular-nums mt-0.5">
+                      {uvForecastLive?.horaPicoUv || clima.horaPicoUv || '13:00 hrs'}
+                    </div>
+                  </div>
+                </div>
+                {hourlyBlocks.length > 0 && (
+                  <div className="grid grid-cols-6 gap-1 text-center pt-1">
+                    {hourlyBlocks.map((b) => (
+                      <div key={b.hora} className="bg-white/75 rounded-lg py-1 px-0.5 border border-stone-200/60">
+                        <div className="text-[9px] text-stone-500 font-mono">{b.hora}</div>
+                        <div className="text-[11px] font-black text-stone-900 font-mono tabular-nums">{b.uv.toFixed(1)}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-[11px] text-stone-800 leading-relaxed">{clasif.recomendacion}</p>
+              </div>
+
+              {/* Configuración Horaria & Permisos */}
+              <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/70 space-y-3 text-xs">
+                <div className="font-bold text-stone-900 flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-orange-700" />
+                  <span>Programación de Alerta al Celular</span>
+                </div>
+
+                <label className="flex items-center justify-between gap-2 bg-white p-2.5 rounded-lg border border-stone-200 cursor-pointer">
+                  <span className="font-semibold text-stone-800">Enviar alerta diaria UV</span>
+                  <input
+                    type="checkbox"
+                    disabled={!canEdit || !onUpdateAlertaUvConfig}
+                    checked={alertaUvConfig.habilitada !== false}
+                    onChange={(e) =>
+                      onUpdateAlertaUvConfig?.({
+                        ...alertaUvConfig,
+                        habilitada: e.target.checked,
+                      })
+                    }
+                    className="w-4 h-4 accent-orange-700"
+                  />
+                </label>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-600 mb-1">
+                      Hora diaria:
+                    </label>
+                    <input
+                      type="time"
+                      disabled={!canEdit || !onUpdateAlertaUvConfig}
+                      value={alertaUvConfig.horaEnvio || '08:00'}
+                      onChange={(e) =>
+                        onUpdateAlertaUvConfig?.({
+                          ...alertaUvConfig,
+                          horaEnvio: e.target.value || '08:00',
+                        })
+                      }
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-600 mb-1">
+                      Notificar cuando UV ≥:
+                    </label>
+                    <select
+                      disabled={!canEdit || !onUpdateAlertaUvConfig}
+                      value={alertaUvConfig.umbralMinimoUv ?? 0}
+                      onChange={(e) =>
+                        onUpdateAlertaUvConfig?.({
+                          ...alertaUvConfig,
+                          umbralMinimoUv: Number(e.target.value),
+                        })
+                      }
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                    >
+                      <option value={0}>Todos los días (UV ≥ 0)</option>
+                      <option value={3}>Moderado+ (UV ≥ 3)</option>
+                      <option value={6}>Alto+ (UV ≥ 6)</option>
+                      <option value={8}>Muy Alto+ (UV ≥ 8)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="p-2.5 bg-white rounded-lg border border-stone-200 text-[11px] text-stone-600 space-y-1">
+                  <div className="flex justify-between">
+                    <span>Permiso navegador/celular:</span>
+                    <strong
+                      className={
+                        perm === 'granted'
+                          ? 'text-emerald-700'
+                          : perm === 'denied'
+                          ? 'text-rose-700'
+                          : 'text-amber-700'
+                      }
+                    >
+                      {perm === 'granted'
+                        ? 'Permitido'
+                        : perm === 'denied'
+                        ? 'Bloqueado en ajustes'
+                        : perm === 'unsupported'
+                        ? 'No soportado'
+                        : 'Pendiente activar'}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Última alerta enviada:</span>
+                    <strong className="font-mono text-stone-800">
+                      {alertaUvConfig.ultimaAlertaFecha || alertaUvConfig.ultimaAlertaPushFecha || 'Pendiente hoy 08:00'}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Historial de Alertas UV 08:00 AM */}
+              <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/70 space-y-2.5 text-xs">
+                <div className="font-bold text-stone-900 flex items-center justify-between">
+                  <span>Bitácora de Alertas UV (08:00 AM)</span>
+                  <span className="text-[11px] text-stone-500 font-mono">{historialUv.length} reg.</span>
+                </div>
+                {historialUv.length === 0 ? (
+                  <div className="p-4 bg-white rounded-xl border border-stone-200 text-center text-[11px] text-stone-500">
+                    Aún no se registran envíos diarios. Presiona <strong>"Activar Alertas en este Celular"</strong> para recibir el reporte UV georreferenciado todos los días a las {alertaUvConfig.horaEnvio || '08:00'} AM.
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+                    {historialUv.slice(0, 6).map((item) => {
+                      const c = clasificarRiesgoUv(item.uvMaximoDia);
+                      return (
+                        <div key={item.id} className="p-2.5 bg-white rounded-xl border border-stone-200 space-y-0.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono font-bold text-[11px] text-stone-800">
+                              {item.fechaLocal} · {item.horaProgramada} hrs
+                            </span>
+                            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase ${c.badgeClass}`}>
+                              Máx {item.uvMaximoDia.toFixed(1)} · {item.nivelRiesgo}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-stone-500 truncate">
+                            {item.ubicacionNombre} · Pico {item.horaPicoUv}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Modelos Fitosanitarios Predictivos para Huerto de Kiwis */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -1002,6 +1349,22 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
                       <span>ETo:</span>
                       <strong className="text-amber-700 font-bold">{dia.eto} mm</strong>
                     </div>
+                    {typeof dia.uvMax === 'number' && (
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span>UV Máx:</span>
+                        <strong
+                          className={
+                            dia.uvMax >= 8
+                              ? 'text-rose-700 font-bold'
+                              : dia.uvMax >= 6
+                              ? 'text-orange-700 font-bold'
+                              : 'text-stone-700 font-bold'
+                          }
+                        >
+                          {dia.uvMax.toFixed(1)}
+                        </strong>
+                      </div>
+                    )}
                   </div>
 
                   {tieneHelada && (

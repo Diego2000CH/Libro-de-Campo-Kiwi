@@ -36,11 +36,13 @@ import {
   PlanillaAuditoriaBPA,
   EventualidadHuerto,
   ControlHeladaRegistro,
-  ConfigControlHeladas
+  ConfigControlHeladas,
+  ConfigAlertaUv
 } from '../types/campo';
 import { getNivelAcceso } from './permissions';
 import { getTemporadaDefaults, normalizarCondicionHorasFrio } from './agroClimaCalculos';
 import { HELADAS_CONFIG } from '../config/heladasConfig';
+import { DEFAULT_UV_ALERT_CONFIG } from './uvAlertas';
 import {
   initialExplotacion,
   initialParcelas,
@@ -531,6 +533,34 @@ export function normalizeConfigControlHeladas(
   };
 }
 
+export function getDefaultConfigAlertaUv(): ConfigAlertaUv {
+  return {
+    ...DEFAULT_UV_ALERT_CONFIG,
+    pushSubscriptions: [],
+    historialUv: [],
+  };
+}
+
+export function normalizeConfigAlertaUv(raw?: ConfigAlertaUv | null): ConfigAlertaUv {
+  const def = getDefaultConfigAlertaUv();
+  if (!raw || typeof raw !== 'object') return def;
+  return {
+    habilitada: raw.habilitada !== false,
+    horaEnvio: typeof raw.horaEnvio === 'string' && /^\d{2}:\d{2}$/.test(raw.horaEnvio) ? raw.horaEnvio : def.horaEnvio,
+    umbralMinimoUv: typeof raw.umbralMinimoUv === 'number' && Number.isFinite(raw.umbralMinimoUv) ? raw.umbralMinimoUv : 0,
+    usarUbicacionClima: raw.usarUbicacionClima !== false,
+    latitudPersonalizada: typeof raw.latitudPersonalizada === 'number' && Number.isFinite(raw.latitudPersonalizada) ? raw.latitudPersonalizada : undefined,
+    longitudPersonalizada: typeof raw.longitudPersonalizada === 'number' && Number.isFinite(raw.longitudPersonalizada) ? raw.longitudPersonalizada : undefined,
+    ubicacionNombre: typeof raw.ubicacionNombre === 'string' ? raw.ubicacionNombre : undefined,
+    notificarTodosUsuarios: raw.notificarTodosUsuarios !== false,
+    pushCelularHabilitado: raw.pushCelularHabilitado !== false,
+    ultimaAlertaFecha: typeof raw.ultimaAlertaFecha === 'string' ? raw.ultimaAlertaFecha : undefined,
+    ultimaAlertaPushFecha: typeof raw.ultimaAlertaPushFecha === 'string' ? raw.ultimaAlertaPushFecha : undefined,
+    pushSubscriptions: Array.isArray(raw.pushSubscriptions) ? raw.pushSubscriptions.slice(0, 15) : [],
+    historialUv: Array.isArray(raw.historialUv) ? raw.historialUv.slice(0, 30) : [],
+  };
+}
+
 export function getBlankRealOrchardData(
   preserveExplotacion?: ExplotacionAgricola,
   preserveUsuarios?: UsuarioPredio[]
@@ -567,6 +597,7 @@ export function getBlankRealOrchardData(
     evaluacionesCuajaSemillas: [],
     turnosRiego: [],
     clima: getBlankClima(),
+    alertaUvConfig: getDefaultConfigAlertaUv(),
     eventualidades: [],
     controlesHelada: [],
     configControlHeladas: getDefaultConfigControlHeladas(),
@@ -623,6 +654,7 @@ export function stripDemoRecords(data: AppStateData): AppStateData {
     planesCargaRaleo: filterOutDemo(data.planesCargaRaleo),
     evaluacionesCuajaSemillas: filterOutDemo(data.evaluacionesCuajaSemillas),
     turnosRiego: filterOutDemo(data.turnosRiego),
+    alertaUvConfig: normalizeConfigAlertaUv(data.alertaUvConfig),
     eventualidades: Array.isArray(data.eventualidades) ? data.eventualidades : [],
     controlesHelada: Array.isArray(data.controlesHelada) ? data.controlesHelada : [],
     configControlHeladas: normalizeConfigControlHeladas(data.configControlHeladas),
@@ -670,6 +702,7 @@ export function getDemoSampleData(): AppStateData {
     evaluacionesCuajaSemillas: initialEvaluacionesCuajaSemillas,
     turnosRiego: initialTurnosRiego,
     clima: initialClimaLaCabana,
+    alertaUvConfig: getDefaultConfigAlertaUv(),
     eventualidades: [],
     controlesHelada: [],
     configControlHeladas: getDefaultConfigControlHeladas(),
@@ -729,6 +762,7 @@ export function getStoredData(): AppStateData {
       planesCargaRaleo: stored.planesCargaRaleo || [],
       evaluacionesCuajaSemillas: stored.evaluacionesCuajaSemillas || [],
       turnosRiego: stored.turnosRiego || [],
+      alertaUvConfig: normalizeConfigAlertaUv(stored.alertaUvConfig),
       eventualidades: stored.eventualidades || [],
       controlesHelada: stored.controlesHelada || [],
       configControlHeladas: normalizeConfigControlHeladas(stored.configControlHeladas),
@@ -857,6 +891,10 @@ export function getStoredControlesHelada(): ControlHeladaRegistro[] {
 
 export function getStoredConfigControlHeladas(): ConfigControlHeladas {
   return normalizeConfigControlHeladas(getStoredData().configControlHeladas);
+}
+
+export function getStoredConfigAlertaUv(): ConfigAlertaUv {
+  return normalizeConfigAlertaUv(getStoredData().alertaUvConfig);
 }
 
 export function getStoredMuestreosBrotacion(): MuestreoBrotacion[] {

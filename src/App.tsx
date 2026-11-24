@@ -58,6 +58,9 @@ import {
   getStoredConfigControlHeladas,
   getDefaultConfigControlHeladas,
   normalizeConfigControlHeladas,
+  getStoredConfigAlertaUv,
+  getDefaultConfigAlertaUv,
+  normalizeConfigAlertaUv,
   getStoredMuestreosBrotacion,
   getStoredConteosBotones,
   getStoredSincroniasFlorales,
@@ -117,6 +120,8 @@ import {
   EventualidadHuerto,
   ControlHeladaRegistro,
   ConfigControlHeladas,
+  ConfigAlertaUv,
+  NotificacionUv,
   LiquidacionPacking,
   AnalisisLaboratorio,
   RegistroEnvaseLimpio,
@@ -150,10 +155,20 @@ import {
 import {
   broadcastFrostNotification,
   getBrowserNotificationPermission,
+  requestBrowserNotificationPermission,
   sendBrowserFrostNotification,
   subscribeFrostBroadcast,
 } from './utils/notificacionesHelada';
-import { BellRing, Check, KeyRound, Lock, RotateCcw, ShieldAlert, Snowflake, X } from 'lucide-react';
+import {
+  buildNotificacionUv,
+  fetchGeoreferencedUvForecast,
+  resolveOrchardGeoLocation,
+  sendMobileUvNotification,
+  sendServerTestUvPush,
+  shouldTriggerDailyUvAlert,
+  subscribeDeviceToWebPush,
+} from './utils/uvAlertas';
+import { BellRing, Check, KeyRound, Lock, RotateCcw, ShieldAlert, Snowflake, Sun, X } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -186,6 +201,9 @@ export default function App() {
   const [controlesHelada, setControlesHelada] = useState<ControlHeladaRegistro[]>(getStoredControlesHelada);
   const [configControlHeladas, setConfigControlHeladas] = useState<ConfigControlHeladas>(
     getStoredConfigControlHeladas
+  );
+  const [alertaUvConfig, setAlertaUvConfig] = useState<ConfigAlertaUv>(
+    getStoredConfigAlertaUv
   );
   const [muestreosBrotacion, setMuestreosBrotacion] = useState<MuestreoBrotacion[]>(getStoredMuestreosBrotacion);
   const [conteosBotones, setConteosBotones] = useState<ConteoBotonesFlorales[]>(getStoredConteosBotones);
@@ -286,6 +304,7 @@ export default function App() {
     eventualidades,
     controlesHelada,
     configControlHeladas,
+    alertaUvConfig,
     liquidacionesPacking,
     analisisLaboratorio,
     registrosEnvases,
@@ -329,6 +348,9 @@ export default function App() {
     if (Array.isArray(d.controlesHelada)) setControlesHelada(d.controlesHelada);
     if (d.configControlHeladas && typeof d.configControlHeladas === 'object') {
       setConfigControlHeladas(normalizeConfigControlHeladas(d.configControlHeladas));
+    }
+    if (d.alertaUvConfig && typeof d.alertaUvConfig === 'object') {
+      setAlertaUvConfig(normalizeConfigAlertaUv(d.alertaUvConfig));
     }
     if (Array.isArray(d.liquidacionesPacking)) setLiquidacionesPacking(d.liquidacionesPacking);
     if (Array.isArray(d.analisisLaboratorio)) setAnalisisLaboratorio(d.analisisLaboratorio);
@@ -833,6 +855,7 @@ export default function App() {
     eventualidades,
     controlesHelada,
     configControlHeladas,
+    alertaUvConfig,
     liquidacionesPacking,
     analisisLaboratorio,
     registrosEnvases,
@@ -1173,6 +1196,7 @@ export default function App() {
     setEventualidades([]);
     setControlesHelada([]);
     setConfigControlHeladas(getDefaultConfigControlHeladas());
+    setAlertaUvConfig(getDefaultConfigAlertaUv());
     setLiquidacionesPacking([]);
     setAnalisisLaboratorio([]);
     setRegistrosEnvases([]);
@@ -1204,6 +1228,7 @@ export default function App() {
     setEventualidades([]);
     setControlesHelada([]);
     setConfigControlHeladas(getDefaultConfigControlHeladas());
+    setAlertaUvConfig(getDefaultConfigAlertaUv());
     setHorasFrio(blank.horasFrio);
     setRegistrosTermicos([]);
     setFenologia([]);
@@ -1427,6 +1452,321 @@ export default function App() {
     );
   }, [configControlHeladas.historialNotificaciones, activeUser]);
 
+  // Monitor Diario 08:00 AM de Radiación UV Georreferenciada
+  const uvDispatchLockRef = useRef<string>('');
+  const [unreadUvNotif, setUnreadUvNotif] = useState<NotificacionUv | null>(null);
+
+  useEffect(() => {
+    const todayIso = new Date().toISOString().split('T')[0];
+    const pendingToday = (alertaUvConfig.historialUv || []).find(
+      (n) => n.fechaLocal === todayIso && !n.leida
+    );
+    if (pendingToday) {
+      setUnreadUvNotif(pendingToday);
+    }
+  }, [alertaUvConfig.historialUv]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('BroadcastChannel' in window)) return;
+    const channel = new BroadcastChannel('fundo_uv_alerts');
+    channel.onmessage = (event) => {
+      if (event.data && event.data.id) {
+        setUnreadUvNotif(event.data as NotificacionUv);
+      }
+    };
+    return () => channel.close();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoadedInitially || !alertaUvConfig.habilitada) return;
+    if (alertaUvConfig.notificarTodosUsuarios === false && !isAdmin) return;
+
+    let cancelled = false;
+
+    const checkAndDispatchUvAlert = async () => {
+      try {
+        const ubicacion = resolveOrchardGeoLocation(explotacion, parcelas, alertaUvConfig);
+        const forecast = await fetchGeoreferencedUvForecast(ubicacion.lat, ubicacion.lng);
+        if (cancelled) return;
+
+        setClima((prev) => {
+          if (
+            prev.indiceUvActual === forecast.uvActual &&
+            prev.indiceUvMaximo === forecast.uvMaximoDia &&
+            prev.nivelRiesgoUv === forecast.nivelRiesgo &&
+            prev.horaPicoUv === forecast.horaPicoUv
+          ) {
+            return prev;
+          }
+          return {
+            ...prev,
+            indiceUvActual: forecast.uvActual,
+            indiceUvMaximo: forecast.uvMaximoDia,
+            nivelRiesgoUv: forecast.nivelRiesgo,
+            horaPicoUv: forecast.horaPicoUv,
+          };
+        });
+
+        if (
+          !shouldTriggerDailyUvAlert(
+            alertaUvConfig,
+            forecast.fechaLocal,
+            forecast.horaLocalActual,
+            forecast.uvMaximoDia
+          )
+        ) {
+          return;
+        }
+
+        if (uvDispatchLockRef.current === forecast.fechaLocal) return;
+        uvDispatchLockRef.current = forecast.fechaLocal;
+
+        const canales: string[] = ['Panel Huerto & Nube'];
+        if (
+          alertaUvConfig.pushCelularHabilitado !== false &&
+          getBrowserNotificationPermission() === 'granted'
+        ) {
+          canales.push('Notificación Celular');
+        }
+        if ((alertaUvConfig.pushSubscriptions || []).length > 0) {
+          canales.push('Web Push Segundo Plano');
+        }
+
+        const notif = buildNotificacionUv({
+          forecast,
+          ubicacion,
+          horaProgramada: alertaUvConfig.horaEnvio || '08:00',
+          canales,
+        });
+
+        setAlertaUvConfig((prev) => {
+          if (prev.ultimaAlertaFecha === forecast.fechaLocal) return prev;
+          return {
+            ...prev,
+            ultimaAlertaFecha: forecast.fechaLocal,
+            ultimaAlertaIso: new Date().toISOString(),
+            historialUv: [notif, ...(prev.historialUv || [])].slice(0, 30),
+          };
+        });
+
+        setUnreadUvNotif(notif);
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          try {
+            const ch = new BroadcastChannel('fundo_uv_alerts');
+            ch.postMessage(notif);
+            ch.close();
+          } catch {
+            // Ignorar error de BroadcastChannel
+          }
+        }
+
+        if (alertaUvConfig.pushCelularHabilitado !== false) {
+          await sendMobileUvNotification(notif, explotacion.nombreFundo);
+        }
+      } catch (err) {
+        console.warn('Error verificando radiación UV diaria:', err);
+      }
+    };
+
+    void checkAndDispatchUvAlert();
+    const interval = window.setInterval(() => {
+      void checkAndDispatchUvAlert();
+    }, 60 * 1000);
+
+    // Programación exacta a la hora configurada (08:00 AM por defecto) si la pestaña queda abierta
+    const [targetHourStr, targetMinStr] = (alertaUvConfig.horaEnvio || '08:00').split(':');
+    const targetH = Number.parseInt(targetHourStr || '8', 10);
+    const targetM = Number.parseInt(targetMinStr || '0', 10);
+    const now = new Date();
+    const nextRun = new Date();
+    nextRun.setHours(Number.isFinite(targetH) ? targetH : 8, Number.isFinite(targetM) ? targetM : 0, 5, 0);
+    if (nextRun.getTime() <= now.getTime()) {
+      nextRun.setDate(nextRun.getDate() + 1);
+    }
+    const msUntilExact = Math.max(1000, nextRun.getTime() - now.getTime());
+    const exactTimer = window.setTimeout(() => {
+      void checkAndDispatchUvAlert();
+    }, msUntilExact);
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        void checkAndDispatchUvAlert();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      window.clearTimeout(exactTimer);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [
+    isLoadedInitially,
+    isAdmin,
+    alertaUvConfig.habilitada,
+    alertaUvConfig.horaEnvio,
+    alertaUvConfig.umbralMinimoUv,
+    alertaUvConfig.ultimaAlertaFecha,
+    alertaUvConfig.usarUbicacionClima,
+    alertaUvConfig.latitudPersonalizada,
+    alertaUvConfig.longitudPersonalizada,
+    alertaUvConfig.notificarTodosUsuarios,
+    alertaUvConfig.pushCelularHabilitado,
+    explotacion.nombreFundo,
+    explotacion.latitud,
+    explotacion.longitud,
+    parcelas,
+  ]);
+
+  const handleAcknowledgeUvNotif = (notifId: string) => {
+    setUnreadUvNotif(null);
+    setAlertaUvConfig((prev) => ({
+      ...prev,
+      historialUv: (prev.historialUv || []).map((item) =>
+        item.id === notifId ? { ...item, leida: true } : item
+      ),
+    }));
+  };
+
+  const handleActivateMobileUvPush = async (opts: {
+    lat: number;
+    lng: number;
+    nombre: string;
+  }): Promise<{ ok: boolean; message: string }> => {
+    const perm = await requestBrowserNotificationPermission();
+    if (perm === 'denied') {
+      return {
+        ok: false,
+        message:
+          'Permiso bloqueado en tu celular/navegador. Habilita las notificaciones del sitio en la configuración del navegador.',
+      };
+    }
+    if (perm !== 'granted') {
+      return {
+        ok: false,
+        message: 'Debes aceptar el permiso de notificaciones para recibir alertas UV en el celular.',
+      };
+    }
+
+    try {
+      const fbUser = auth.currentUser || firebaseUser;
+      const token = fbUser ? await fbUser.getIdToken() : null;
+      const { subscription, serverSynced } = await subscribeDeviceToWebPush({
+        token,
+        ubicacion: {
+          lat: opts.lat,
+          lng: opts.lng,
+          nombre: opts.nombre,
+          fuente: 'personalizada',
+        },
+        fundoNombre: explotacion.nombreFundo,
+        horaEnvio: alertaUvConfig.horaEnvio || '08:00',
+        umbralMinimoUv: alertaUvConfig.umbralMinimoUv ?? 0,
+        usuarioId: activeUser?.id,
+      });
+
+      setAlertaUvConfig((prev) => {
+        const existingSubs = prev.pushSubscriptions || [];
+        const nextSubs = subscription
+          ? [
+              ...existingSubs.filter((s) => s.endpoint !== subscription.endpoint),
+              subscription,
+            ]
+          : existingSubs;
+        return {
+          ...prev,
+          habilitada: true,
+          pushCelularHabilitado: true,
+          ubicacionNombre: opts.nombre,
+          pushSubscriptions: nextSubs,
+        };
+      });
+
+      return {
+        ok: true,
+        message: serverSynced
+          ? `Celular vinculado con Web Push. Recibirás la alerta UV diaria a las ${alertaUvConfig.horaEnvio || '08:00'} hrs según (${opts.lat.toFixed(4)}°, ${opts.lng.toFixed(4)}°).`
+          : `Notificaciones locales activadas para este dispositivo a las ${alertaUvConfig.horaEnvio || '08:00'} hrs. Inicia sesión con Google para sincronizar Push en segundo plano.`,
+      };
+    } catch (err: any) {
+      return {
+        ok: false,
+        message: err?.message || 'No se pudo completar la vinculación Push del dispositivo.',
+      };
+    }
+  };
+
+  const handleTriggerTestUvAlert = async (opts: {
+    lat: number;
+    lng: number;
+    nombre: string;
+  }): Promise<{ ok: boolean; message: string }> => {
+    try {
+      const forecast = await fetchGeoreferencedUvForecast(opts.lat, opts.lng);
+      setClima((prev) => ({
+        ...prev,
+        indiceUvActual: forecast.uvActual,
+        indiceUvMaximo: forecast.uvMaximoDia,
+        nivelRiesgoUv: forecast.nivelRiesgo,
+        horaPicoUv: forecast.horaPicoUv,
+      }));
+
+      const notif = buildNotificacionUv({
+        forecast,
+        ubicacion: {
+          lat: opts.lat,
+          lng: opts.lng,
+          nombre: opts.nombre,
+          fuente: 'personalizada',
+        },
+        horaProgramada: alertaUvConfig.horaEnvio || '08:00',
+        canales: ['Prueba Manual', 'Notificación Celular'],
+      });
+
+      setAlertaUvConfig((prev) => ({
+        ...prev,
+        historialUv: [notif, ...(prev.historialUv || [])].slice(0, 30),
+      }));
+      setUnreadUvNotif(notif);
+
+      const localSent = await sendMobileUvNotification(notif, explotacion.nombreFundo);
+
+      let serverSentCount = 0;
+      const fbUser = auth.currentUser || firebaseUser;
+      if (fbUser) {
+        try {
+          const token = await fbUser.getIdToken();
+          const res = await sendServerTestUvPush({
+            token,
+            lat: opts.lat,
+            lng: opts.lng,
+            ubicacionNombre: opts.nombre,
+            fundoNombre: explotacion.nombreFundo,
+          });
+          serverSentCount = res.sentCount || 0;
+        } catch (err) {
+          console.warn('Envío Push servidor opcional omitido:', err);
+        }
+      }
+
+      return {
+        ok: true,
+        message:
+          serverSentCount > 0
+            ? `Alerta UV de prueba enviada a ${serverSentCount} celular(es) vinculado(s) (UV Máx ${forecast.uvMaximoDia.toFixed(1)} · ${forecast.nivelRiesgo}).`
+            : localSent
+            ? `Notificación UV enviada a este dispositivo (UV Máx ${forecast.uvMaximoDia.toFixed(1)} · ${forecast.nivelRiesgo}).`
+            : `Alerta UV generada en pantalla (UV Máx ${forecast.uvMaximoDia.toFixed(1)} · ${forecast.nivelRiesgo}). Activa el permiso del navegador para recibirla en el celular.`,
+      };
+    } catch (err: any) {
+      return {
+        ok: false,
+        message: err?.message || 'Error consultando el índice UV para la ubicación georreferenciada.',
+      };
+    }
+  };
+
   // Si no hay usuario logueado en la sesión, renderizar pantalla de Login obligatoria
   if (!currentUser) {
     return (
@@ -1541,6 +1881,44 @@ export default function App() {
                   <X className="w-4 h-4" />
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {unreadUvNotif && (
+        <div className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-3">
+          <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl text-amber-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <Sun className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <div className="min-w-0 space-y-0.5">
+                <div className="font-black text-amber-950">
+                  Alerta Diaria Radiación UV ({unreadUvNotif.horaProgramada} hrs) · Máx {unreadUvNotif.uvMaximoDia.toFixed(1)} ({unreadUvNotif.nivelRiesgo})
+                </div>
+                <p className="text-[11px] text-amber-900 leading-snug">
+                  <span className="font-semibold">{unreadUvNotif.ubicacionNombre}</span> ({unreadUvNotif.latitud.toFixed(4)}°, {unreadUvNotif.longitud.toFixed(4)}°) · Pico a las {unreadUvNotif.horaPicoUv}. {unreadUvNotif.recomendacion}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {activeTab !== 'clima' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('clima')}
+                  className="px-3 py-1.5 bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  <Sun className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Ver Clima y UV</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleAcknowledgeUvNotif(unreadUvNotif.id)}
+                className="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Entendido</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1804,6 +2182,10 @@ export default function App() {
           <ClimaView
             clima={clima}
             onUpdateClima={guardEdit(setClima)}
+            alertaUvConfig={alertaUvConfig}
+            onUpdateAlertaUvConfig={guardEdit(setAlertaUvConfig)}
+            onActivateMobileUvPush={handleActivateMobileUvPush}
+            onTriggerTestUvAlert={handleTriggerTestUvAlert}
             eventualidades={eventualidades}
             parcelas={parcelas}
             explotacion={explotacion}
@@ -1976,6 +2358,9 @@ export default function App() {
                     if (Array.isArray(parsed.controlesHelada)) setControlesHelada(parsed.controlesHelada);
                     if (parsed.configControlHeladas && typeof parsed.configControlHeladas === 'object') {
                       setConfigControlHeladas(normalizeConfigControlHeladas(parsed.configControlHeladas));
+                    }
+                    if (parsed.alertaUvConfig && typeof parsed.alertaUvConfig === 'object') {
+                      setAlertaUvConfig(normalizeConfigAlertaUv(parsed.alertaUvConfig));
                     }
                     if (Array.isArray(parsed.liquidacionesPacking)) setLiquidacionesPacking(parsed.liquidacionesPacking);
                     if (Array.isArray(parsed.analisisLaboratorio)) setAnalisisLaboratorio(parsed.analisisLaboratorio);
