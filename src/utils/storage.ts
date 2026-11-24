@@ -40,6 +40,7 @@ import {
 } from '../types/campo';
 import { getNivelAcceso } from './permissions';
 import { getTemporadaDefaults, normalizarCondicionHorasFrio } from './agroClimaCalculos';
+import { HELADAS_CONFIG } from '../config/heladasConfig';
 import {
   initialExplotacion,
   initialParcelas,
@@ -460,12 +461,13 @@ export function normalizePlanillaBpa(raw?: PlanillaAuditoriaBPA | null): Planill
 
 export function getDefaultConfigControlHeladas(): ConfigControlHeladas {
   return {
-    umbralAlertaC: 1.5,
-    umbralEncendidoC: 0.5,
-    umbralApagadoC: 1.5,
-    estadoFenologicoReferencia: 'Brotación / Brotes tiernos (BBCH 11-19)',
-    metodoPrincipalPredio: 'Aspersión Antihelada Sobre-Copa',
-    tasaPrecipitacionMmHora: 3.5,
+    umbralAlertaC: HELADAS_CONFIG.umbralAlertaPreventivaC,
+    umbralEncendidoC: HELADAS_CONFIG.umbralCriticoC,
+    umbralCriticoC: HELADAS_CONFIG.umbralCriticoC,
+    umbralApagadoC: HELADAS_CONFIG.umbralApagadoSeguroC,
+    estadoFenologicoReferencia: HELADAS_CONFIG.estadoFenologicoReferencia,
+    metodoPrincipalPredio: HELADAS_CONFIG.metodoPrincipalPredio,
+    tasaPrecipitacionMmHora: HELADAS_CONFIG.tasaPrecipitacionMmHora,
     checklist: {
       aspersoresLimpiosDestapados: false,
       bombaPresionVerificada: false,
@@ -478,6 +480,10 @@ export function getDefaultConfigControlHeladas(): ConfigControlHeladas {
     },
     protocoloEmergenciaNotas:
       'En noches despejadas con baja humedad relativa, iniciar aspersión guiándose por la temperatura de bulbo húmedo (+0.5°C a +1.0°C) y detener solo cuando el hielo superficial comience a fundirse sobre las yemas/brotes.',
+    notificacionesProactivas: {
+      ...HELADAS_CONFIG.notificacionesProactivas,
+    },
+    historialNotificaciones: [],
   };
 }
 
@@ -486,10 +492,18 @@ export function normalizeConfigControlHeladas(
 ): ConfigControlHeladas {
   const def = getDefaultConfigControlHeladas();
   if (!raw || typeof raw !== 'object') return def;
+  const umbralCriticoVal =
+    typeof raw.umbralCriticoC === 'number' && Number.isFinite(raw.umbralCriticoC)
+      ? raw.umbralCriticoC
+      : typeof raw.umbralEncendidoC === 'number' && Number.isFinite(raw.umbralEncendidoC)
+      ? raw.umbralEncendidoC
+      : def.umbralCriticoC;
+
   return {
     umbralAlertaC: typeof raw.umbralAlertaC === 'number' ? raw.umbralAlertaC : def.umbralAlertaC,
     umbralEncendidoC:
       typeof raw.umbralEncendidoC === 'number' ? raw.umbralEncendidoC : def.umbralEncendidoC,
+    umbralCriticoC: umbralCriticoVal,
     umbralApagadoC:
       typeof raw.umbralApagadoC === 'number' ? raw.umbralApagadoC : def.umbralApagadoC,
     estadoFenologicoReferencia:
@@ -507,6 +521,13 @@ export function normalizeConfigControlHeladas(
       raw.protocoloEmergenciaNotas !== undefined
         ? raw.protocoloEmergenciaNotas
         : def.protocoloEmergenciaNotas,
+    notificacionesProactivas: {
+      ...HELADAS_CONFIG.notificacionesProactivas,
+      ...(raw.notificacionesProactivas || {}),
+    },
+    historialNotificaciones: Array.isArray(raw.historialNotificaciones)
+      ? raw.historialNotificaciones.slice(0, 40)
+      : [],
   };
 }
 

@@ -905,15 +905,55 @@ export interface ChecklistControlHeladas {
   responsableChecklist?: string;
 }
 
+export interface NotificacionesProactivasConfig {
+  habilitadas: boolean;
+  notificarAdministrador: boolean;
+  notificarTodosUsuarios: boolean;
+  incluirBulboHumedo: boolean;
+  pushNavegadorHabilitado: boolean;
+  cooldownMinutos: number;
+}
+
+export interface NotificacionHeladaDestinatario {
+  usuarioId: string;
+  nombre: string;
+  rol: RolUsuario;
+  esAdministrador: boolean;
+  email?: string;
+  telefono?: string;
+  estadoEntrega: 'enviada' | 'leida';
+  fechaLecturaIso?: string;
+}
+
+export interface NotificacionHelada {
+  id: string;
+  fechaHoraIso: string;
+  tipo: 'umbral_critico_sensor' | 'umbral_bulbo_humedo' | 'aviso_manual';
+  severidad: 'critica' | 'advertencia';
+  titulo: string;
+  mensaje: string;
+  tempSensorC: number;
+  tempMinimaPronosticoC: number;
+  tempBulboHumedoC?: number;
+  umbralCriticoConfiguradoC: number;
+  estadoFenologico: string;
+  emitidoPor: string;
+  canales: string[];
+  destinatarios: NotificacionHeladaDestinatario[];
+}
+
 export interface ConfigControlHeladas {
   umbralAlertaC: number;
   umbralEncendidoC: number;
+  umbralCriticoC?: number;
   umbralApagadoC: number;
   estadoFenologicoReferencia: string;
   metodoPrincipalPredio: MetodoControlHelada;
   tasaPrecipitacionMmHora?: number;
   checklist: ChecklistControlHeladas;
   protocoloEmergenciaNotas?: string;
+  notificacionesProactivas?: NotificacionesProactivasConfig;
+  historialNotificaciones?: NotificacionHelada[];
 }
 
 export interface ControlHeladaRegistro {

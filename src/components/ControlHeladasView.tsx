@@ -12,20 +12,28 @@ import {
   EventualidadHuerto,
   ExplotacionAgricola,
   MetodoControlHelada,
+  NotificacionHelada,
   Parcela,
   SeguimientoFenologico,
+  UsuarioPredio,
 } from '../types/campo';
 import {
   AlertTriangle,
+  Bell,
+  BellRing,
+  Check,
   CheckCircle2,
   CheckSquare,
   Clock,
   CloudSun,
+  Copy,
   Download,
   Droplet,
   Edit3,
   Plus,
+  RefreshCw,
   Search,
+  Send,
   Settings2,
   ShieldAlert,
   Snowflake,
@@ -33,10 +41,28 @@ import {
   Thermometer,
   ThermometerSnowflake,
   Trash2,
+  Users,
   X,
 } from 'lucide-react';
 import { exportControlHeladasPDF } from '../utils/pdfExport';
 import { combinarCatalogoFenologico } from '../utils/fenologiaHelper';
+import {
+  HELADAS_CONFIG,
+  buildDestinatariosNotificacionHelada,
+  buildNotificacionHelada,
+  calcularBulboHumedoC,
+  calcularPuntoRocioC,
+  evaluarRiesgoSensorHelada,
+  resolveUmbralCriticoConfigurado,
+} from '../config/heladasConfig';
+import {
+  BrowserNotificationPermissionState,
+  broadcastFrostNotification,
+  formatFrostAlertShareText,
+  getBrowserNotificationPermission,
+  requestBrowserNotificationPermission,
+  sendBrowserFrostNotification,
+} from '../utils/notificacionesHelada';
 
 interface ControlHeladasViewProps {
   controles: ControlHeladaRegistro[];
@@ -46,13 +72,17 @@ interface ControlHeladasViewProps {
   config: ConfigControlHeladas;
   onUpdateConfig: (cfg: ConfigControlHeladas) => void;
   clima: ClimaCondiciones;
+  onUpdateClima?: (clima: ClimaCondiciones) => void;
   parcelas: Parcela[];
   explotacion?: ExplotacionAgricola;
   eventualidades?: EventualidadHuerto[];
   fenologia?: SeguimientoFenologico[];
   estadosFenologicosPersonalizados?: EstadoFenologicoCatalogo[];
+  usuarios?: UsuarioPredio[];
+  activeUser?: UsuarioPredio;
   activeUserName?: string;
   canEdit?: boolean;
+  onAcknowledgeNotificacion?: (notificacionId: string) => void;
   onNavigateTab?: (tab: ActiveTab) => void;
 }
 
@@ -131,28 +161,6 @@ const UMBRALES_KIWI_HAYWARD: UmbralFenologicoKiwi[] = [
   },
 ];
 
-// Fórmula psicrométrica de Stull (2011) para temperatura de bulbo húmedo aproximada (°C)
-function calcularBulboHumedoC(tempC: number, hrPct: number): number {
-  const rh = Math.max(5, Math.min(100, hrPct));
-  const tw =
-    tempC * Math.atan(0.151977 * Math.sqrt(rh + 8.313659)) +
-    Math.atan(tempC + rh) -
-    Math.atan(rh - 1.676331) +
-    0.00391838 * Math.pow(rh, 1.5) * Math.atan(0.023101 * rh) -
-    4.686035;
-  return Number(tw.toFixed(1));
-}
-
-// Punto de rocío fórmula Magnus (°C)
-function calcularPuntoRocioC(tempC: number, hrPct: number): number {
-  const rh = Math.max(5, Math.min(100, hrPct));
-  const a = 17.27;
-  const b = 237.7;
-  const alpha = (a * tempC) / (b + tempC) + Math.log(rh / 100);
-  const td = (b * alpha) / (a - alpha);
-  return Number(td.toFixed(1));
-}
-
 function calcularDuracionHoras(horaInicio?: string, horaTermino?: string): number {
   if (!horaInicio || !horaTermino) return 0;
   const [h1, m1] = horaInicio.split(':').map(Number);
@@ -179,13 +187,17 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
   config,
   onUpdateConfig,
   clima,
+  onUpdateClima,
   parcelas,
   explotacion,
   eventualidades = [],
   fenologia = [],
   estadosFenologicosPersonalizados = [],
+  usuarios = [],
+  activeUser,
   activeUserName = 'Operador Predio',
   canEdit = true,
+  onAcknowledgeNotificacion,
   onNavigateTab,
 }) => {
   const [filtroAnio, setFiltroAnio] = useState<string>('todos');
@@ -198,17 +210,56 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
   const [editingControl, setEditingControl] = useState<ControlHeladaRegistro | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Estado del centro de notificaciones proactivas y sensor
+  const [browserPermission, setBrowserPermission] = useState<BrowserNotificationPermissionState>(
+    () => getBrowserNotificationPermission()
+  );
+  const [isSyncingSensor, setIsSyncingSensor] = useState<boolean>(false);
+  const [sensorFeedback, setSensorFeedback] = useState<string | null>(null);
+  const [sensorTempInput, setSensorTempInput] = useState<string>(() =>
+    clima.direccionViento !== 'Sin datos' ? String(clima.temperaturaActual) : ''
+  );
+  const [sensorHrInput, setSensorHrInput] = useState<string>(() =>
+    clima.humedadRelativa > 0 ? String(clima.humedadRelativa) : '78'
+  );
+  const [sensorVientoInput, setSensorVientoInput] = useState<string>(() =>
+    clima.velocidadVientoKmH > 0 ? String(clima.velocidadVientoKmH) : '3'
+  );
+  const [copiedNotifId, setCopiedNotifId] = useState<string | null>(null);
+
   // Estado editable local de configuración al abrir el panel
   const [draftConfig, setDraftConfig] = useState<ConfigControlHeladas>(config);
 
   const openConfigPanel = () => {
-    setDraftConfig(config);
+    setDraftConfig({
+      ...config,
+      umbralCriticoC: resolveUmbralCriticoConfigurado(config),
+      notificacionesProactivas: {
+        ...HELADAS_CONFIG.notificacionesProactivas,
+        ...(config.notificacionesProactivas || {}),
+      },
+    });
     setShowConfigPanel((prev) => !prev);
   };
 
   const handleSaveConfig = (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdateConfig(draftConfig);
+    const umbralCriticoNorm = Number(
+      draftConfig.umbralCriticoC ?? draftConfig.umbralEncendidoC ?? HELADAS_CONFIG.umbralCriticoC
+    );
+    onUpdateConfig({
+      ...config,
+      ...draftConfig,
+      umbralCriticoC: umbralCriticoNorm,
+      umbralEncendidoC: Number.isFinite(draftConfig.umbralEncendidoC)
+        ? draftConfig.umbralEncendidoC
+        : umbralCriticoNorm,
+      notificacionesProactivas: {
+        ...HELADAS_CONFIG.notificacionesProactivas,
+        ...(draftConfig.notificacionesProactivas || {}),
+      },
+      historialNotificaciones: config.historialNotificaciones || [],
+    });
     setShowConfigPanel(false);
   };
 
@@ -232,6 +283,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
       ...config,
       umbralAlertaC: u.alertaSugeridaC,
       umbralEncendidoC: u.encendidoSugeridoC,
+      umbralCriticoC: u.encendidoSugeridoC,
       umbralApagadoC: Math.max(u.alertaSugeridaC, u.encendidoSugeridoC + 1.0),
       estadoFenologicoReferencia: `${u.etapa} (${u.bbch})`,
     };
@@ -239,20 +291,206 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
     setDraftConfig(nextCfg);
   };
 
-  // Cálculos térmicos en vivo
+  // Cálculos térmicos y evaluación del umbral crítico en vivo
   const hrLive = clima.humedadRelativa > 0 ? clima.humedadRelativa : 75;
   const twActual = calcularBulboHumedoC(clima.temperaturaActual, hrLive);
   const twMinima = calcularBulboHumedoC(clima.tempMinima, hrLive);
   const tdActual = calcularPuntoRocioC(clima.temperaturaActual, hrLive);
 
+  const evalSensor = useMemo(
+    () => evaluarRiesgoSensorHelada(clima, config),
+    [clima, config]
+  );
+
+  const notifPolicy = config.notificacionesProactivas || HELADAS_CONFIG.notificacionesProactivas;
+  const umbralCriticoActivo = resolveUmbralCriticoConfigurado(config);
+  const destinatariosConfigurados = useMemo(
+    () => buildDestinatariosNotificacionHelada(usuarios, notifPolicy),
+    [usuarios, notifPolicy]
+  );
+  const adminsConfigurados = useMemo(
+    () => destinatariosConfigurados.filter((d) => d.esAdministrador),
+    [destinatariosConfigurados]
+  );
+  const otrosUsuariosConfigurados = useMemo(
+    () => destinatariosConfigurados.filter((d) => !d.esAdministrador),
+    [destinatariosConfigurados]
+  );
+  const historialNotificaciones = useMemo(
+    () =>
+      [...(config.historialNotificaciones || [])].sort((a, b) =>
+        b.fechaHoraIso.localeCompare(a.fechaHoraIso)
+      ),
+    [config.historialNotificaciones]
+  );
+
+  const handleRequestBrowserPush = async () => {
+    const res = await requestBrowserNotificationPermission();
+    setBrowserPermission(res);
+    if (res === 'granted') {
+      setSensorFeedback('Notificaciones push del navegador activadas para alertas críticas de helada.');
+    } else if (res === 'denied') {
+      setSensorFeedback('El navegador bloqueó las notificaciones push. Habilítalas en el candado de la barra de direcciones; los avisos internos del huerto siguen activos.');
+    }
+  };
+
+  const handleSyncSensorLive = async () => {
+    if (!onUpdateClima) return;
+    setIsSyncingSensor(true);
+    setSensorFeedback(null);
+    const lat = explotacion?.latitud ?? -39.628593;
+    const lng = explotacion?.longitud ?? -72.461085;
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,et0_fao_evapotranspiration&timezone=America%2FSantiago&forecast_days=3`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('Error consultando Open-Meteo');
+      const data = await resp.json();
+      const tActual = Number((data?.current?.temperature_2m ?? clima.temperaturaActual).toFixed(1));
+      const tMin = Number((data?.daily?.temperature_2m_min?.[0] ?? tActual).toFixed(1));
+      const tMax = Number((data?.daily?.temperature_2m_max?.[0] ?? Math.max(tActual, 12)).toFixed(1));
+      const hr = Math.round(data?.current?.relative_humidity_2m ?? 75);
+      const wind = Number((data?.current?.wind_speed_10m ?? 4).toFixed(1));
+      const rainProb = Math.round(data?.daily?.precipitation_probability_max?.[0] ?? 10);
+      const eto = Number((data?.daily?.et0_fao_evapotranspiration?.[0] ?? 2.0).toFixed(2));
+      const wCode = Number(data?.current?.weather_code ?? 0);
+
+      const nextClima: ClimaCondiciones = {
+        ...clima,
+        temperaturaActual: tActual,
+        tempMinima: tMin,
+        tempMaxima: tMax,
+        humedadRelativa: hr,
+        velocidadVientoKmH: wind,
+        direccionViento: 'Sensor Estación / Open-Meteo',
+        probabilidadLluvia: rainProb,
+        evapotranspiracionEtoMmDia: eto,
+        alertaHelada: tActual < umbralCriticoActivo || tMin <= config.umbralAlertaC,
+        estadoCielo: wCode >= 51 ? 'Lluvia Moderada' : wCode >= 2 ? 'Nublado' : 'Soleado',
+      };
+      onUpdateClima(nextClima);
+      setSensorTempInput(String(tActual));
+      setSensorHrInput(String(hr));
+      setSensorVientoInput(String(wind));
+      setSensorFeedback(
+        tActual < umbralCriticoActivo
+          ? `Sensor actualizado en ${tActual.toFixed(1)}°C (< umbral crítico ${umbralCriticoActivo.toFixed(1)}°C). Notificación automática activada.`
+          : `Sensor sincronizado en vivo: ${tActual.toFixed(1)}°C (mínima hoy ${tMin.toFixed(1)}°C, HR ${hr}%).`
+      );
+    } catch {
+      setSensorFeedback('No se pudo conectar con la estación meteorológica en línea. Puedes ingresar la lectura manual del sensor de terreno.');
+    } finally {
+      setIsSyncingSensor(false);
+    }
+  };
+
+  const handleApplySensorTerreno = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canEdit || !onUpdateClima) return;
+    const tNum = Number(sensorTempInput);
+    if (!Number.isFinite(tNum)) {
+      setSensorFeedback('Ingresa una temperatura numérica válida para el sensor.');
+      return;
+    }
+    const hrNum = Math.max(10, Math.min(100, Number(sensorHrInput) || 78));
+    const vientoNum = Math.max(0, Number(sensorVientoInput) || 0);
+    const nextClima: ClimaCondiciones = {
+      ...clima,
+      temperaturaActual: Number(tNum.toFixed(1)),
+      tempMinima:
+        clima.direccionViento === 'Sin datos'
+          ? Number(tNum.toFixed(1))
+          : Math.min(clima.tempMinima, Number(tNum.toFixed(1))),
+      tempMaxima:
+        clima.direccionViento === 'Sin datos'
+          ? Number(Math.max(tNum, 8).toFixed(1))
+          : clima.tempMaxima,
+      humedadRelativa: hrNum,
+      velocidadVientoKmH: vientoNum,
+      direccionViento: 'Sensor Terreno Predio',
+      alertaHelada: tNum < umbralCriticoActivo || tNum <= config.umbralAlertaC,
+    };
+    onUpdateClima(nextClima);
+    setSensorFeedback(
+      tNum < umbralCriticoActivo
+        ? `Lectura de sensor registrada (${tNum.toFixed(1)}°C < ${umbralCriticoActivo.toFixed(1)}°C). Se despachó alerta proactiva al Administrador y usuarios.`
+        : `Lectura de sensor actualizada a ${tNum.toFixed(1)}°C (HR ${hrNum}%).`
+    );
+  };
+
+  const handleSendManualFrostNotice = async () => {
+    if (!canEdit) return;
+    const canales: string[] = ['Panel Huerto & Nube', 'Canal Multi-Pestaña'];
+    if (notifPolicy.pushNavegadorHabilitado && getBrowserNotificationPermission() === 'granted') {
+      canales.push('Push Navegador');
+    }
+
+    const evalForNotice = evalSensor.sensorActivo
+      ? evalSensor
+      : {
+          ...evalSensor,
+          sensorActivo: true,
+          tempSensorC: Number(sensorTempInput) || clima.temperaturaActual,
+        };
+
+    const notif = buildNotificacionHelada({
+      tipo: evalSensor.bajoUmbralCritico ? 'umbral_critico_sensor' : 'aviso_manual',
+      evalSensor: evalForNotice,
+      clima,
+      config,
+      usuarios,
+      emitidoPor: activeUser?.nombre || activeUserName,
+      canales,
+    });
+
+    onUpdateConfig({
+      ...config,
+      historialNotificaciones: [notif, ...(config.historialNotificaciones || [])].slice(0, 40),
+    });
+    broadcastFrostNotification(notif);
+    if (notifPolicy.pushNavegadorHabilitado) {
+      await sendBrowserFrostNotification(notif, explotacion?.nombreFundo);
+    }
+    setSensorFeedback(
+      `Aviso enviado a Administrador (${adminsConfigurados.length}) y ${Math.max(0, destinatariosConfigurados.length - adminsConfigurados.length)} usuarios del equipo.`
+    );
+  };
+
+  const handleClearHistorialNotificaciones = () => {
+    if (!canEdit) return;
+    onUpdateConfig({
+      ...config,
+      historialNotificaciones: [],
+    });
+    setSensorFeedback('Historial de notificaciones proactivas limpiado.');
+  };
+
+  const handleCopyNotificacion = async (notif: NotificacionHelada) => {
+    const text = formatFrostAlertShareText(notif, explotacion?.nombreFundo);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedNotifId(notif.id);
+      setTimeout(() => setCopiedNotifId((prev) => (prev === notif.id ? null : prev)), 2500);
+    } catch {
+      setSensorFeedback('No se pudo copiar al portapapeles en este navegador.');
+    }
+  };
+
   const riesgoHeladaNivel = useMemo(() => {
-    const tEval = Math.min(clima.temperaturaActual, clima.tempMinima);
-    if (tEval <= config.umbralEncendidoC || twMinima <= config.umbralEncendidoC) {
+    if (!evalSensor.sensorActivo) {
       return {
-        nivel: 'ENCENDIDO / ACCIÓN INMEDIATA',
+        nivel: 'ESPERANDO LECTURA DE SENSOR',
+        badgeClass: 'bg-stone-700 text-white',
+        cardClass: 'bg-stone-50 border-stone-200 text-stone-900',
+        mensaje: `Sin lectura activa del sensor térmico. Sincroniza la estación en vivo o ingresa la lectura de terreno para evaluar el umbral crítico configurado (${umbralCriticoActivo.toFixed(1)}°C).`,
+      };
+    }
+    const tEval = Math.min(clima.temperaturaActual, clima.tempMinima);
+    if (evalSensor.bajoUmbralCritico || tEval <= config.umbralEncendidoC || twMinima <= config.umbralEncendidoC) {
+      return {
+        nivel: 'UMBRAL CRÍTICO / ACCIÓN INMEDIATA',
         badgeClass: 'bg-rose-600 text-white',
         cardClass: 'bg-rose-50 border-rose-300 text-rose-950',
-        mensaje: `Mínima pronosticada (${clima.tempMinima}°C) o bulbo húmedo (${twMinima}°C) iguala/supera el umbral de encendido (${config.umbralEncendidoC}°C).`,
+        mensaje: `Sensor en ${clima.temperaturaActual.toFixed(1)}°C (bulbo húmedo ${twActual.toFixed(1)}°C, mínima ${clima.tempMinima.toFixed(1)}°C) bajo umbral crítico configurado (${umbralCriticoActivo.toFixed(1)}°C). Activar defensa antihelada y notificar al equipo.`,
       };
     }
     if (tEval <= config.umbralAlertaC || tdActual <= 0) {
@@ -260,16 +498,16 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
         nivel: 'ALERTA PREVENTIVA NOCTURNA',
         badgeClass: 'bg-amber-600 text-white',
         cardClass: 'bg-amber-50 border-amber-300 text-amber-950',
-        mensaje: `Condición de riesgo térmico (Mín ${clima.tempMinima}°C · Punto rocío ${tdActual}°C · Viento ${clima.velocidadVientoKmH} km/h). Preparar equipos y cuadrilla.`,
+        mensaje: `Condición de riesgo térmico (Sensor ${clima.temperaturaActual.toFixed(1)}°C · Mín ${clima.tempMinima.toFixed(1)}°C · Punto rocío ${tdActual.toFixed(1)}°C · Viento ${clima.velocidadVientoKmH} km/h). Preparar equipos y cuadrilla.`,
       };
     }
     return {
       nivel: 'SIN RIESGO INMINENTE',
       badgeClass: 'bg-emerald-700 text-white',
       cardClass: 'bg-emerald-50/70 border-emerald-200 text-emerald-950',
-      mensaje: `Temperaturas sobre umbral de alerta (${config.umbralAlertaC}°C). Mantener monitoreo estándar y checklist pre-temporada al día.`,
+      mensaje: `Temperaturas sobre umbral crítico (${umbralCriticoActivo.toFixed(1)}°C) y preventivo (${config.umbralAlertaC.toFixed(1)}°C). Monitoreo automático activo.`,
     };
-  }, [clima, config, twMinima, tdActual]);
+  }, [clima, config, evalSensor, twActual, twMinima, tdActual, umbralCriticoActivo]);
 
   const checklistItems: {
     key: keyof Omit<ChecklistControlHeladas, 'fechaUltimaVerificacion' | 'responsableChecklist'>;
@@ -728,17 +966,22 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
         </div>
       </div>
 
-      {/* Panel Desplegable de Configuración de Umbrales */}
+      {/* Panel Desplegable de Configuración de Umbrales y Notificaciones Proactivas */}
       {showConfigPanel && canEdit && (
         <form
           onSubmit={handleSaveConfig}
           className="bg-white rounded-2xl border border-cyan-300 p-5 shadow-xs space-y-4"
         >
           <div className="flex items-center justify-between border-b border-stone-200 pb-3">
-            <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-              <Settings2 className="w-4 h-4 text-cyan-700" />
-              <span>Configuración de Protocolo y Umbrales Antihelada del Huerto</span>
-            </h2>
+            <div>
+              <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
+                <Settings2 className="w-4 h-4 text-cyan-700" />
+                <span>Configuración de Protocolo, Umbral Crítico y Notificaciones Proactivas</span>
+              </h2>
+              <p className="text-[11px] text-stone-500 mt-0.5">
+                Base predeterminada definida en <span className="font-mono text-stone-700">src/config/heladasConfig.ts</span> (Umbral crítico inicial: {HELADAS_CONFIG.umbralCriticoC.toFixed(1)}°C).
+              </p>
+            </div>
             <button
               type="button"
               onClick={() => setShowConfigPanel(false)}
@@ -749,6 +992,25 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label className="block font-bold text-stone-700 mb-1">
+                Umbral Crítico Notificación Sensor (°C):
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={draftConfig.umbralCriticoC ?? draftConfig.umbralEncendidoC}
+                onChange={(e) =>
+                  setDraftConfig({
+                    ...draftConfig,
+                    umbralCriticoC: Number(e.target.value),
+                  })
+                }
+                className="w-full p-2.5 bg-white border border-rose-300 rounded-xl font-mono font-bold text-rose-900"
+                required
+              />
+            </div>
+
             <div>
               <label className="block font-bold text-stone-700 mb-1">
                 Umbral Alerta Preventiva (°C):
@@ -821,26 +1083,6 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
 
             <div>
               <label className="block font-bold text-stone-700 mb-1">
-                Tasa Precipitación Aspersión (mm/hr):
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                value={draftConfig.tasaPrecipitacionMmHora ?? ''}
-                onChange={(e) =>
-                  setDraftConfig({
-                    ...draftConfig,
-                    tasaPrecipitacionMmHora: e.target.value ? Number(e.target.value) : undefined,
-                  })
-                }
-                placeholder="Ej. 3.5"
-                className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-stone-700 mb-1">
                 Estado Fenológico de Referencia:
               </label>
               <select
@@ -864,6 +1106,73 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
             </div>
           </div>
 
+          <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-3 text-xs">
+            <div className="font-bold text-stone-800 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <BellRing className="w-4 h-4 text-cyan-700" />
+                Reglas de Envío Proactivo (Administrador y Usuarios)
+              </span>
+              <div className="flex items-center gap-2">
+                <label className="text-[11px] font-semibold text-stone-600">Cooldown (min):</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={360}
+                  value={draftConfig.notificacionesProactivas?.cooldownMinutos ?? 30}
+                  onChange={(e) =>
+                    setDraftConfig({
+                      ...draftConfig,
+                      notificacionesProactivas: {
+                        ...HELADAS_CONFIG.notificacionesProactivas,
+                        ...(draftConfig.notificacionesProactivas || {}),
+                        cooldownMinutos: Math.max(1, Number(e.target.value) || 30),
+                      },
+                    })
+                  }
+                  className="w-20 p-1.5 bg-white border border-stone-300 rounded-lg font-mono text-center"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {[
+                { key: 'habilitadas' as const, label: 'Notificaciones proactivas activas' },
+                { key: 'notificarAdministrador' as const, label: 'Notificar al Administrador del predio' },
+                { key: 'notificarTodosUsuarios' as const, label: 'Notificar a todos los usuarios' },
+                { key: 'incluirBulboHumedo' as const, label: 'Alertar también por Bulbo Húmedo < umbral' },
+                { key: 'pushNavegadorHabilitado' as const, label: 'Emitir Push del Navegador al cruzar umbral' },
+              ].map((opt) => {
+                const checked = Boolean(
+                  draftConfig.notificacionesProactivas?.[opt.key] ??
+                    HELADAS_CONFIG.notificacionesProactivas[opt.key]
+                );
+                return (
+                  <label
+                    key={opt.key}
+                    className="flex items-center gap-2 p-2 bg-white border border-stone-200 rounded-xl cursor-pointer hover:border-cyan-300"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) =>
+                        setDraftConfig({
+                          ...draftConfig,
+                          notificacionesProactivas: {
+                            ...HELADAS_CONFIG.notificacionesProactivas,
+                            ...(draftConfig.notificacionesProactivas || {}),
+                            [opt.key]: e.target.checked,
+                          },
+                        })
+                      }
+                      className="rounded border-stone-300 text-cyan-800"
+                    />
+                    <span className="text-[11px] font-semibold text-stone-700">{opt.label}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="text-xs">
             <label className="block font-bold text-stone-700 mb-1">
               Protocolo / Notas de Operación de Emergencia:
@@ -882,19 +1191,382 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
             <button
               type="button"
               onClick={() => setShowConfigPanel(false)}
-              className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold cursor-pointer"
+              className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold cursor-pointer whitespace-nowrap shrink-0"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-cyan-900 hover:bg-cyan-800 text-white rounded-xl text-xs font-bold cursor-pointer"
+              className="px-4 py-2 bg-cyan-900 hover:bg-cyan-800 text-white rounded-xl text-xs font-bold cursor-pointer whitespace-nowrap shrink-0"
             >
-              Guardar Umbrales
+              Guardar Umbrales y Notificaciones
             </button>
           </div>
         </form>
       )}
+
+      {/* Centro de Notificaciones Proactivas (Administrador & Todos los Usuarios) */}
+      <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <BellRing className="w-4 h-4 text-rose-700 shrink-0" />
+              <h2 className="font-bold text-sm sm:text-base text-stone-900">
+                Notificaciones Proactivas · Sensor vs Umbral Crítico
+              </h2>
+              <span className="text-[11px] font-mono tabular-nums font-bold text-stone-600">
+                Umbral configurado: &lt; {umbralCriticoActivo.toFixed(1)}°C
+              </span>
+            </div>
+            <p className="text-xs text-stone-500">
+              Envía aviso automático al <strong className="text-stone-700">Administrador</strong> ({adminsConfigurados.length}) y a <strong className="text-stone-700">todos los usuarios</strong> ({otrosUsuariosConfigurados.length}) cuando la temperatura del sensor cae bajo el umbral crítico de <span className="font-mono text-stone-700">heladasConfig.ts</span>.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleRequestBrowserPush}
+              className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
+                browserPermission === 'granted'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  : browserPermission === 'denied'
+                  ? 'bg-stone-100 border-stone-200 text-stone-600'
+                  : 'bg-white hover:bg-stone-50 border-stone-300 text-stone-800'
+              }`}
+            >
+              <Bell className="w-3.5 h-3.5" />
+              <span>
+                {browserPermission === 'granted'
+                  ? 'Push Navegador Activo'
+                  : browserPermission === 'denied'
+                  ? 'Push Bloqueado'
+                  : browserPermission === 'unsupported'
+                  ? 'Push No Soportado'
+                  : 'Activar Push Navegador'}
+              </span>
+            </button>
+
+            {canEdit && onUpdateClima && (
+              <button
+                type="button"
+                disabled={isSyncingSensor}
+                onClick={handleSyncSensorLive}
+                className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0 disabled:opacity-60"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-cyan-800 ${isSyncingSensor ? 'animate-spin' : ''}`} />
+                <span>{isSyncingSensor ? 'Sincronizando...' : 'Sincronizar Sensor en Vivo'}</span>
+              </button>
+            )}
+
+            {canEdit && (
+              <button
+                type="button"
+                onClick={handleSendManualFrostNotice}
+                className="px-3.5 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Enviar Aviso al Equipo</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Estado en vivo + Lectura directa sensor de terreno */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="lg:col-span-5 p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-stone-800 flex items-center gap-1.5">
+                <Thermometer className="w-4 h-4 text-cyan-800" />
+                Lectura de Sensor Térmico
+              </span>
+              <span className="text-[11px] text-stone-500 font-mono">
+                {evalSensor.sensorActivo ? clima.direccionViento : 'Sin lectura activa'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="p-2.5 bg-white rounded-xl border border-stone-200">
+                <div className="text-[10px] font-bold uppercase text-stone-500">Sensor Aire</div>
+                <div
+                  className={`text-base font-black font-mono tabular-nums mt-0.5 ${
+                    evalSensor.sensorActivo && evalSensor.tempSensorC < umbralCriticoActivo
+                      ? 'text-rose-700'
+                      : 'text-stone-900'
+                  }`}
+                >
+                  {evalSensor.sensorActivo ? `${evalSensor.tempSensorC.toFixed(1)}°C` : '—'}
+                </div>
+              </div>
+              <div className="p-2.5 bg-white rounded-xl border border-stone-200">
+                <div className="text-[10px] font-bold uppercase text-stone-500">Bulbo Húmedo</div>
+                <div
+                  className={`text-base font-black font-mono tabular-nums mt-0.5 ${
+                    evalSensor.sensorActivo && evalSensor.tempBulboHumedoC < umbralCriticoActivo
+                      ? 'text-rose-700'
+                      : 'text-cyan-900'
+                  }`}
+                >
+                  {evalSensor.sensorActivo ? `${evalSensor.tempBulboHumedoC.toFixed(1)}°C` : '—'}
+                </div>
+              </div>
+              <div className="p-2.5 bg-white rounded-xl border border-stone-200">
+                <div className="text-[10px] font-bold uppercase text-stone-500">Umbral Crítico</div>
+                <div className="text-base font-black font-mono tabular-nums text-rose-800 mt-0.5">
+                  &lt; {umbralCriticoActivo.toFixed(1)}°C
+                </div>
+              </div>
+            </div>
+
+            {canEdit && onUpdateClima && (
+              <form onSubmit={handleApplySensorTerreno} className="pt-2 border-t border-stone-200 space-y-2">
+                <div className="text-[11px] font-bold text-stone-700">
+                  Ingresar Lectura Manual de Sensor en Terreno:
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <label className="block text-[10px] text-stone-500 mb-0.5">T° Sensor (°C)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={sensorTempInput}
+                      onChange={(e) => setSensorTempInput(e.target.value)}
+                      placeholder="Ej. 0.2"
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-stone-500 mb-0.5">Humedad (%)</label>
+                    <input
+                      type="number"
+                      step="1"
+                      min="10"
+                      max="100"
+                      value={sensorHrInput}
+                      onChange={(e) => setSensorHrInput(e.target.value)}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-stone-500 mb-0.5">Viento (km/h)</label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      value={sensorVientoInput}
+                      onChange={(e) => setSensorVientoInput(e.target.value)}
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2 px-3 bg-cyan-900 hover:bg-cyan-800 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors whitespace-nowrap"
+                >
+                  Aplicar Lectura Sensor &amp; Evaluar Umbral
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Destinatarios configurados: Administrador + Todos los Usuarios */}
+          <div className="lg:col-span-7 p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-stone-800 flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-cyan-800" />
+                Destinatarios de Alerta Proactiva ({destinatariosConfigurados.length} configurados)
+              </span>
+              <span className="text-[11px] font-mono text-stone-500">
+                {notifPolicy.habilitadas ? 'Despacho automático ACTIVO' : 'Despacho automático PAUSADO'} · Cooldown {notifPolicy.cooldownMinutos} min
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-white rounded-xl border border-stone-200 space-y-1.5">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-rose-800">
+                  Administrador del Predio ({adminsConfigurados.length})
+                </div>
+                {adminsConfigurados.length === 0 ? (
+                  <p className="text-[11px] text-stone-500">Sin administrador asignado.</p>
+                ) : (
+                  <div className="divide-y divide-stone-100">
+                    {adminsConfigurados.map((adm) => (
+                      <div key={adm.usuarioId} className="py-1.5 first:pt-0 last:pb-0">
+                        <div className="font-bold text-stone-900">{adm.nombre}</div>
+                        <div className="text-[11px] text-stone-500">
+                          {adm.email || 'Sin correo'} {adm.telefono ? `· ${adm.telefono}` : ''}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 bg-white rounded-xl border border-stone-200 space-y-1.5">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-stone-600">
+                  Todos los Usuarios del Equipo ({otrosUsuariosConfigurados.length})
+                </div>
+                {otrosUsuariosConfigurados.length === 0 ? (
+                  <p className="text-[11px] text-stone-500">
+                    {notifPolicy.notificarTodosUsuarios
+                      ? 'No hay usuarios adicionales registrados en Equipo & Usuarios.'
+                      : 'Envío a usuarios adicionales desactivado en configuración.'}
+                  </p>
+                ) : (
+                  <div className="divide-y divide-stone-100 max-h-32 overflow-y-auto pr-1">
+                    {otrosUsuariosConfigurados.map((usr) => (
+                      <div key={usr.usuarioId} className="py-1.5 first:pt-0 last:pb-0 flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-stone-900 truncate">{usr.nombre}</div>
+                          <div className="text-[10px] text-stone-500 truncate">
+                            {usr.rol.replace(/_/g, ' ')} {usr.telefono ? `· ${usr.telefono}` : ''}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {sensorFeedback && (
+          <div className="p-3 rounded-xl bg-cyan-50 border border-cyan-200 text-xs text-cyan-950 flex items-center justify-between gap-2">
+            <span className="font-medium">{sensorFeedback}</span>
+            <button
+              type="button"
+              onClick={() => setSensorFeedback(null)}
+              className="text-cyan-800 hover:text-cyan-950 p-0.5 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Historial de Notificaciones Proactivas Despachadas */}
+        <div className="space-y-2.5 pt-2 border-t border-stone-100">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-600">
+              Bitácora de Notificaciones Enviadas ({historialNotificaciones.length})
+            </h3>
+            {canEdit && historialNotificaciones.length > 0 && (
+              <button
+                type="button"
+                onClick={handleClearHistorialNotificaciones}
+                className="text-[11px] font-bold text-stone-500 hover:text-rose-700 cursor-pointer whitespace-nowrap"
+              >
+                Limpiar historial
+              </button>
+            )}
+          </div>
+
+          {historialNotificaciones.length === 0 ? (
+            <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-500">
+              No se han emitido notificaciones críticas aún. Cuando el sensor baje de{' '}
+              <span className="font-mono font-bold text-stone-700">{umbralCriticoActivo.toFixed(1)}°C</span>, el sistema generará un aviso automático para el Administrador y todo el equipo.
+            </div>
+          ) : (
+            <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+              {historialNotificaciones.map((notif) => {
+                const leidosCount = notif.destinatarios.filter((d) => d.estadoEntrega === 'leida').length;
+                const miRegistro = activeUser
+                  ? notif.destinatarios.find((d) => d.usuarioId === activeUser.id)
+                  : undefined;
+                const fechaFmt = new Date(notif.fechaHoraIso).toLocaleString('es-CL', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
+
+                return (
+                  <div
+                    key={notif.id}
+                    className={`p-3.5 rounded-xl border space-y-2.5 ${
+                      notif.severidad === 'critica'
+                        ? 'bg-rose-50/50 border-rose-200'
+                        : 'bg-amber-50/50 border-amber-200'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={`text-xs font-black ${
+                              notif.severidad === 'critica' ? 'text-rose-900' : 'text-amber-900'
+                            }`}
+                          >
+                            {notif.titulo}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-stone-600 font-mono tabular-nums">
+                          {fechaFmt} · Sensor: {notif.tempSensorC.toFixed(1)}°C · Umbral Crítico:{' '}
+                          {notif.umbralCriticoConfiguradoC.toFixed(1)}°C
+                          {notif.tempBulboHumedoC !== undefined
+                            ? ` · BH: ${notif.tempBulboHumedoC.toFixed(1)}°C`
+                            : ''}{' '}
+                          · Emisor: {notif.emitidoPor}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[11px] font-mono tabular-nums font-bold text-stone-700">
+                          Confirmados {leidosCount}/{notif.destinatarios.length}
+                        </span>
+                        {onAcknowledgeNotificacion && miRegistro && miRegistro.estadoEntrega !== 'leida' && (
+                          <button
+                            type="button"
+                            onClick={() => onAcknowledgeNotificacion(notif.id)}
+                            className="px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
+                          >
+                            <Check className="w-3 h-3" />
+                            <span>Confirmar Lectura</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleCopyNotificacion(notif)}
+                          className="px-2.5 py-1 bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
+                        >
+                          <Copy className="w-3 h-3" />
+                          <span>{copiedNotifId === notif.id ? 'Copiado' : 'Copiar Aviso'}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-stone-800 leading-relaxed">{notif.mensaje}</p>
+
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-stone-600 pt-1 border-t border-stone-200/70">
+                      <span className="font-semibold text-stone-700">
+                        Canales: {notif.canales.join(' · ')}
+                      </span>
+                      <span className="text-stone-400">|</span>
+                      <span className="font-semibold text-stone-700">Destinatarios:</span>
+                      {notif.destinatarios.map((d) => (
+                        <span key={d.usuarioId} className="inline-flex items-center gap-1">
+                          <span className={d.esAdministrador ? 'font-bold text-rose-900' : 'text-stone-800'}>
+                            {d.nombre}
+                            {d.esAdministrador ? ' (Admin)' : ''}
+                          </span>
+                          <span
+                            className={`font-mono text-[10px] ${
+                              d.estadoEntrega === 'leida' ? 'text-emerald-700 font-bold' : 'text-stone-500'
+                            }`}
+                          >
+                            [{d.estadoEntrega === 'leida' ? 'Leída' : 'Enviada'}]
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Doble Columna: Umbrales Críticos Kiwi Hayward + Checklist Operacional Pre-Helada */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">

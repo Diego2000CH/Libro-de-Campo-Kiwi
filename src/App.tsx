@@ -138,7 +138,19 @@ import {
   getRolLabel,
   isAdminUser,
 } from './utils/permissions';
-import { KeyRound, Lock, RotateCcw, ShieldAlert, X } from 'lucide-react';
+import {
+  HELADAS_CONFIG,
+  buildNotificacionHelada,
+  evaluarRiesgoSensorHelada,
+  shouldDispatchAutoFrostNotification,
+} from './config/heladasConfig';
+import {
+  broadcastFrostNotification,
+  getBrowserNotificationPermission,
+  sendBrowserFrostNotification,
+  subscribeFrostBroadcast,
+} from './utils/notificacionesHelada';
+import { BellRing, Check, KeyRound, Lock, RotateCcw, ShieldAlert, Snowflake, X } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -1292,6 +1304,88 @@ export default function App() {
     [inventario, usuarios, maquinarias, calibracionesEquipo, analisisLaboratorio, parcelas, tareasHuerto]
   );
 
+  const evalSensorGlobal = React.useMemo(
+    () => evaluarRiesgoSensorHelada(clima, configControlHeladas),
+    [clima, configControlHeladas]
+  );
+
+  const lastAutoFrostDispatchRef = useRef<string>('');
+  const [liveBroadcastAlert, setLiveBroadcastAlert] = useState<string | null>(null);
+
+  useEffect(() => {
+    return subscribeFrostBroadcast((notif) => {
+      setLiveBroadcastAlert(notif.titulo);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isLoadedInitially) return;
+    if (!shouldDispatchAutoFrostNotification(evalSensorGlobal, configControlHeladas)) return;
+
+    const triggerKey = `${evalSensorGlobal.disparadoPor}-${evalSensorGlobal.tempSensorC.toFixed(1)}-${evalSensorGlobal.umbralCriticoC.toFixed(1)}`;
+    if (lastAutoFrostDispatchRef.current === triggerKey) return;
+    lastAutoFrostDispatchRef.current = triggerKey;
+
+    const notifCfg = configControlHeladas.notificacionesProactivas || HELADAS_CONFIG.notificacionesProactivas;
+    const canales: string[] = ['Panel Huerto & Nube', 'Canal Multi-Pestaña'];
+    if (notifCfg.pushNavegadorHabilitado && getBrowserNotificationPermission() === 'granted') {
+      canales.push('Push Navegador');
+    }
+
+    const nuevaNotif = buildNotificacionHelada({
+      tipo:
+        evalSensorGlobal.disparadoPor === 'bulbo_humedo'
+          ? 'umbral_bulbo_humedo'
+          : 'umbral_critico_sensor',
+      evalSensor: evalSensorGlobal,
+      clima,
+      config: configControlHeladas,
+      usuarios,
+      emitidoPor: 'Monitor Automático Sensor Heladas',
+      canales,
+    });
+
+    setConfigControlHeladas((prev) => ({
+      ...prev,
+      historialNotificaciones: [nuevaNotif, ...(prev.historialNotificaciones || [])].slice(0, 40),
+    }));
+
+    broadcastFrostNotification(nuevaNotif);
+    if (notifCfg.pushNavegadorHabilitado) {
+      void sendBrowserFrostNotification(nuevaNotif, explotacion.nombreFundo);
+    }
+  }, [isLoadedInitially, evalSensorGlobal, clima, configControlHeladas, usuarios, explotacion.nombreFundo]);
+
+  const handleAcknowledgeNotificacionHelada = (notificacionId: string) => {
+    if (!activeUser) return;
+    const nowIso = new Date().toISOString();
+    setConfigControlHeladas((prev) => ({
+      ...prev,
+      historialNotificaciones: (prev.historialNotificaciones || []).map((notif) =>
+        notif.id !== notificacionId
+          ? notif
+          : {
+              ...notif,
+              destinatarios: notif.destinatarios.map((d) =>
+                d.usuarioId === activeUser.id
+                  ? { ...d, estadoEntrega: 'leida', fechaLecturaIso: nowIso }
+                  : d
+              ),
+            }
+      ),
+    }));
+  };
+
+  const unreadFrostNotifForUser = React.useMemo(() => {
+    if (!activeUser) return null;
+    const hist = configControlHeladas.historialNotificaciones || [];
+    return (
+      hist.find((n) =>
+        n.destinatarios.some((d) => d.usuarioId === activeUser.id && d.estadoEntrega !== 'leida')
+      ) || null
+    );
+  }, [configControlHeladas.historialNotificaciones, activeUser]);
+
   // Si no hay usuario logueado en la sesión, renderizar pantalla de Login obligatoria
   if (!currentUser) {
     return (
@@ -1330,7 +1424,12 @@ export default function App() {
         onForceSync={handleForceSync}
         onOpenResetModal={guardAdmin(() => setIsResetConfirmOpen(true))}
         alertasProactivasCount={alertasProactivas.length}
-        alertaHeladaActiva={Boolean(clima?.alertaHelada || clima.tempMinima <= configControlHeladas.umbralAlertaC)}
+        alertaHeladaActiva={Boolean(
+          clima?.alertaHelada ||
+            evalSensorGlobal.bajoUmbralCritico ||
+            Boolean(unreadFrostNotifForUser) ||
+            (evalSensorGlobal.sensorActivo && clima.tempMinima <= configControlHeladas.umbralAlertaC)
+        )}
       />
 
       {permissionErrorToast && (
@@ -1347,6 +1446,61 @@ export default function App() {
             >
               <X className="w-4 h-4" />
             </button>
+          </div>
+        </div>
+      )}
+
+      {(unreadFrostNotifForUser || evalSensorGlobal.bajoUmbralCritico || liveBroadcastAlert) && (
+        <div className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-3">
+          <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-xl text-rose-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <BellRing className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
+              <div className="min-w-0 space-y-0.5">
+                <div className="font-black text-rose-900">
+                  {unreadFrostNotifForUser?.titulo ||
+                    liveBroadcastAlert ||
+                    `ALERTA CRÍTICA DE HELADA: Sensor ${evalSensorGlobal.tempSensorC.toFixed(1)}°C (< ${evalSensorGlobal.umbralCriticoC.toFixed(1)}°C)`}
+                </div>
+                <p className="text-[11px] text-rose-900 leading-snug">
+                  {unreadFrostNotifForUser?.mensaje ||
+                    `Temperatura bajo umbral crítico (${evalSensorGlobal.umbralCriticoC.toFixed(1)}°C). Notificación dirigida al Administrador y a todo el equipo.`}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {activeTab !== 'heladas' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('heladas')}
+                  className="px-3 py-1.5 bg-white hover:bg-rose-100 text-rose-900 border border-rose-300 rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  <Snowflake className="w-3.5 h-3.5 text-cyan-800" />
+                  <span>Ir a Control Heladas</span>
+                </button>
+              )}
+              {unreadFrostNotifForUser && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleAcknowledgeNotificacionHelada(unreadFrostNotifForUser.id);
+                    setLiveBroadcastAlert(null);
+                  }}
+                  className="px-3 py-1.5 bg-rose-800 hover:bg-rose-900 text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Confirmar Lectura</span>
+                </button>
+              )}
+              {!unreadFrostNotifForUser && liveBroadcastAlert && (
+                <button
+                  type="button"
+                  onClick={() => setLiveBroadcastAlert(null)}
+                  className="p-1 text-rose-700 hover:text-rose-950 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -1635,13 +1789,17 @@ export default function App() {
             config={configControlHeladas}
             onUpdateConfig={guardEdit(setConfigControlHeladas)}
             clima={clima}
+            onUpdateClima={guardEdit(setClima)}
             parcelas={parcelas}
             explotacion={explotacion}
             eventualidades={eventualidades}
             fenologia={fenologia}
             estadosFenologicosPersonalizados={estadosFenologicosCustom}
+            usuarios={usuarios}
+            activeUser={activeUser}
             activeUserName={activeUser?.nombre}
             canEdit={canEdit}
+            onAcknowledgeNotificacion={handleAcknowledgeNotificacionHelada}
             onNavigateTab={setActiveTab}
           />
         )}

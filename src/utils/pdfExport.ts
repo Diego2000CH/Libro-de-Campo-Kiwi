@@ -1265,18 +1265,22 @@ function renderControlHeladasSection(
       chk.sueloHumedoSinMalezaAlta,
     ].filter(Boolean).length;
 
+    const umbralCriticoPdf =
+      typeof config.umbralCriticoC === 'number' ? config.umbralCriticoC : config.umbralEncendidoC;
+    const notifCountPdf = config.historialNotificaciones?.length || 0;
+
     const headCfg = [
-      'Umbral Alerta / Encendido / Apagado',
+      'Umbral Crítico / Alerta / Encendido / Apagado',
       'Método Principal & Precipitación',
       'Estado Fenológico Ref.',
-      'Checklist Pre-Helada',
+      'Checklist & Notificaciones Proactivas',
     ];
     const bodyCfg = [
       [
-        `Alerta: ${num(config.umbralAlertaC, 1)}°C\nEncendido: ${num(config.umbralEncendidoC, 1)}°C · Apagado: ${num(config.umbralApagadoC, 1)}°C`,
+        `Crítico Notif: < ${num(umbralCriticoPdf, 1)}°C · Alerta: ${num(config.umbralAlertaC, 1)}°C\nEncendido: ${num(config.umbralEncendidoC, 1)}°C · Apagado: ${num(config.umbralApagadoC, 1)}°C`,
         `${config.metodoPrincipalPredio}${config.tasaPrecipitacionMmHora ? `\nTasa diseño: ${num(config.tasaPrecipitacionMmHora, 1)} mm/hr` : ''}`,
         str(config.estadoFenologicoReferencia),
-        `${chkDone}/6 verificados${chk.fechaUltimaVerificacion ? `\nFecha: ${chk.fechaUltimaVerificacion}` : ''}${chk.responsableChecklist ? ` · ${chk.responsableChecklist}` : ''}`,
+        `${chkDone}/6 verificados${chk.fechaUltimaVerificacion ? ` (${chk.fechaUltimaVerificacion})` : ''}\nAvisos proactivos emitidos: ${notifCountPdf}`,
       ],
     ];
     y = renderTable(doc, y, headCfg, bodyCfg, 'Sin configuración de umbrales.', [14, 116, 144]);
