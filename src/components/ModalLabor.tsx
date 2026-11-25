@@ -13,8 +13,13 @@ import {
   Sprout, 
   Droplet, 
   ShieldCheck, 
-  AlertTriangle 
+  AlertTriangle,
+  Camera,
+  Wind
 } from 'lucide-react';
+import { compressImageToDataUrl } from '../utils/imageCompress';
+import { evaluarVentanaPulverizacion } from '../utils/pulverizacionHelper';
+import { NumericInput } from './NumericInput';
 
 interface ModalLaborProps {
   isOpen: boolean;
@@ -94,6 +99,8 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
   const [registradoPor, setRegistradoPor] = useState(activeUser?.nombre || 'Administrador');
   const [observaciones, setObservaciones] = useState('');
+  const [fotoEvidenciaDataUrl, setFotoEvidenciaDataUrl] = useState('');
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -168,6 +175,8 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
       setDuracionRiegoHoras(initialLabor.duracionRiegoHoras ?? 6.5);
       setRegistradoPor(initialLabor.registradoPor || activeUser?.nombre || 'Administrador');
       setObservaciones(initialLabor.observaciones || '');
+      setFotoEvidenciaDataUrl(initialLabor.fotoEvidenciaDataUrl || '');
+      setPhotoError(null);
     } else {
       const targetTipo = defaultTipoLabor || 'fitosanitario';
       const pId = defaultParcelaId || parcelas[0]?.id || '';
@@ -210,6 +219,8 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
       setDuracionRiegoHoras(6.5);
       setRegistradoPor(activeUser?.nombre || 'Administrador');
       setObservaciones('');
+      setFotoEvidenciaDataUrl('');
+      setPhotoError(null);
     }
   }, [initialLabor, defaultParcelaId, defaultTipoLabor, isOpen]);
 
@@ -223,6 +234,19 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
   const unidadMostrada =
     selectedInsumo?.unidad || unidadManual || (tipoLabor === 'fertilizacion' ? 'Kg' : 'Litros');
   const carenciaMostrada = selectedInsumo?.periodoCarenciaDias ?? 0;
+  const evalPulverizacion = evaluarVentanaPulverizacion(climaActual);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError(null);
+    try {
+      const dataUrl = await compressImageToDataUrl(file);
+      setFotoEvidenciaDataUrl(dataUrl);
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : 'No se pudo procesar la foto.');
+    }
+  };
 
   const aplicadorNombreFinal =
     aplicadorSelect === '__manual__' ? aplicadorManual.trim() : aplicadorSelect.trim();
@@ -370,7 +394,8 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
         humedadRelativa: climaActual?.humedadRelativa ?? 60,
         velocidadVientoKmH: climaActual?.velocidadVientoKmH ?? 5
       },
-      observaciones
+      observaciones,
+      fotoEvidenciaDataUrl: fotoEvidenciaDataUrl || undefined
     };
 
     onSave(laborToSave);
@@ -464,12 +489,12 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span className="font-bold">Sup. (ha):</span>
-                <input
-                  type="number"
+                <NumericInput
                   step="0.1"
                   min="0.1"
                   value={superficieManualHa}
-                  onChange={(e) => handleSuperficieManualChange(parseFloat(e.target.value) || 1)}
+                  emptyFallback={0}
+                  onChangeNumber={(val) => handleSuperficieManualChange(val)}
                   className="w-20 p-1 bg-white border border-amber-300 rounded text-xs font-bold font-mono tabular-nums"
                 />
               </div>
@@ -512,6 +537,19 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
               <div className="font-bold text-purple-950 text-xs flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-purple-700" />
                 <span>Parámetros de Aplicación Fitosanitaria (Producto, Ingrediente Activo, Agua & Aplicador)</span>
+              </div>
+
+              <div className={`p-2.5 rounded-xl border text-[11px] space-y-1 ${evalPulverizacion.cardClass}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`font-black flex items-center gap-1.5 ${evalPulverizacion.textClass}`}>
+                    <Wind className="w-3.5 h-3.5 shrink-0" />
+                    {evalPulverizacion.titulo}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${evalPulverizacion.badgeClass}`}>
+                    Viento {(climaActual?.velocidadVientoKmH ?? 0).toFixed(1)} km/h · HR {Math.round(climaActual?.humedadRelativa ?? 60)}%
+                  </span>
+                </div>
+                <p className={evalPulverizacion.textClass}>{evalPulverizacion.recomendacion}</p>
               </div>
 
               {productosSelectorList.length > 0 ? (
@@ -581,12 +619,11 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Dosis por Ha:</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.01"
                     min="0"
                     value={dosisPorHa}
-                    onChange={(e) => setDosisPorHa(parseFloat(e.target.value) || 0)}
+                    onChangeNumber={(val) => setDosisPorHa(val)}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold font-mono tabular-nums text-xs"
                     required
                   />
@@ -596,23 +633,22 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Mojamiento (L/ha):</label>
-                  <input
-                    type="number"
+                  <NumericInput
+                    integer
                     min="0"
                     value={volumenCaldoLHa}
-                    onChange={(e) => handleVolumenCaldoChange(parseInt(e.target.value) || 0)}
+                    onChangeNumber={(val) => handleVolumenCaldoChange(val)}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums text-xs"
                     placeholder="1000"
                   />
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Total Agua Aplicada (L):</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     min="0"
                     step="1"
                     value={totalAguaAplicadaL}
-                    onChange={(e) => setTotalAguaAplicadaL(parseFloat(e.target.value) || 0)}
+                    onChangeNumber={(val) => setTotalAguaAplicadaL(val)}
                     className="w-full p-2 bg-white border border-purple-300 rounded-lg font-bold font-mono text-purple-950 tabular-nums text-xs"
                     required
                   />
@@ -774,13 +810,11 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                   <label className="block font-bold text-stone-700 mb-1">
                     Dosis / Hectárea ({unidadMostrada}/ha):
                   </label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
                     min="0"
                     value={dosisPorHa}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
+                    onChangeNumber={(val) => {
                       setDosisPorHa(val);
                       setDosisPorPlanta(convertHaToPlanta(val, plantasPorHaRef, unidadDosisPlanta));
                     }}
@@ -794,13 +828,11 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Dosis por Planta:</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
                     min="0"
                     value={dosisPorPlanta}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
+                    onChangeNumber={(val) => {
                       setDosisPorPlanta(val);
                       setDosisPorHa(convertPlantaToHa(val, plantasPorHaRef, unidadDosisPlanta));
                     }}
@@ -829,13 +861,13 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Plantas / Ha Ref.:</label>
-                  <input
-                    type="number"
+                  <NumericInput
+                    integer
                     min="1"
                     step="1"
                     value={plantasPorHaRef}
-                    onChange={(e) => {
-                      const pHa = parseInt(e.target.value) || 555;
+                    emptyFallback={555}
+                    onChangeNumber={(pHa) => {
                       setPlantasPorHaRef(pHa);
                       setDosisPorPlanta(convertHaToPlanta(dosisPorHa, pHa, unidadDosisPlanta));
                     }}
@@ -894,11 +926,10 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Volumen Extraído (m³):</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     min="0"
                     value={volumenM3}
-                    onChange={(e) => setVolumenM3(parseFloat(e.target.value) || 0)}
+                    onChangeNumber={(val) => setVolumenM3(val)}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-blue-900 font-mono text-sm"
                     required
                   />
@@ -906,12 +937,11 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Duración Bombeo (Horas):</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     min="0"
                     step="0.5"
                     value={duracionRiegoHoras}
-                    onChange={(e) => setDuracionRiegoHoras(parseFloat(e.target.value) || 0)}
+                    onChangeNumber={(val) => setDuracionRiegoHoras(val)}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-xs"
                     required
                   />
@@ -952,6 +982,40 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                 className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg text-xs"
               />
             </div>
+          </div>
+
+          {/* Evidencia fotográfica desde celular */}
+          <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+            <label className="block font-bold text-stone-700 flex items-center gap-1.5">
+              <Camera className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Evidencia Fotográfica desde el Celular (opcional):</span>
+            </label>
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handlePhotoUpload}
+                className="text-[11px] text-stone-600"
+              />
+              {fotoEvidenciaDataUrl && (
+                <div className="flex items-center gap-2">
+                  <img
+                    src={fotoEvidenciaDataUrl}
+                    alt="Evidencia de labor"
+                    className="h-14 w-14 rounded-lg border border-stone-300 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFotoEvidenciaDataUrl('')}
+                    className="px-2 py-1 text-[10px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 cursor-pointer"
+                  >
+                    Quitar foto
+                  </button>
+                </div>
+              )}
+            </div>
+            {photoError && <p className="text-rose-600 text-[10px]">{photoError}</p>}
           </div>
 
           {/* Footer modal */}

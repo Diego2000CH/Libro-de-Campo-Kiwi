@@ -30,7 +30,13 @@ import {
   Square,
   Smartphone,
   BellRing,
-  Clock
+  Clock,
+  Camera,
+  X,
+  Copy,
+  Check,
+  Radio,
+  Wifi
 } from 'lucide-react';
 import { calcularGradosDiaPeriodo } from '../utils/agroClimaCalculos';
 import { exportEventualidadesPDF } from '../utils/pdfExport';
@@ -42,6 +48,8 @@ import {
   PronosticoUvGeorreferenciado,
 } from '../utils/uvAlertas';
 import { getBrowserNotificationPermission } from '../utils/notificacionesHelada';
+import { compressImageToDataUrl } from '../utils/imageCompress';
+import { evaluarVentanaPulverizacion } from '../utils/pulverizacionHelper';
 
 interface ClimaViewProps {
   clima: ClimaCondiciones;
@@ -53,6 +61,7 @@ interface ClimaViewProps {
   eventualidades?: EventualidadHuerto[];
   parcelas?: Parcela[];
   explotacion?: ExplotacionAgricola;
+  onUpdateExplotacion?: (explotacion: ExplotacionAgricola) => void;
   activeUserName?: string;
   onAddEventualidad?: (ev: EventualidadHuerto) => void;
   onUpdateEventualidad?: (ev: EventualidadHuerto) => void;
@@ -140,6 +149,7 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
   eventualidades = [],
   parcelas = [],
   explotacion,
+  onUpdateExplotacion,
   activeUserName = 'Encargado de Huerto',
   onAddEventualidad,
   onUpdateEventualidad,
@@ -152,6 +162,43 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
   const [uvForecastLive, setUvForecastLive] = useState<PronosticoUvGeorreferenciado | null>(null);
   const [uvPushFeedback, setUvPushFeedback] = useState<{ ok: boolean; text: string } | null>(null);
   const [isPushBusy, setIsPushBusy] = useState(false);
+
+  // Estado de Estación Meteorológica Local (DropControl Wiseconn / Davis / Ecowitt / Webhook IoT)
+  const defaultStationCfg = {
+    habilitada: explotacion?.estacionMeteoConfig?.habilitada ?? false,
+    proveedor: explotacion?.estacionMeteoConfig?.proveedor ?? ('dropcontrol_wiseconn' as const),
+    estacionNombre:
+      explotacion?.estacionMeteoConfig?.estacionNombre ||
+      `Estación DropControl ${explotacion?.nombreFundo || 'Fundo'}`,
+    codigoEstacion: explotacion?.estacionMeteoConfig?.codigoEstacion || 'fundo-01',
+    autoSincronizar: explotacion?.estacionMeteoConfig?.autoSincronizar ?? true,
+    autoAlimentarHeladas: explotacion?.estacionMeteoConfig?.autoAlimentarHeladas ?? true,
+  };
+  const [stationCfg, setStationCfg] = useState(defaultStationCfg);
+  const [stationCapabilities, setStationCapabilities] = useState<{
+    wiseconnCloudConfigured?: boolean;
+    ecowittCloudConfigured: boolean;
+    davisCloudConfigured: boolean;
+    ingestSecretConfigured: boolean;
+  } | null>(null);
+  const [isSyncingStation, setIsSyncingStation] = useState(false);
+  const [stationFeedback, setStationFeedback] = useState<{ ok: boolean; text: string } | null>(null);
+  const [copiedWebhook, setCopiedWebhook] = useState(false);
+  const [fotoZoomUrl, setFotoZoomUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (explotacion?.estacionMeteoConfig) {
+      setStationCfg({
+        habilitada: explotacion.estacionMeteoConfig.habilitada,
+        proveedor: explotacion.estacionMeteoConfig.proveedor,
+        estacionNombre: explotacion.estacionMeteoConfig.estacionNombre,
+        codigoEstacion: explotacion.estacionMeteoConfig.codigoEstacion,
+        autoSincronizar: explotacion.estacionMeteoConfig.autoSincronizar,
+        autoAlimentarHeladas: explotacion.estacionMeteoConfig.autoAlimentarHeladas,
+      });
+    }
+  }, [explotacion?.estacionMeteoConfig]);
+
   // Ubicación seleccionada (prioriza la Entrada Principal especificada por el usuario)
   const [ubicacionNombre, setUbicacionNombre] = useState<string>(() => {
     const saved = localStorage.getItem('fundo_clima_nombre');
@@ -215,7 +262,8 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
     danioEstimadoPct: 0,
     medidaMitigacion: '',
     registradoPor: activeUserName,
-    observaciones: ''
+    observaciones: '',
+    fotoEvidenciaDataUrl: ''
   });
 
   const aniosDisponibles = useMemo(() => {
@@ -344,6 +392,8 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
         indiceUvMaximo: uvParsed.uvMaximoDia,
         nivelRiesgoUv: uvParsed.nivelRiesgo,
         horaPicoUv: uvParsed.horaPicoUv,
+        fuenteDatos: 'Open-Meteo Satelital',
+        precipitacionDiaMm: Number((daily.precipitation_sum?.[0] ?? precipitacionActual ?? 0).toFixed(1)),
       };
 
       // Guardar pronóstico de 7 días
@@ -395,10 +445,147 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
     }
   };
 
-  // Carga automática inicial al montar el componente
+  // Carga automática inicial al montar el componente + lectura de estación local si existe
   useEffect(() => {
     fetchClimaEnVivo(coords.lat, coords.lng, ubicacionNombre);
+    const code = (stationCfg.codigoEstacion || 'fundo-01').trim();
+    if (/^[a-zA-Z0-9_-]{3,48}$/.test(code)) {
+      fetch(`/api/weather-station/latest/${encodeURIComponent(code)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.capabilities) {
+            setStationCapabilities(data.capabilities);
+          }
+          if (stationCfg.habilitada && data?.reading?.clima) {
+            const merged = { ...clima, ...data.reading.clima };
+            setLocalClima(merged);
+            if (canEdit) onUpdateClima(merged);
+          }
+        })
+        .catch(() => {});
+    }
   }, []);
+
+  const handleSaveStationConfig = () => {
+    if (!canEdit || !onUpdateExplotacion || !explotacion) return;
+    const cleanCode = stationCfg.codigoEstacion.trim().replace(/[^a-zA-Z0-9_-]/g, '') || 'fundo-01';
+    const nextCfg = { ...stationCfg, codigoEstacion: cleanCode };
+    setStationCfg(nextCfg);
+    onUpdateExplotacion({
+      ...explotacion,
+      estacionMeteoConfig: nextCfg,
+    });
+    setStationFeedback({ ok: true, text: 'Configuración de estación local guardada en el predio.' });
+  };
+
+  const handleSyncStation = async () => {
+    const cleanCode = stationCfg.codigoEstacion.trim();
+    if (!/^[a-zA-Z0-9_-]{3,48}$/.test(cleanCode)) {
+      setStationFeedback({
+        ok: false,
+        text: 'El código de estación debe tener entre 3 y 48 caracteres alfanuméricos o guiones (ej. fundo-01).',
+      });
+      return;
+    }
+    setIsSyncingStation(true);
+    setStationFeedback(null);
+    try {
+      const res = await fetch('/api/weather-station/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stationCode: cleanCode,
+          provider: stationCfg.proveedor,
+          stationName: stationCfg.estacionNombre,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Error sincronizando estación local');
+      if (data?.capabilities) setStationCapabilities(data.capabilities);
+
+      if (data?.reading?.clima) {
+        const merged: ClimaCondiciones = {
+          ...clima,
+          ...data.reading.clima,
+          indiceUvActual: data.reading.clima.indiceUvActual ?? clima.indiceUvActual,
+          indiceUvMaximo: clima.indiceUvMaximo,
+          nivelRiesgoUv: clima.nivelRiesgoUv,
+          horaPicoUv: clima.horaPicoUv,
+        };
+        setLocalClima(merged);
+        if (canEdit) onUpdateClima(merged);
+        const horaStr = new Date(data.reading.receivedAtIso).toLocaleTimeString('es-CL', {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        setUltimaSincronizacion(`${merged.fuenteDatos} · ${horaStr} hrs`);
+        setStationFeedback({
+          ok: true,
+          text: `Lectura recibida (${data.source === 'cloud_api' ? 'Cloud API' : 'Webhook Push Local'}): ${data.reading.rawSummary}`,
+        });
+      } else {
+        setStationFeedback({
+          ok: false,
+          text:
+            data?.message ||
+            'Aún no llegan tramas HTTP desde tu estación. Configura la URL Webhook en tu consola Ecowitt o presiona "Probar Trama Webhook".',
+        });
+      }
+    } catch (err: any) {
+      setStationFeedback({ ok: false, text: err?.message || 'Error conectando con la estación.' });
+    } finally {
+      setIsSyncingStation(false);
+    }
+  };
+
+  const handleTestWebhookStation = async () => {
+    const cleanCode = stationCfg.codigoEstacion.trim();
+    if (!/^[a-zA-Z0-9_-]{3,48}$/.test(cleanCode)) {
+      setStationFeedback({
+        ok: false,
+        text: 'Código de estación inválido (usa 3-48 caracteres alfanuméricos o guiones).',
+      });
+      return;
+    }
+    setIsSyncingStation(true);
+    setStationFeedback(null);
+    try {
+      const res = await fetch(`/api/weather-station/test-ingest/${encodeURIComponent(cleanCode)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: stationCfg.proveedor,
+          stationName: stationCfg.estacionNombre,
+          baseTempC: clima.temperaturaActual,
+          baseHumidity: clima.humedadRelativa,
+          baseWindKmH: clima.velocidadVientoKmH,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Error en prueba de trama');
+      if (data?.reading?.clima) {
+        const merged: ClimaCondiciones = {
+          ...clima,
+          ...data.reading.clima,
+          indiceUvActual: data.reading.clima.indiceUvActual ?? clima.indiceUvActual,
+          indiceUvMaximo: clima.indiceUvMaximo,
+          nivelRiesgoUv: clima.nivelRiesgoUv,
+          horaPicoUv: clima.horaPicoUv,
+        };
+        setLocalClima(merged);
+        if (canEdit) onUpdateClima(merged);
+        setUltimaSincronizacion(`${merged.fuenteDatos} · Prueba Webhook`);
+        setStationFeedback({
+          ok: true,
+          text: `Trama de prueba procesada e inyectada en el huerto: ${data.reading.rawSummary}`,
+        });
+      }
+    } catch (err: any) {
+      setStationFeedback({ ok: false, text: err?.message || 'No se pudo probar el webhook.' });
+    } finally {
+      setIsSyncingStation(false);
+    }
+  };
 
   // Búsqueda de comuna en Open-Meteo Geocoding
   const handleBuscar = async (e: React.FormEvent) => {
@@ -491,7 +678,8 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
       danioEstimadoPct: 0,
       medidaMitigacion: preset?.medidaMitigacion || '',
       registradoPor: activeUserName,
-      observaciones: ''
+      observaciones: '',
+      fotoEvidenciaDataUrl: ''
     });
     setIsEventoModalOpen(true);
   };
@@ -556,7 +744,8 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
       danioEstimadoPct: eventoForm.danioEstimadoPct,
       medidaMitigacion: eventoForm.medidaMitigacion || '',
       registradoPor: eventoForm.registradoPor || activeUserName,
-      observaciones: eventoForm.observaciones || ''
+      observaciones: eventoForm.observaciones || '',
+      fotoEvidenciaDataUrl: eventoForm.fotoEvidenciaDataUrl || undefined
     };
 
     if (editingEvento) {
@@ -920,6 +1109,307 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
           );
         })()}
       </div>
+
+      {/* Ventana Óptima de Pulverización y Alerta de Deriva (Feature #5) */}
+      {(() => {
+        const evalPulv = evaluarVentanaPulverizacion(clima);
+        return (
+          <div className={`p-5 rounded-2xl border shadow-2xs space-y-4 ${evalPulv.cardClass}`}>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-stone-700">
+                  <Wind className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Ventana Óptima de Pulverización &amp; Alerta de Deriva SAG</span>
+                </div>
+                <h3 className={`text-base font-black ${evalPulv.textClass}`}>
+                  {evalPulv.titulo}
+                </h3>
+                <p className="text-xs text-stone-700 leading-relaxed">
+                  {evalPulv.resumen} — {evalPulv.recomendacion}
+                </p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-black uppercase self-start md:self-center shrink-0 ${evalPulv.badgeClass}`}>
+                Estado: {evalPulv.estado}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {evalPulv.factores.map((f) => (
+                <div key={f.parametro} className="p-3 bg-white/90 rounded-xl border border-stone-200 space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-bold uppercase text-stone-500">{f.parametro}</span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${
+                        f.estado === 'No Apta'
+                          ? 'bg-rose-100 text-rose-800'
+                          : f.estado === 'Precaucion'
+                          ? 'bg-amber-100 text-amber-900'
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}
+                    >
+                      {f.estado}
+                    </span>
+                  </div>
+                  <div className="text-sm font-black text-stone-900 font-mono tabular-nums">
+                    {f.valorTexto}
+                  </div>
+                  <p className="text-[11px] text-stone-600 leading-snug">{f.detalle}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Conexión Directa con Estación Meteorológica Local (Davis / Ecowitt / Webhook IoT) (Feature #6) */}
+      {(() => {
+        const cleanStationCode = stationCfg.codigoEstacion.trim() || 'fundo-01';
+        const webhookUrl =
+          typeof window !== 'undefined'
+            ? `${window.location.origin}/api/weather-station/ingest/${encodeURIComponent(cleanStationCode)}`
+            : `/api/weather-station/ingest/${cleanStationCode}`;
+
+        return (
+          <div className="p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-stone-100 pb-3.5">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-indigo-800">
+                  <Radio className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Estación Meteorológica Local (DropControl Wiseconn / Davis / Ecowitt / Webhook IoT)</span>
+                </div>
+                <h3 className="font-black text-base text-stone-900">
+                  Integración Directa de Sensores del Predio
+                </h3>
+                <p className="text-xs text-stone-600">
+                  Conecta tu estación <strong>DropControl (Wiseconn)</strong>, consola <strong>Ecowitt</strong>, <strong>Davis WeatherLink</strong> o gateway IoT para alimentar temperatura, bulbo húmedo, punto de rocío, viento, lluvia y mojado foliar en tiempo real.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-stone-100 text-stone-700 border border-stone-200 flex items-center gap-1.5">
+                  <Wifi className="w-3.5 h-3.5 text-emerald-700" />
+                  Fuente Activa: {clima.fuenteDatos || 'Open-Meteo Satelital'}
+                </span>
+                {canEdit && (
+                  <>
+                    <button
+                      type="button"
+                      disabled={isSyncingStation}
+                      onClick={handleSyncStation}
+                      className="px-3.5 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${isSyncingStation ? 'animate-spin' : ''}`} />
+                      <span>{isSyncingStation ? 'Consultando...' : 'Sincronizar Lectura Estación'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSyncingStation}
+                      onClick={handleTestWebhookStation}
+                      className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold cursor-pointer disabled:opacity-50"
+                    >
+                      Probar Trama Webhook
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {stationFeedback && (
+              <div
+                className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${
+                  stationFeedback.ok
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
+                    : 'bg-amber-50 border-amber-200 text-amber-950'
+                }`}
+              >
+                <span>{stationFeedback.text}</span>
+                <button
+                  type="button"
+                  onClick={() => setStationFeedback(null)}
+                  className="font-bold underline text-[11px] cursor-pointer"
+                >
+                  Ocultar
+                </button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 text-xs">
+              {/* Configuración no-secreta del predio */}
+              <div className="lg:col-span-7 p-4 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                      Tipo / Proveedor Estación:
+                    </label>
+                    <select
+                      disabled={!canEdit}
+                      value={stationCfg.proveedor}
+                      onChange={(e) =>
+                        setStationCfg({
+                          ...stationCfg,
+                          proveedor: e.target.value as typeof stationCfg.proveedor,
+                        })
+                      }
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-semibold"
+                    >
+                      <option value="dropcontrol_wiseconn">DropControl (Wiseconn API)</option>
+                      <option value="ecowitt_push">Ecowitt Gateway (HTTP Push)</option>
+                      <option value="davis_weatherlink">Davis WeatherLink Cloud</option>
+                      <option value="ecowitt_cloud">Ecowitt Cloud API</option>
+                      <option value="iot_webhook">Sensor IoT / Webhook Propio</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                      Nombre Estación en Predio:
+                    </label>
+                    <input
+                      type="text"
+                      disabled={!canEdit}
+                      value={stationCfg.estacionNombre}
+                      onChange={(e) =>
+                        setStationCfg({ ...stationCfg, estacionNombre: e.target.value })
+                      }
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                      Código Estación (ID URL):
+                    </label>
+                    <input
+                      type="text"
+                      disabled={!canEdit}
+                      value={stationCfg.codigoEstacion}
+                      onChange={(e) =>
+                        setStationCfg({ ...stationCfg, codigoEstacion: e.target.value })
+                      }
+                      placeholder="fundo-01"
+                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Endpoint HTTP Push Local para Ecowitt / IoT */}
+                <div className="p-3 bg-white rounded-xl border border-stone-200 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-bold text-stone-800">
+                      Endpoint HTTP Push Local (Ecowitt Customized Upload / IoT JSON):
+                    </span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(webhookUrl);
+                          setCopiedWebhook(true);
+                          setTimeout(() => setCopiedWebhook(false), 2000);
+                        } catch {
+                          // fallback silencioso
+                        }
+                      }}
+                      className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      {copiedWebhook ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedWebhook ? 'Copiado' : 'Copiar URL'}</span>
+                    </button>
+                  </div>
+                  <div className="font-mono text-[11px] text-indigo-950 bg-indigo-50/60 px-2.5 py-1.5 rounded-lg border border-indigo-200 break-all">
+                    {webhookUrl}
+                  </div>
+                  <p className="text-[10px] text-stone-500">
+                    Las credenciales Cloud se configuran únicamente como Secretos / variables de entorno del servidor ({stationCapabilities?.wiseconnCloudConfigured ? 'DropControl Wiseconn listo' : 'WISECONN_API_KEY pendiente en servidor'} · {stationCapabilities?.davisCloudConfigured ? 'Davis listo' : 'Davis pendiente'} · {stationCapabilities?.ecowittCloudConfigured ? 'Ecowitt listo' : 'Ecowitt pendiente'}).
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold text-stone-700">
+                      <input
+                        type="checkbox"
+                        disabled={!canEdit}
+                        checked={stationCfg.habilitada}
+                        onChange={(e) =>
+                          setStationCfg({ ...stationCfg, habilitada: e.target.checked })
+                        }
+                        className="w-4 h-4 accent-indigo-700"
+                      />
+                      <span>Priorizar estación local</span>
+                    </label>
+                    <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold text-stone-700">
+                      <input
+                        type="checkbox"
+                        disabled={!canEdit}
+                        checked={stationCfg.autoSincronizar}
+                        onChange={(e) =>
+                          setStationCfg({ ...stationCfg, autoSincronizar: e.target.checked })
+                        }
+                        className="w-4 h-4 accent-indigo-700"
+                      />
+                      <span>Auto-sincronizar en vivo</span>
+                    </label>
+                  </div>
+                  {canEdit && onUpdateExplotacion && (
+                    <button
+                      type="button"
+                      onClick={handleSaveStationConfig}
+                      className="px-3.5 py-1.5 bg-indigo-800 hover:bg-indigo-700 text-white rounded-lg font-bold cursor-pointer"
+                    >
+                      Guardar Config Estación
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Telemetría Agrometeorológica Extendida */}
+              <div className="lg:col-span-5 p-4 rounded-xl bg-stone-50 border border-stone-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-stone-900">Telemetría Microclimática de Estación</span>
+                  <span className="text-[10px] font-mono text-stone-500">
+                    {clima.estacionNombre || 'Open-Meteo'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 bg-white rounded-lg border border-stone-200">
+                    <div className="text-[10px] font-bold uppercase text-stone-400">Bulbo Húmedo (Tw)</div>
+                    <div className="text-sm font-black font-mono text-cyan-900 tabular-nums mt-0.5">
+                      {clima.temperaturaBulboHumedoC !== undefined
+                        ? `${clima.temperaturaBulboHumedoC.toFixed(1)}°C`
+                        : '—'}
+                    </div>
+                  </div>
+                  <div className="p-2.5 bg-white rounded-lg border border-stone-200">
+                    <div className="text-[10px] font-bold uppercase text-stone-400">Punto de Rocío (Td)</div>
+                    <div className="text-sm font-black font-mono text-blue-900 tabular-nums mt-0.5">
+                      {clima.puntoRocioC !== undefined ? `${clima.puntoRocioC.toFixed(1)}°C` : '—'}
+                    </div>
+                  </div>
+                  <div className="p-2.5 bg-white rounded-lg border border-stone-200">
+                    <div className="text-[10px] font-bold uppercase text-stone-400">Humedad Foliar</div>
+                    <div className="text-sm font-black font-mono text-emerald-900 tabular-nums mt-0.5">
+                      {clima.humedadFoliarPct !== undefined ? `${clima.humedadFoliarPct}%` : '—'}
+                    </div>
+                  </div>
+                  <div className="p-2.5 bg-white rounded-lg border border-stone-200">
+                    <div className="text-[10px] font-bold uppercase text-stone-400">Radiación / Lluvia Día</div>
+                    <div className="text-sm font-black font-mono text-amber-900 tabular-nums mt-0.5">
+                      {clima.radiacionSolarWm2 !== undefined ? `${clima.radiacionSolarWm2} W/m²` : '—'} ·{' '}
+                      {clima.precipitacionDiaMm !== undefined ? `${clima.precipitacionDiaMm} mm` : '0 mm'}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-[10px] text-stone-500 font-mono">
+                  Última lectura:{' '}
+                  {clima.estacionUltimaLecturaIso
+                    ? new Date(clima.estacionUltimaLecturaIso).toLocaleString('es-CL')
+                    : ultimaSincronizacion}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Panel de Alerta Diaria al Celular de Radiación UV (08:00 AM · Georreferenciada) */}
       {(() => {
@@ -1596,6 +2086,20 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
                       {ev.observaciones && (
                         <div className="text-[11px] text-stone-500 mt-0.5">{ev.observaciones}</div>
                       )}
+                      {ev.fotoEvidenciaDataUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setFotoZoomUrl(ev.fotoEvidenciaDataUrl!)}
+                          className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 border border-stone-200 text-[10px] font-bold text-stone-800 cursor-pointer"
+                        >
+                          <img
+                            src={ev.fotoEvidenciaDataUrl}
+                            alt="Evidencia evento"
+                            className="w-6 h-6 rounded object-cover border border-stone-300"
+                          />
+                          <span>Ver Foto</span>
+                        </button>
+                      )}
                     </td>
                     <td className="p-3 text-[11px] text-stone-600 whitespace-nowrap">
                       {ev.registradoPor}
@@ -1919,6 +2423,51 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
                 />
               </div>
 
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+                <label className="block font-bold text-stone-700">
+                  Evidencia Fotográfica desde Celular / Terreno (se incluye en PDF):
+                </label>
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-300 rounded-lg text-xs font-bold text-stone-800 inline-flex items-center gap-1.5 cursor-pointer">
+                    <Camera className="w-4 h-4 text-cyan-700" />
+                    <span>{eventoForm.fotoEvidenciaDataUrl ? 'Cambiar Foto' : 'Tomar / Subir Foto'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          const dataUrl = await compressImageToDataUrl(file, 600, 0.55);
+                          setEventoForm((prev) => ({ ...prev, fotoEvidenciaDataUrl: dataUrl }));
+                        } catch {
+                          // ignorar error de lectura
+                        }
+                      }}
+                    />
+                  </label>
+                  {eventoForm.fotoEvidenciaDataUrl && (
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={eventoForm.fotoEvidenciaDataUrl}
+                        alt="Previsualización evidencia"
+                        className="w-14 h-14 rounded-lg object-cover border border-stone-300 cursor-pointer"
+                        onClick={() => setFotoZoomUrl(eventoForm.fotoEvidenciaDataUrl!)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEventoForm((prev) => ({ ...prev, fotoEvidenciaDataUrl: '' }))}
+                        className="px-2 py-1 text-[11px] text-rose-700 hover:bg-rose-50 rounded font-bold cursor-pointer"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
                 <button
                   type="button"
@@ -2138,6 +2687,37 @@ export const ClimaView: React.FC<ClimaViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL ZOOM EVIDENCIA FOTOGRÁFICA */}
+      {fotoZoomUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-xs"
+          onClick={() => setFotoZoomUrl(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-stone-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-3 bg-stone-900 text-white flex items-center justify-between text-xs font-bold">
+              <span>Evidencia Fotográfica de Terreno</span>
+              <button
+                type="button"
+                onClick={() => setFotoZoomUrl(null)}
+                className="p-1 text-stone-300 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-3 bg-stone-100 flex items-center justify-center">
+              <img
+                src={fotoZoomUrl}
+                alt="Evidencia ampliada"
+                className="max-h-[75vh] w-auto rounded-lg object-contain"
+              />
+            </div>
           </div>
         </div>
       )}

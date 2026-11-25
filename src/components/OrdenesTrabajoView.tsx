@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { 
+  ClimaCondiciones,
   OrdenTrabajoFitosanitaria, 
   Parcela, 
   InsumoInventario, 
@@ -9,6 +10,11 @@ import {
   ExplotacionAgricola
 } from '../types/campo';
 import { exportOrdenesTrabajoPDF } from '../utils/pdfExport';
+import {
+  evaluarCarenciaVsCosecha,
+  evaluarVentanaPulverizacion,
+} from '../utils/pulverizacionHelper';
+import { NumericInput } from './NumericInput';
 import { 
   FileCheck2, 
   Plus, 
@@ -28,7 +34,9 @@ import {
   Droplet,
   ChevronRight,
   Info,
-  Download
+  Download,
+  Wind,
+  Calendar
 } from 'lucide-react';
 
 interface OrdenesTrabajoViewProps {
@@ -42,6 +50,7 @@ interface OrdenesTrabajoViewProps {
   onExecuteOrden: (ordenId: string, aplicadorNombre: string, firma: string) => void;
   onDeleteOrden: (id: string) => void;
   explotacion?: ExplotacionAgricola;
+  clima?: ClimaCondiciones;
   canEdit?: boolean;
 }
 
@@ -63,6 +72,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
   onExecuteOrden,
   onDeleteOrden,
   explotacion,
+  clima,
   canEdit = true
 }) => {
   const [isNewOrdenOpen, setIsNewOrdenOpen] = useState(false);
@@ -77,11 +87,11 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
   const [firmaDigital, setFirmaDigital] = useState('Aplicador Autorizado SAG');
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Filtrar solo los productos aptos para recetas (Fitosanitarios y Fertilizantes)
+  // Filtrar solo los productos aptos para recetas (Fitosanitarios, Enmiendas y Fertilizantes)
   const productosFitoDisponibles = inventario.filter((item) => {
     if (item.categoriaBodega === 'material_riego') return false;
     if (item.categoriaBodega === 'fitosanitario') return true;
-    const fitoTypes = ['fungicida', 'bactericida', 'insecticida_acaricida', 'fertilizante_foliar', 'fertilizante_suelo', 'herbicida', 'coadyuvante', 'rompedor_dormancia'];
+    const fitoTypes = ['fungicida', 'bactericida', 'insecticida_acaricida', 'fertilizante_foliar', 'fertilizante_suelo', 'herbicida', 'coadyuvante', 'rompedor_dormancia', 'enmienda'];
     return fitoTypes.includes(item.tipo) || item.categoria === 'fitosanitario' || item.categoria === 'fertilizante';
   });
 
@@ -92,6 +102,10 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
   const [superficieNoKiwiHa, setSuperficieNoKiwiHa] = useState<number>(1.0);
   const [objetivoFitosanitario, setObjetivoFitosanitario] = useState<string>('');
   const [volumenCaldoLHa, setVolumenCaldoLHa] = useState<number>(1000);
+  const [fechaProgramada, setFechaProgramada] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [fechaCosechaEstimadaRef, setFechaCosechaEstimadaRef] = useState<string>(
+    explotacion?.fechaCosechaEstimada || ''
+  );
   const [aplicadorOrdenNuevo, setAplicadorOrdenNuevo] = useState<string>(
     usuarios.find((u) => u.rol === 'aplicador_sag')?.nombre || ''
   );
@@ -170,6 +184,8 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
     setSuperficieNoKiwiHa(1.0);
     setObjetivoFitosanitario('');
     setVolumenCaldoLHa(1000);
+    setFechaProgramada(new Date().toISOString().split('T')[0]);
+    setFechaCosechaEstimadaRef(explotacion?.fechaCosechaEstimada || '');
     setAplicadorOrdenNuevo(usuarios.find((u) => u.rol === 'aplicador_sag')?.nombre || '');
     setObservacionesTecnicas('');
     setProductosMezcla([
@@ -231,11 +247,19 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
       ? selectedCuartelIds.map((id) => parcelas.find((p) => p.id === id)?.nombre || id)
       : [nombreSectorNoKiwi];
 
+    const evalVentana = evaluarVentanaPulverizacion(clima);
+    const fechaProg = fechaProgramada || new Date().toISOString().split('T')[0];
+    const evalCarencia = evaluarCarenciaVsCosecha({
+      fechaAplicacion: fechaProg,
+      carenciaDias: maxCarencia,
+      fechaCosechaEstimada: fechaCosechaEstimadaRef || undefined,
+    });
+
     const nuevaOrden: OrdenTrabajoFitosanitaria = {
       id: `ot-${Date.now()}`,
       codigoReceta: `REC-AGR-2026-${Math.floor(10 + Math.random() * 89)}`,
       fechaEmision: new Date().toISOString().split('T')[0],
-      fechaProgramada: new Date().toISOString().split('T')[0],
+      fechaProgramada: fechaProg,
       destinoAplicacion: destinoSeleccionado,
       parcelaIds: destinoSeleccionado === 'kiwi' ? selectedCuartelIds : [],
       parcelasNombres: nombresCuarteles,
@@ -267,7 +291,18 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
       estado: 'en_proceso',
       descontadoInventario: true, // Se descuentan todos los productos al emitir la orden
       fechaDescuentoBodega: new Date().toISOString().split('T')[0],
-      observacionesTecnicas
+      observacionesTecnicas,
+      ventanaPulverizacionEstado: clima ? evalVentana.estado : undefined,
+      condicionesPulverizacion: clima
+        ? {
+            temperaturaC: clima.temperaturaActual,
+            humedadRelativa: clima.humedadRelativa,
+            velocidadVientoKmH: clima.velocidadVientoKmH,
+            probabilidadLluvia: clima.probabilidadLluvia,
+          }
+        : undefined,
+      fechaCosechaEstimadaRef: fechaCosechaEstimadaRef || undefined,
+      alertaCarenciaSuperaCosecha: evalCarencia.nivel === 'critico',
     };
 
     onAddOrden(nuevaOrden);
@@ -408,6 +443,28 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-900 border border-blue-200 flex items-center gap-1">
                           <Package className="w-3 h-3 text-blue-700" />
                           Stock Descontado en Bodega
+                        </span>
+                      )}
+
+                      {orden.ventanaPulverizacionEstado && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 border ${
+                            orden.ventanaPulverizacionEstado === 'No Apta'
+                              ? 'bg-rose-50 text-rose-800 border-rose-300'
+                              : orden.ventanaPulverizacionEstado === 'Precaucion'
+                              ? 'bg-amber-50 text-amber-900 border-amber-300'
+                              : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                          }`}
+                        >
+                          <Wind className="w-3 h-3" />
+                          Pulverización: {orden.ventanaPulverizacionEstado}
+                        </span>
+                      )}
+
+                      {orden.alertaCarenciaSuperaCosecha && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-900 border border-rose-300 flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3 text-rose-700" />
+                          Carencia LMR Supera Cosecha ({orden.fechaCosechaEstimadaRef})
                         </span>
                       )}
                     </div>
@@ -631,6 +688,60 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                 </span>
               </div>
 
+              {/* Semáforo de Ventana de Pulverización & Deriva (Feature #5) */}
+              {(() => {
+                const evalVentana = evaluarVentanaPulverizacion(clima);
+                return (
+                  <div className={`p-3 rounded-xl border space-y-2 ${evalVentana.cardClass}`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`font-black text-xs flex items-center gap-1.5 ${evalVentana.textClass}`}>
+                        <Wind className="w-4 h-4" />
+                        {evalVentana.titulo}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${evalVentana.badgeClass}`}>
+                        {evalVentana.estado}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-700">{evalVentana.resumen} — {evalVentana.recomendacion}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                      {evalVentana.factores.map((f) => (
+                        <div key={f.parametro} className="bg-white/85 px-2 py-1 rounded-lg border border-stone-200 text-[10px]">
+                          <div className="text-stone-500 font-bold uppercase">{f.parametro}</div>
+                          <div className="font-mono font-black text-stone-900">{f.valorTexto}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Fechas de Programación y Cosecha Estimada (Validación Carencia LMR) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-amber-50/50 border border-amber-200 rounded-xl">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Fecha Programada Aplicación:</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={fechaProgramada}
+                    onChange={(e) => setFechaProgramada(e.target.value)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">
+                    Fecha Estimada de Cosecha (Validar Carencia LMR):
+                  </label>
+                  <input
+                    type="date"
+                    value={fechaCosechaEstimadaRef}
+                    onChange={(e) => setFechaCosechaEstimadaRef(e.target.value)}
+                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                  />
+                </div>
+              </div>
+
               {/* 1. SELECCIÓN DE DESTINO DEL PRODUCTO */}
               <div>
                 <label className="block font-bold text-stone-800 mb-1.5 uppercase tracking-wider text-[11px]">
@@ -751,12 +862,12 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                     </div>
                     <div>
                       <label className="block font-bold text-stone-700 mb-1">Superficie a Tratar (ha):</label>
-                      <input
-                        type="number"
+                      <NumericInput
                         step="0.05"
                         min="0.05"
                         value={superficieNoKiwiHa}
-                        onChange={(e) => setSuperficieNoKiwiHa(parseFloat(e.target.value) || 0.1)}
+                        emptyFallback={0}
+                        onChangeNumber={(val) => setSuperficieNoKiwiHa(val)}
                         className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-emerald-900"
                         required
                       />
@@ -825,12 +936,11 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                               <label className="block text-[10px] font-bold text-stone-500 uppercase mb-0.5">
                                 Dosis / Ha ({insumoSeleccionado?.unidad}/ha):
                               </label>
-                              <input
-                                type="number"
+                              <NumericInput
                                 step="0.05"
                                 min="0.01"
                                 value={item.dosisPorHa}
-                                onChange={(e) => handleUpdateProductoMezcla(index, 'dosisPorHa', parseFloat(e.target.value) || 0)}
+                                onChangeNumber={(val) => handleUpdateProductoMezcla(index, 'dosisPorHa', val)}
                                 className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-xs"
                                 required
                               />
@@ -886,6 +996,34 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                             Atención: La cantidad requerida ({totalReq} {insumoSeleccionado.unidad}) supera el stock actual disponible ({insumoSeleccionado.stockActual} {insumoSeleccionado.unidad}).
                           </div>
                         )}
+
+                        {insumoSeleccionado && (() => {
+                          const evalLmr = evaluarCarenciaVsCosecha({
+                            fechaAplicacion: fechaProgramada,
+                            carenciaDias: insumoSeleccionado.periodoCarenciaDias || 0,
+                            fechaCosechaEstimada: fechaCosechaEstimadaRef || undefined,
+                          });
+                          return (
+                            <div
+                              className={`text-[10px] px-2.5 py-1.5 rounded-lg border font-semibold flex items-center gap-1.5 ${
+                                evalLmr.nivel === 'critico'
+                                  ? 'bg-rose-50 border-rose-300 text-rose-900 font-bold'
+                                  : evalLmr.nivel === 'estrecho'
+                                  ? 'bg-amber-50 border-amber-300 text-amber-900'
+                                  : evalLmr.nivel === 'seguro'
+                                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                                  : 'bg-stone-50 border-stone-200 text-stone-600'
+                              }`}
+                            >
+                              {evalLmr.nivel === 'critico' || evalLmr.nivel === 'estrecho' ? (
+                                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                              ) : (
+                                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                              )}
+                              <span>{evalLmr.mensaje}</span>
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })}
@@ -926,11 +1064,12 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Volumen Mojamiento (L/ha):</label>
-                  <input
-                    type="number"
+                  <NumericInput
+                    integer
                     step="50"
+                    min="0"
                     value={volumenCaldoLHa}
-                    onChange={(e) => setVolumenCaldoLHa(parseInt(e.target.value) || 0)}
+                    onChangeNumber={(val) => setVolumenCaldoLHa(val)}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold font-mono tabular-nums"
                     required
                   />
@@ -986,6 +1125,24 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
             <p className="text-stone-500 text-[11px]">
               El aplicador autorizado debe validar la ejecución según la receta agronómica oficial y normas SAG.
             </p>
+
+            {(() => {
+              const evalPulv = evaluarVentanaPulverizacion(clima);
+              return (
+                <div className={`p-3 rounded-xl border text-[11px] space-y-1 ${evalPulv.cardClass}`}>
+                  <div className={`font-black flex items-center justify-between ${evalPulv.textClass}`}>
+                    <span className="flex items-center gap-1.5">
+                      <Wind className="w-3.5 h-3.5" />
+                      {evalPulv.titulo}
+                    </span>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] uppercase ${evalPulv.badgeClass}`}>
+                      {evalPulv.estado}
+                    </span>
+                  </div>
+                  <p className="text-stone-700 leading-snug">{evalPulv.resumen}</p>
+                </div>
+              );
+            })()}
 
             <div>
               <label className="block font-bold text-stone-700 mb-1">Aplicador Responsable con Carnet SAG:</label>
@@ -1071,12 +1228,11 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Superficie Total (ha):</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
+                    min="0"
                     value={editingOrden.superficieTotalHa}
-                    onChange={(e) => {
-                      const sup = parseFloat(e.target.value) || 0;
+                    onChangeNumber={(sup) => {
                       setEditingOrden({
                         ...editingOrden,
                         superficieTotalHa: sup,
@@ -1089,11 +1245,11 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Mojamiento (L/ha):</label>
-                  <input
-                    type="number"
+                  <NumericInput
+                    integer
+                    min="0"
                     value={editingOrden.volumenCaldoLHa}
-                    onChange={(e) => {
-                      const caldo = parseInt(e.target.value) || 0;
+                    onChangeNumber={(caldo) => {
                       setEditingOrden({
                         ...editingOrden,
                         volumenCaldoLHa: caldo,
@@ -1106,16 +1262,16 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Total Agua (L):</label>
-                  <input
-                    type="number"
+                  <NumericInput
+                    min="0"
                     value={
                       editingOrden.totalAguaAplicadaL ??
                       Number(((editingOrden.superficieTotalHa || 0) * (editingOrden.volumenCaldoLHa || 0)).toFixed(0))
                     }
-                    onChange={(e) =>
+                    onChangeNumber={(val) =>
                       setEditingOrden({
                         ...editingOrden,
-                        totalAguaAplicadaL: parseFloat(e.target.value) || 0
+                        totalAguaAplicadaL: val
                       })
                     }
                     className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-bold font-mono tabular-nums text-cyan-950"
@@ -1126,20 +1282,22 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Carencia (Días LMR):</label>
-                  <input
-                    type="number"
+                  <NumericInput
+                    integer
+                    min="0"
                     value={editingOrden.carenciaDias}
-                    onChange={(e) => setEditingOrden({ ...editingOrden, carenciaDias: parseInt(e.target.value) || 0 })}
+                    onChangeNumber={(val) => setEditingOrden({ ...editingOrden, carenciaDias: val })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-amber-900"
                     required
                   />
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Reingreso REI (Horas):</label>
-                  <input
-                    type="number"
+                  <NumericInput
+                    integer
+                    min="0"
                     value={editingOrden.tiempoReingresoHoras}
-                    onChange={(e) => setEditingOrden({ ...editingOrden, tiempoReingresoHoras: parseInt(e.target.value) || 0 })}
+                    onChangeNumber={(val) => setEditingOrden({ ...editingOrden, tiempoReingresoHoras: val })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg"
                     required
                   />

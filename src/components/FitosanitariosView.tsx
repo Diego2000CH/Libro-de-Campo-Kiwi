@@ -39,6 +39,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { isInsumoStockBajoActivo } from '../utils/alertasHuerto';
+import { NumericInput } from './NumericInput';
 
 interface FitosanitariosViewProps {
   inventario: InsumoInventario[];
@@ -62,6 +63,7 @@ const CATEGORIAS_FITOSANITARIOS: { id: string; label: string; icon: string }[] =
   { id: 'fitorregulador', label: 'Fitorregulador', icon: '⚡' },
   { id: 'fungicida_bactericida', label: 'Fungicida + Bactericida', icon: '🛡️' },
   { id: 'elicitor_psa', label: 'Elicitor PSA', icon: '🚨' },
+  { id: 'enmienda', label: 'Enmienda', icon: '🪨' },
   { id: 'fertilizante', label: 'Fertilizante', icon: '🌱' }
 ];
 
@@ -91,7 +93,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
   const [editingInsumo, setEditingInsumo] = useState<InsumoInventario | null>(null);
   const [insumoToDelete, setInsumoToDelete] = useState<InsumoInventario | null>(null);
   const [reponiendoId, setReponiendoId] = useState<string | null>(null);
-  const [cantidadReponer, setCantidadReponer] = useState<number>(10);
+  const [cantidadReponer, setCantidadReponer] = useState<number | ''>(10);
 
   const [usarDiaExacto, setUsarDiaExacto] = useState<boolean>(false);
 
@@ -109,14 +111,14 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
     destinosUso: DestinoProducto[];
     fabricante: string;
     numeroRegistroSAG: string;
-    stockActual: number;
-    stockMinimo: number;
+    stockActual: number | '';
+    stockMinimo: number | '';
     unidad: 'Kg' | 'Litros' | 'cc' | 'ml' | 'gramos';
     costoUnitarioCLP: number;
     lote: string;
     tieneCarencia: boolean;
-    periodoCarenciaDias: number;
-    tiempoReingresoHoras: number;
+    periodoCarenciaDias: number | '';
+    tiempoReingresoHoras: number | '';
     dosisRecomendadaHa: string;
     ubicacionBodega: string;
     observaciones: string;
@@ -151,7 +153,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
     if (item.categoriaBodega === 'material_riego') return false;
     if (item.categoriaBodega === 'fitosanitario') return true;
     // Fallback para items existentes
-    const fitoTypes = ['fungicida', 'bactericida', 'insecticida_acaricida', 'fertilizante_foliar', 'fertilizante_suelo', 'herbicida', 'coadyuvante', 'rompedor_dormancia'];
+    const fitoTypes = ['fungicida', 'bactericida', 'insecticida_acaricida', 'fertilizante_foliar', 'fertilizante_suelo', 'herbicida', 'coadyuvante', 'rompedor_dormancia', 'enmienda'];
     return fitoTypes.includes(item.tipo) || item.categoria === 'fitosanitario' || item.categoria === 'fertilizante';
   });
 
@@ -164,6 +166,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       item.tipo === 'bactericida' ? 'bactericida' :
       item.tipo === 'fertilizante_foliar' || item.tipo === 'fertilizante_suelo' ? 'fertilizante' :
       item.tipo === 'coadyuvante' ? 'coadyuvante' :
+      item.tipo === 'enmienda' ? 'enmienda' :
       item.tipo === 'rompedor_dormancia' ? 'fertilizante' : 'fungicida'
     );
 
@@ -186,7 +189,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
   // Apertura modal nuevo
   const handleOpenNew = () => {
     const defaultCat = (selectedCategoria !== 'todos' ? selectedCategoria : 'fungicida') as CategoriaFitosanitario;
-    const isExempt = defaultCat === 'fertilizante' || defaultCat === 'coadyuvante' || defaultCat === 'bioestimulante';
+    const isExempt = defaultCat === 'fertilizante' || defaultCat === 'enmienda' || defaultCat === 'coadyuvante' || defaultCat === 'bioestimulante';
     setUsarDiaExacto(false);
     setFormFito({
       nombreComercial: '',
@@ -196,14 +199,14 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       solubilidadFertilizante: 'soluble',
       composicionFertilizante: '',
       fechaElaboracion: getCurrentYearMonth(),
-      sinVencimiento: false,
+      sinVencimiento: defaultCat === 'enmienda',
       fechaVencimiento: '',
       destinosUso: ['kiwi'],
       fabricante: '',
-      numeroRegistroSAG: defaultCat === 'fertilizante' ? 'SAG F-' : 'SAG ',
+      numeroRegistroSAG: defaultCat === 'fertilizante' ? 'SAG F-' : defaultCat === 'enmienda' ? 'Sin registro' : 'SAG ',
       stockActual: 10,
       stockMinimo: 5,
-      unidad: defaultCat === 'fertilizante' ? 'Kg' : 'Kg',
+      unidad: 'Kg',
       costoUnitarioCLP: 0,
       lote: `LT-${new Date().getFullYear()}`,
       tieneCarencia: !isExempt,
@@ -352,8 +355,9 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
   const handleConfirmarReposicion = (insumoId: string) => {
     const item = inventario.find((i) => i.id === insumoId);
-    if (!item) return;
-    const nuevoStock = Number((item.stockActual + Number(cantidadReponer)).toFixed(2));
+    const monto = Number(cantidadReponer);
+    if (!item || !Number.isFinite(monto) || monto <= 0) return;
+    const nuevoStock = Number((item.stockActual + monto).toFixed(2));
     onUpdateInsumo({
       ...item,
       stockActual: nuevoStock,
@@ -375,7 +379,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
             Bodega de Fitosanitarios
           </h1>
           <p className="text-xs text-stone-500">
-            Control fitosanitario oficial de Herbicidas, Fungicidas, Acaricidas, Insecticidas, Coadyuvantes, Bactericidas, Bioestimulantes, Fitorreguladores, Elicitor PSA y Fertilizantes.
+            Control fitosanitario oficial de Herbicidas, Fungicidas, Acaricidas, Insecticidas, Coadyuvantes, Bactericidas, Bioestimulantes, Fitorreguladores, Elicitor PSA, Enmiendas y Fertilizantes.
           </p>
         </div>
 
@@ -770,11 +774,10 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
             <h3 className="font-bold text-sm text-stone-900">Ingreso de Guía / Factura a Bodega Químicos</h3>
             <div>
               <label className="block font-bold text-stone-700 mb-1">Cantidad a Ingresar en Stock:</label>
-              <input
-                type="number"
+              <NumericInput
                 step="0.5"
                 value={cantidadReponer}
-                onChange={(e) => setCantidadReponer(parseFloat(e.target.value) || 0)}
+                onValueChange={setCantidadReponer}
                 className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-base text-emerald-900"
                 min="0.1"
                 required
@@ -790,8 +793,9 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               </button>
               <button
                 type="button"
+                disabled={cantidadReponer === '' || Number(cantidadReponer) <= 0}
                 onClick={() => handleConfirmarReposicion(reponiendoId)}
-                className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer"
+                className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg cursor-pointer"
               >
                 Confirmar Ingreso
               </button>
@@ -817,7 +821,22 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                   <label className="block font-bold text-stone-700 mb-1">Categoría del Producto:</label>
                   <select
                     value={formFito.categoriaFito}
-                    onChange={(e) => setFormFito({ ...formFito, categoriaFito: e.target.value as any })}
+                    onChange={(e) => {
+                      const nextCat = e.target.value as CategoriaFitosanitario;
+                      const nextExempt =
+                        nextCat === 'fertilizante' ||
+                        nextCat === 'enmienda' ||
+                        nextCat === 'coadyuvante' ||
+                        nextCat === 'bioestimulante';
+                      setFormFito((prev) => ({
+                        ...prev,
+                        categoriaFito: nextCat,
+                        tieneCarencia: !nextExempt,
+                        periodoCarenciaDias: nextExempt ? 0 : (prev.periodoCarenciaDias || 7),
+                        tiempoReingresoHoras: nextExempt ? 4 : (prev.tiempoReingresoHoras || 12),
+                        sinVencimiento: nextCat === 'enmienda' ? true : prev.sinVencimiento,
+                      }));
+                    }}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-emerald-900"
                   >
                     <option value="herbicida">Herbicida</option>
@@ -830,6 +849,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                     <option value="fitorregulador">Fitorregulador</option>
                     <option value="fungicida_bactericida">Fungicida + Bactericida</option>
                     <option value="elicitor_psa">Elicitor PSA</option>
+                    <option value="enmienda">Enmienda</option>
                     <option value="fertilizante">Fertilizante</option>
                   </select>
                 </div>
@@ -891,15 +911,23 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                   </div>
                 </div>
               ) : (
-                /* Para Fitosanitarios: Ingrediente Activo */
+                /* Para Fitosanitarios / Enmiendas: Ingrediente Activo o Composición */
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Ingrediente Activo:</label>
+                  <label className="block font-bold text-stone-700 mb-1">
+                    {formFito.categoriaFito === 'enmienda'
+                      ? 'Ingrediente Activo / Composición Mineral:'
+                      : 'Ingrediente Activo:'}
+                  </label>
                   <input
                     type="text"
                     value={formFito.ingredienteActivo}
                     onChange={(e) => setFormFito({ ...formFito, ingredienteActivo: e.target.value })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
-                    placeholder="ej. Cyprodinil 37.5% + Fludioxonil 25.0%"
+                    placeholder={
+                      formFito.categoriaFito === 'enmienda'
+                        ? 'ej. Sulfato de Calcio (Yeso Agrícola) 92%, Carbonato de Calcio'
+                        : 'ej. Cyprodinil 37.5% + Fludioxonil 25.0%'
+                    }
                     required
                   />
                 </div>
@@ -1042,22 +1070,22 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Inicial:</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
+                    min="0"
                     value={formFito.stockActual}
-                    onChange={(e) => setFormFito({ ...formFito, stockActual: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(val) => setFormFito({ ...formFito, stockActual: val })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
                     required
                   />
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Mínimo:</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
+                    min="0"
                     value={formFito.stockMinimo}
-                    onChange={(e) => setFormFito({ ...formFito, stockMinimo: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(val) => setFormFito({ ...formFito, stockMinimo: val })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
                     required
                   />
@@ -1098,11 +1126,11 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                   <div className="grid grid-cols-2 gap-3 pt-1">
                     <div>
                       <label className="block font-bold text-stone-700 mb-1">Carencia SAG (Días LMR):</label>
-                      <input
-                        type="number"
+                      <NumericInput
+                        integer
                         min="1"
                         value={formFito.periodoCarenciaDias}
-                        onChange={(e) => setFormFito({ ...formFito, periodoCarenciaDias: parseInt(e.target.value) || 0 })}
+                        onValueChange={(val) => setFormFito({ ...formFito, periodoCarenciaDias: val })}
                         className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-amber-900"
                         placeholder="ej. 7, 14 días"
                         required={formFito.tieneCarencia}
@@ -1110,18 +1138,18 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                     </div>
                     <div>
                       <label className="block font-bold text-stone-700 mb-1">Reingreso (Horas REI):</label>
-                      <input
-                        type="number"
+                      <NumericInput
+                        integer
                         min="0"
                         value={formFito.tiempoReingresoHoras}
-                        onChange={(e) => setFormFito({ ...formFito, tiempoReingresoHoras: parseInt(e.target.value) || 0 })}
+                        onValueChange={(val) => setFormFito({ ...formFito, tiempoReingresoHoras: val })}
                         className="w-full p-2 bg-white border border-stone-300 rounded-lg"
                       />
                     </div>
                   </div>
                 ) : (
                   <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-200 text-[11px] text-emerald-800 font-medium">
-                    ✓ Producto <strong>Exento de Carencia SAG (0 días)</strong>. Válido para fertilizantes, bioestimulantes, coadyuvantes u orgánicos sin LMR.
+                    ✓ Producto <strong>Exento de Carencia SAG (0 días)</strong>. Válido para fertilizantes, enmiendas, bioestimulantes, coadyuvantes u orgánicos sin LMR.
                   </div>
                 )}
               </div>
@@ -1187,6 +1215,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                     <option value="fitorregulador">Fitorregulador</option>
                     <option value="fungicida_bactericida">Fungicida + Bactericida</option>
                     <option value="elicitor_psa">Elicitor PSA</option>
+                    <option value="enmienda">Enmienda</option>
                     <option value="fertilizante">Fertilizante</option>
                   </select>
                 </div>
@@ -1246,9 +1275,13 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                   </div>
                 </div>
               ) : (
-                /* Ingrediente Activo */
+                /* Ingrediente Activo / Composición */
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Ingrediente Activo:</label>
+                  <label className="block font-bold text-stone-700 mb-1">
+                    {formFito.categoriaFito === 'enmienda'
+                      ? 'Ingrediente Activo / Composición Mineral:'
+                      : 'Ingrediente Activo:'}
+                  </label>
                   <input
                     type="text"
                     value={formFito.ingredienteActivo}
@@ -1393,22 +1426,22 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Actual:</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
+                    min="0"
                     value={formFito.stockActual}
-                    onChange={(e) => setFormFito({ ...formFito, stockActual: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(val) => setFormFito({ ...formFito, stockActual: val })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-emerald-950"
                     required
                   />
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Mínimo:</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
+                    min="0"
                     value={formFito.stockMinimo}
-                    onChange={(e) => setFormFito({ ...formFito, stockMinimo: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(val) => setFormFito({ ...formFito, stockMinimo: val })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
                     required
                   />
@@ -1449,11 +1482,11 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                   <div className="grid grid-cols-2 gap-3 pt-1">
                     <div>
                       <label className="block font-bold text-stone-700 mb-1">Carencia (Días LMR):</label>
-                      <input
-                        type="number"
+                      <NumericInput
+                        integer
                         min="1"
                         value={formFito.periodoCarenciaDias}
-                        onChange={(e) => setFormFito({ ...formFito, periodoCarenciaDias: parseInt(e.target.value) || 0 })}
+                        onValueChange={(val) => setFormFito({ ...formFito, periodoCarenciaDias: val })}
                         className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-amber-900"
                         placeholder="ej. 7, 14 días"
                         required={formFito.tieneCarencia}
@@ -1461,11 +1494,11 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                     </div>
                     <div>
                       <label className="block font-bold text-stone-700 mb-1">Reingreso (Horas REI):</label>
-                      <input
-                        type="number"
+                      <NumericInput
+                        integer
                         min="0"
                         value={formFito.tiempoReingresoHoras}
-                        onChange={(e) => setFormFito({ ...formFito, tiempoReingresoHoras: parseInt(e.target.value) || 0 })}
+                        onValueChange={(val) => setFormFito({ ...formFito, tiempoReingresoHoras: val })}
                         className="w-full p-2 bg-white border border-stone-300 rounded-lg"
                       />
                     </div>

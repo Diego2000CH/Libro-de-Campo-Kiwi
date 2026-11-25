@@ -31,6 +31,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { isInsumoStockBajoActivo } from '../utils/alertasHuerto';
+import { NumericInput } from './NumericInput';
 
 interface MaterialesRiegoViewProps {
   inventario: InsumoInventario[];
@@ -79,7 +80,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
   const [editingItem, setEditingItem] = useState<InsumoInventario | null>(null);
   const [materialToDelete, setMaterialToDelete] = useState<InsumoInventario | null>(null);
   const [reponiendoId, setReponiendoId] = useState<string | null>(null);
-  const [cantidadReponer, setCantidadReponer] = useState<number>(10);
+  const [cantidadReponer, setCantidadReponer] = useState<number | ''>(10);
 
   // Estado para alternar Mes/Año vs Día exacto en formulario
   const [usarDiaExacto, setUsarDiaExacto] = useState<boolean>(false);
@@ -90,8 +91,8 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
     categoriaMaterial: CategoriaMaterial;
     fabricante: string;
     especificacionTecnica: string;
-    stockActual: number;
-    stockMinimo: number;
+    stockActual: number | '';
+    stockMinimo: number | '';
     unidad: InsumoInventario['unidad'];
     costoUnitarioCLP: number;
     fechaElaboracion: string;
@@ -296,8 +297,9 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
   const handleConfirmarReposicion = (id: string) => {
     const item = inventario.find((i) => i.id === id);
-    if (!item) return;
-    const nuevoStock = Number((item.stockActual + Number(cantidadReponer)).toFixed(2));
+    const monto = Number(cantidadReponer);
+    if (!item || !Number.isFinite(monto) || monto <= 0) return;
+    const nuevoStock = Number((item.stockActual + monto).toFixed(2));
     onUpdateInsumo({
       ...item,
       stockActual: nuevoStock,
@@ -657,11 +659,10 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
             <h3 className="font-bold text-sm text-stone-900">Ingreso de Material a Pañol</h3>
             <div>
               <label className="block font-bold text-stone-700 mb-1">Cantidad a Ingresar en Stock:</label>
-              <input
-                type="number"
+              <NumericInput
                 step="0.5"
                 value={cantidadReponer}
-                onChange={(e) => setCantidadReponer(parseFloat(e.target.value) || 0)}
+                onValueChange={setCantidadReponer}
                 className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-base text-blue-950"
                 min="0.1"
                 required
@@ -677,8 +678,9 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               </button>
               <button
                 type="button"
+                disabled={cantidadReponer === '' || Number(cantidadReponer) <= 0}
                 onClick={() => handleConfirmarReposicion(reponiendoId)}
-                className="px-4 py-1.5 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-lg cursor-pointer"
+                className="px-4 py-1.5 bg-blue-900 hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg cursor-pointer"
               >
                 Confirmar Ingreso
               </button>
@@ -856,22 +858,22 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Inicial:</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
+                    min="0"
                     value={formMaterial.stockActual}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, stockActual: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(val) => setFormMaterial({ ...formMaterial, stockActual: val })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
                     required
                   />
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Mínimo:</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
+                    min="0"
                     value={formMaterial.stockMinimo}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, stockMinimo: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(val) => setFormMaterial({ ...formMaterial, stockMinimo: val })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
                     required
                   />
@@ -1101,22 +1103,22 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Actual:</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
+                    min="0"
                     value={formMaterial.stockActual}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, stockActual: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(val) => setFormMaterial({ ...formMaterial, stockActual: val })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-blue-950"
                     required
                   />
                 </div>
                 <div>
                   <label className="block font-bold text-stone-700 mb-1">Stock Mínimo:</label>
-                  <input
-                    type="number"
+                  <NumericInput
                     step="0.1"
+                    min="0"
                     value={formMaterial.stockMinimo}
-                    onChange={(e) => setFormMaterial({ ...formMaterial, stockMinimo: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(val) => setFormMaterial({ ...formMaterial, stockMinimo: val })}
                     className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
                     required
                   />

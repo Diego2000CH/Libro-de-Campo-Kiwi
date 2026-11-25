@@ -18,6 +18,15 @@ import {
   startDailyUvPushScheduler,
   unregisterPushSubscriptionInMemory,
 } from './src/lib/pushServer.ts';
+import {
+  fetchFromConfiguredCloudStation,
+  getLatestStationReading,
+  getWeatherStationServerCapabilities,
+  isValidStationCode,
+  normalizeIncomingWeatherPayload,
+  type StationReadingRecord,
+} from './src/lib/weatherStationServer.ts';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +37,7 @@ async function startServer() {
   const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json({ limit: '4mb' }));
+  app.use(express.urlencoded({ extended: false, limit: '256kb' }));
 
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true });
@@ -228,6 +238,149 @@ async function startServer() {
       res.json({ ok: true, sentCount: result.sentCount, uvMaximoDia: result.uvMaximoDia });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to send test UV push';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  // ==================== ESTACIÓN METEOROLÓGICA LOCAL (DAVIS / ECOWITT / WEBHOOK IOT) ====================
+
+  const verifyIngestSecretIfConfigured = (req: express.Request): boolean => {
+    const expected = (process.env.WEATHER_STATION_INGEST_SECRET || '').trim();
+    if (!expected) return true;
+    const provided = String(
+      req.headers['x-station-secret'] || req.query.secret || req.body?.secret || ''
+    ).trim();
+    if (!provided) return false;
+    const bufA = Buffer.from(expected);
+    const bufB = Buffer.from(provided);
+    if (bufA.length !== bufB.length) return false;
+    return crypto.timingSafeEqual(bufA, bufB);
+  };
+
+  app.all('/api/weather-station/ingest/:stationCode', (req, res) => {
+    try {
+      const { stationCode } = req.params;
+      if (!isValidStationCode(stationCode)) {
+        return res.status(400).json({ error: 'Código de estación inválido (usa 3-48 caracteres alfanuméricos o guiones).' });
+      }
+      if (!verifyIngestSecretIfConfigured(req)) {
+        return res.status(401).json({ error: 'Secreto de ingesta inválido.' });
+      }
+      const payload: Record<string, unknown> = {
+        ...(req.query as Record<string, unknown>),
+        ...(req.body && typeof req.body === 'object' ? req.body : {}),
+      };
+      const record = normalizeIncomingWeatherPayload({
+        stationCode: stationCode.trim(),
+        payload,
+      });
+      res.json({ ok: true, reading: record });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error procesando trama de estación';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  app.get('/api/weather-station/latest/:stationCode', async (req, res) => {
+    try {
+      const { stationCode } = req.params;
+      if (!isValidStationCode(stationCode)) {
+        return res.status(400).json({ error: 'Código de estación inválido.' });
+      }
+      res.setHeader('Cache-Control', 'no-store');
+      const capabilities = getWeatherStationServerCapabilities();
+      const reading = getLatestStationReading(stationCode.trim());
+      res.json({ ok: true, reading, capabilities });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error consultando lectura de estación';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  app.post('/api/weather-station/sync', async (req, res) => {
+    try {
+      const { stationCode, provider, stationName } = req.body || {};
+      if (!isValidStationCode(stationCode)) {
+        return res.status(400).json({ error: 'Código de estación inválido.' });
+      }
+      const cleanCode = stationCode.trim();
+      const capabilities = getWeatherStationServerCapabilities();
+      const validProvider: StationReadingRecord['provider'] | undefined =
+        provider === 'dropcontrol_wiseconn' ||
+        provider === 'davis_weatherlink' ||
+        provider === 'ecowitt_cloud' ||
+        provider === 'ecowitt_push' ||
+        provider === 'iot_webhook'
+          ? provider
+          : undefined;
+
+      const cloudReading = await fetchFromConfiguredCloudStation(
+        cleanCode,
+        validProvider,
+        typeof stationName === 'string' ? stationName.trim() : undefined
+      );
+
+      if (cloudReading) {
+        return res.json({ ok: true, source: 'cloud_api', reading: cloudReading, capabilities });
+      }
+
+      const cached = getLatestStationReading(cleanCode);
+      if (cached) {
+        return res.json({ ok: true, source: 'webhook_cache', reading: cached, capabilities });
+      }
+
+      return res.json({
+        ok: true,
+        source: 'none',
+        reading: null,
+        capabilities,
+        message:
+          'Aún no se han recibido tramas HTTP Push ni se encontró WISECONN_API_KEY / credenciales Cloud configuradas en el servidor.',
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error sincronizando estación meteorológica';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  app.post('/api/weather-station/test-ingest/:stationCode', (req, res) => {
+    try {
+      const { stationCode } = req.params;
+      if (!isValidStationCode(stationCode)) {
+        return res.status(400).json({ error: 'Código de estación inválido.' });
+      }
+      const { provider, stationName, baseTempC, baseHumidity, baseWindKmH } = req.body || {};
+      const record = normalizeIncomingWeatherPayload({
+        stationCode: stationCode.trim(),
+        providerHint:
+          provider === 'dropcontrol_wiseconn' ||
+          provider === 'davis_weatherlink' ||
+          provider === 'ecowitt_cloud' ||
+          provider === 'ecowitt_push' ||
+          provider === 'iot_webhook'
+            ? provider
+            : 'dropcontrol_wiseconn',
+        stationNameHint: typeof stationName === 'string' ? stationName.trim() : undefined,
+        payload: {
+          tempC: Number.isFinite(Number(baseTempC)) ? Number(baseTempC) : 14.8,
+          humedad: Number.isFinite(Number(baseHumidity)) ? Number(baseHumidity) : 78,
+          vientoKmH: Number.isFinite(Number(baseWindKmH)) ? Number(baseWindKmH) : 7.4,
+          windDirDeg: 225,
+          lluviaMm: 0.4,
+          humedadFoliarPct: 45,
+          radiacionSolarWm2: 520,
+          uv: 5.2,
+          stationtype:
+            provider === 'dropcontrol_wiseconn'
+              ? 'DropControl Wiseconn (Prueba)'
+              : provider === 'davis_weatherlink'
+              ? 'Davis Vantage Pro2 (Prueba)'
+              : 'Ecowitt GW2000 (Prueba)',
+        },
+      });
+      res.json({ ok: true, reading: record });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error generando prueba de estación';
       res.status(500).json({ error: message });
     }
   });

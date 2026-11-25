@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   Bell,
   BellRing,
+  Camera,
   Check,
   CheckCircle2,
   CheckSquare,
@@ -45,6 +46,7 @@ import {
   X,
 } from 'lucide-react';
 import { exportControlHeladasPDF } from '../utils/pdfExport';
+import { compressImageToDataUrl } from '../utils/imageCompress';
 import { combinarCatalogoFenologico } from '../utils/fenologiaHelper';
 import {
   HELADAS_CONFIG,
@@ -209,6 +211,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingControl, setEditingControl] = useState<ControlHeladaRegistro | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [fotoZoomUrl, setFotoZoomUrl] = useState<string | null>(null);
 
   // Estado del centro de notificaciones proactivas y sensor
   const [browserPermission, setBrowserPermission] = useState<BrowserNotificationPermissionState>(
@@ -653,6 +656,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
   const [fTratamientoPost, setFTratamientoPost] = useState('');
   const [fOperador, setFOperador] = useState(activeUserName);
   const [fObservaciones, setFObservaciones] = useState('');
+  const [fFotoEvidenciaDataUrl, setFFotoEvidenciaDataUrl] = useState('');
 
   const recalcDuracion = (ini: string, fin: string) => {
     const hrs = calcularDuracionHoras(ini, fin);
@@ -714,6 +718,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
     setFTratamientoPost('');
     setFOperador(activeUserName);
     setFObservaciones('');
+    setFFotoEvidenciaDataUrl('');
     setIsModalOpen(true);
   };
 
@@ -748,6 +753,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
     setFTratamientoPost(reg.tratamientoPostHelada || '');
     setFOperador(reg.operadorResponsable || activeUserName);
     setFObservaciones(reg.observaciones || '');
+    setFFotoEvidenciaDataUrl(reg.fotoEvidenciaDataUrl || '');
     setIsModalOpen(true);
   };
 
@@ -820,6 +826,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
       tratamientoPostHelada: fTratamientoPost.trim() || undefined,
       operadorResponsable: fOperador.trim() || activeUserName,
       observaciones: fObservaciones.trim() || undefined,
+      fotoEvidenciaDataUrl: fFotoEvidenciaDataUrl || undefined,
     };
 
     if (editingControl) {
@@ -1280,8 +1287,12 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 <Thermometer className="w-4 h-4 text-cyan-800" />
                 Lectura de Sensor Térmico
               </span>
-              <span className="text-[11px] text-stone-500 font-mono">
-                {evalSensor.sensorActivo ? clima.direccionViento : 'Sin lectura activa'}
+              <span className="text-[11px] text-stone-500 font-mono truncate max-w-[200px]" title={clima.estacionNombre || clima.direccionViento}>
+                {evalSensor.sensorActivo
+                  ? clima.fuenteDatos && clima.fuenteDatos !== 'Open-Meteo Satelital'
+                    ? `${clima.fuenteDatos}${clima.estacionNombre ? ` · ${clima.estacionNombre}` : ''}`
+                    : clima.direccionViento
+                  : 'Sin lectura activa'}
               </span>
             </div>
 
@@ -2018,18 +2029,34 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                     </div>
                   </div>
 
-                  {(reg.tratamientoPostHelada || reg.observaciones) && (
-                    <div className="text-[11px] text-stone-600 bg-white px-3 py-2 rounded-xl border border-stone-200/80 flex flex-wrap gap-x-4 gap-y-1">
-                      {reg.tratamientoPostHelada && (
-                        <span>
-                          <strong className="text-stone-800">Tratamiento Post-Helada:</strong>{' '}
-                          {reg.tratamientoPostHelada}
-                        </span>
-                      )}
-                      {reg.observaciones && (
-                        <span>
-                          <strong className="text-stone-800">Obs:</strong> {reg.observaciones}
-                        </span>
+                  {(reg.tratamientoPostHelada || reg.observaciones || reg.fotoEvidenciaDataUrl) && (
+                    <div className="text-[11px] text-stone-600 bg-white px-3 py-2 rounded-xl border border-stone-200/80 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1">
+                        {reg.tratamientoPostHelada && (
+                          <span>
+                            <strong className="text-stone-800">Tratamiento Post-Helada:</strong>{' '}
+                            {reg.tratamientoPostHelada}
+                          </span>
+                        )}
+                        {reg.observaciones && (
+                          <span>
+                            <strong className="text-stone-800">Obs:</strong> {reg.observaciones}
+                          </span>
+                        )}
+                      </div>
+                      {reg.fotoEvidenciaDataUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setFotoZoomUrl(reg.fotoEvidenciaDataUrl!)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 border border-stone-200 text-[10px] font-bold text-stone-800 cursor-pointer shrink-0"
+                        >
+                          <img
+                            src={reg.fotoEvidenciaDataUrl}
+                            alt="Evidencia control heladas"
+                            className="w-6 h-6 rounded object-cover border border-stone-300"
+                          />
+                          <span>Ver Evidencia Fotográfica</span>
+                        </button>
                       )}
                     </div>
                   )}
@@ -2517,6 +2544,51 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                     className="w-full p-2.5 bg-white border border-stone-300 rounded-xl"
                   />
                 </div>
+
+                <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+                  <label className="block font-bold text-stone-700">
+                    Evidencia Fotográfica desde Celular (hielo, aspersores, daño en yemas — se incluye en PDF):
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-300 rounded-xl text-xs font-bold text-stone-800 inline-flex items-center gap-1.5 cursor-pointer">
+                      <Camera className="w-4 h-4 text-cyan-800" />
+                      <span>{fFotoEvidenciaDataUrl ? 'Cambiar Foto' : 'Tomar / Subir Foto'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            const dataUrl = await compressImageToDataUrl(file, 600, 0.55);
+                            setFFotoEvidenciaDataUrl(dataUrl);
+                          } catch {
+                            // ignorar
+                          }
+                        }}
+                      />
+                    </label>
+                    {fFotoEvidenciaDataUrl && (
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={fFotoEvidenciaDataUrl}
+                          alt="Evidencia helada"
+                          className="w-14 h-14 rounded-lg object-cover border border-stone-300 cursor-pointer"
+                          onClick={() => setFotoZoomUrl(fFotoEvidenciaDataUrl)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFFotoEvidenciaDataUrl('')}
+                          className="px-2 py-1 text-[11px] font-bold text-rose-700 hover:bg-rose-50 rounded cursor-pointer"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
@@ -2535,6 +2607,37 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Zoom Foto Evidencia */}
+      {fotoZoomUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-xs"
+          onClick={() => setFotoZoomUrl(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-stone-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-3 bg-stone-900 text-white flex items-center justify-between text-xs font-bold">
+              <span>Evidencia Fotográfica · Control de Heladas</span>
+              <button
+                type="button"
+                onClick={() => setFotoZoomUrl(null)}
+                className="p-1 text-stone-300 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-3 bg-stone-100 flex items-center justify-center">
+              <img
+                src={fotoZoomUrl}
+                alt="Evidencia control heladas"
+                className="max-h-[75vh] w-auto rounded-lg object-contain"
+              />
+            </div>
           </div>
         </div>
       )}

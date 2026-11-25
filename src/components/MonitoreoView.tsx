@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { Parcela, RegistroLabor, TipoLabor } from '../types/campo';
+import { ExplotacionAgricola, Parcela, RegistroLabor, TipoLabor } from '../types/campo';
 import {
   Bug,
   Plus,
   Eye,
   Camera,
   X,
+  Download,
 } from 'lucide-react';
 import { compressImageToDataUrl } from '../utils/imageCompress';
+import { exportMonitoreosPDF } from '../utils/pdfExport';
 
 interface MonitoreoViewProps {
   labores: RegistroLabor[];
   parcelas: Parcela[];
+  explotacion?: ExplotacionAgricola;
   onOpenNewLaborWithDefaults: (parcelaId?: string, tipoLabor?: TipoLabor) => void;
   onSaveQuickObservation: (labor: RegistroLabor) => void;
   canEdit?: boolean;
@@ -20,6 +23,7 @@ interface MonitoreoViewProps {
 export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
   labores,
   parcelas,
+  explotacion,
   onOpenNewLaborWithDefaults,
   onSaveQuickObservation,
   canEdit = true
@@ -125,16 +129,27 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
           </p>
         </div>
 
-        {canEdit && (
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-center">
           <button
             type="button"
-            onClick={() => setIsQuickObsOpen(true)}
-            className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-center"
+            onClick={() => exportMonitoreosPDF(monitoreos, explotacion)}
+            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
           >
-            <Plus className="w-4 h-4" />
-            <span>Nueva Inspección de Campo</span>
+            <Download className="w-4 h-4 text-rose-800" />
+            <span>Exportar PDF ({monitoreos.length})</span>
           </button>
-        )}
+
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => setIsQuickObsOpen(true)}
+              className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Nueva Inspección de Campo</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tarjetas de Plagas Clave de Hayward */}
@@ -202,10 +217,18 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setPreviewPhoto(m.fotoEvidenciaDataUrl!)}
-                    className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg text-[11px] font-bold flex items-center gap-1.5 self-start sm:self-center shrink-0 cursor-pointer"
+                    className="p-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-[11px] font-bold flex items-center gap-2 self-start sm:self-center shrink-0 cursor-pointer border border-stone-200"
+                    title="Ampliar fotografía de terreno"
                   >
-                    <Camera className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>Ver Foto</span>
+                    <img
+                      src={m.fotoEvidenciaDataUrl}
+                      alt="Miniatura"
+                      className="w-10 h-10 rounded-lg object-cover border border-stone-300"
+                    />
+                    <span className="pr-1.5 flex items-center gap-1">
+                      <Camera className="w-3.5 h-3.5 text-emerald-700" />
+                      Ver Foto
+                    </span>
                   </button>
                 )}
               </div>

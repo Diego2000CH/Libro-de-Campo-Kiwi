@@ -41,6 +41,15 @@ export interface ExplotacionAgricola {
   certificaciones: string[]; // ['GlobalGAP IFA v6', 'Cuaderno Oficial SAG Chile', 'BPA Buenas Prácticas']
   latitud: number;
   longitud: number;
+  fechaCosechaEstimada?: string; // Referencia para validación de carencias LMR
+  estacionMeteoConfig?: {
+    habilitada: boolean;
+    proveedor: 'dropcontrol_wiseconn' | 'ecowitt_push' | 'davis_weatherlink' | 'ecowitt_cloud' | 'iot_webhook';
+    estacionNombre: string;
+    codigoEstacion: string;
+    autoSincronizar: boolean;
+    autoAlimentarHeladas: boolean;
+  };
 }
 
 export interface Parcela {
@@ -166,6 +175,7 @@ export type CategoriaFitosanitario =
   | 'fitorregulador' 
   | 'fungicida_bactericida' 
   | 'elicitor_psa' 
+  | 'enmienda'
   | 'fertilizante';
 
 export type CategoriaMaterial = 
@@ -420,6 +430,15 @@ export interface OrdenTrabajoFitosanitaria {
   aplicadorFirma?: string;
   fechaEjecucion?: string;
   observacionesTecnicas?: string;
+  ventanaPulverizacionEstado?: string;
+  condicionesPulverizacion?: {
+    temperaturaC?: number;
+    humedadRelativa?: number;
+    velocidadVientoKmH?: number;
+    probabilidadLluvia?: number;
+  };
+  fechaCosechaEstimadaRef?: string;
+  alertaCarenciaSuperaCosecha?: boolean;
 }
 
 export type PeriodicidadRegistroTermico = 'diario' | 'semanal' | 'mensual';
@@ -585,6 +604,15 @@ export interface ClimaCondiciones {
   indiceUvMaximo?: number;
   nivelRiesgoUv?: NivelRiesgoUv;
   horaPicoUv?: string;
+  fuenteDatos?: 'Open-Meteo Satelital' | 'DropControl Wiseconn' | 'Estación Ecowitt' | 'Estación Davis' | 'Estación Local IoT' | 'Manual';
+  estacionId?: string;
+  estacionNombre?: string;
+  estacionUltimaLecturaIso?: string;
+  temperaturaBulboHumedoC?: number;
+  puntoRocioC?: number;
+  humedadFoliarPct?: number;
+  precipitacionDiaMm?: number;
+  radiacionSolarWm2?: number;
 }
 
 export interface MuestreoBrotacion {
@@ -878,6 +906,7 @@ export interface EventualidadHuerto {
   medidaMitigacion?: string;
   registradoPor: string;
   observaciones?: string;
+  fotoEvidenciaDataUrl?: string;
 }
 
 export interface EstadoFenologicoCatalogo {
@@ -995,6 +1024,7 @@ export interface ControlHeladaRegistro {
   tratamientoPostHelada?: string;
   operadorResponsable: string;
   observaciones?: string;
+  fotoEvidenciaDataUrl?: string;
 }
 
 export interface PushSubscriptionRecord {

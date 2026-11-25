@@ -462,6 +462,7 @@ const CAT_FITO_LABEL: Record<string, string> = {
   fitorregulador: 'Fitorregulador',
   fungicida_bactericida: 'Fungicida + Bactericida',
   elicitor_psa: 'Elicitor PSA',
+  enmienda: 'Enmienda',
   fertilizante: 'Fertilizante',
 };
 
@@ -1809,6 +1810,86 @@ function renderTareasTemporadasSection(doc: jsPDF, startY: number, data: Partial
   return y;
 }
 
+interface PhotoGalleryItem {
+  fecha: string;
+  titulo: string;
+  detalle: string;
+  dataUrl: string;
+}
+
+function renderPhotoEvidenceGallery(
+  doc: jsPDF,
+  startY: number,
+  bannerTitle: string,
+  items: PhotoGalleryItem[],
+  accentColor: [number, number, number] = [6, 78, 59]
+): number {
+  const validItems = items.filter((item) => item.dataUrl && item.dataUrl.startsWith('data:image/'));
+  if (validItems.length === 0) return startY;
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 12;
+  const gap = 6;
+  const colW = (pageWidth - marginX * 2 - gap) / 2;
+  const cardH = 66;
+  const imgW = 62;
+  const imgH = 54;
+
+  let y = drawSectionBanner(doc, startY, bannerTitle, `${validItems.length} fotos adjuntas`, accentColor);
+
+  for (let i = 0; i < validItems.length; i += 2) {
+    if (y + cardH > pageHeight - 16) {
+      doc.addPage();
+      y = 14;
+    }
+
+    for (let col = 0; col < 2; col++) {
+      const item = validItems[i + col];
+      if (!item) continue;
+
+      const x = marginX + col * (colW + gap);
+      doc.setDrawColor(214, 211, 209);
+      doc.setFillColor(250, 250, 249);
+      doc.roundedRect(x, y, colW, cardH, 2, 2, 'FD');
+
+      try {
+        const format = item.dataUrl.includes('image/png') ? 'PNG' : 'JPEG';
+        doc.addImage(item.dataUrl, format, x + 4, y + 6, imgW, imgH);
+      } catch {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(7.5);
+        doc.setTextColor(120, 113, 108);
+        doc.text('Imagen no compatible', x + 8, y + 32);
+      }
+
+      const textX = x + imgW + 8;
+      const textMaxW = colW - imgW - 12;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
+      doc.text(str(item.fecha), textX, y + 11);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(28, 25, 23);
+      const titleLines = doc.splitTextToSize(str(item.titulo), textMaxW).slice(0, 2);
+      doc.text(titleLines, textX, y + 17);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(87, 83, 78);
+      const detailLines = doc.splitTextToSize(str(item.detalle), textMaxW).slice(0, 5);
+      doc.text(detailLines, textX, y + 27);
+    }
+
+    y += cardH + 5;
+  }
+
+  return y;
+}
+
 // ==================== EXPORTADORES DEDICADOS POR MÓDULO ====================
 
 export function exportBodegaFitosanitariosPDF(
@@ -1870,7 +1951,22 @@ export function exportMaquinariaPDF(
     explotacion,
     `${maquinarias.length} equipos · ${mantenciones.length} mantenciones`
   );
-  renderMaquinariaSection(doc, startY, maquinarias, mantenciones);
+  let nextY = renderMaquinariaSection(doc, startY, maquinarias, mantenciones);
+  const fotosMant: PhotoGalleryItem[] = mantenciones
+    .filter((m) => Boolean(m.fotoEvidenciaDataUrl))
+    .map((m) => ({
+      fecha: m.fecha,
+      titulo: `${m.maquinariaNombre} · ${m.tipoMantencion}`,
+      detalle: `Horómetro: ${num(m.horometro, 0)} hrs · Taller: ${str(m.tallerOMecanico)}. ${str(m.repuestosUtilizados, '')}`,
+      dataUrl: m.fotoEvidenciaDataUrl!,
+    }));
+  renderPhotoEvidenceGallery(
+    doc,
+    nextY,
+    'ANEXO FOTOGRÁFICO · MANTENCIONES DE MAQUINARIA',
+    fotosMant,
+    [180, 83, 9]
+  );
   applyFooters(doc, explotacion?.nombreFundo || 'Control de Maquinarias');
   doc.save(`maquinarias_mantenciones_${sanitizeFileName(explotacion?.nombreFundo || 'huerto')}.pdf`);
 }
@@ -1953,12 +2049,27 @@ export function exportEventualidadesPDF(
       `${str(ev.registradoPor)}${ev.observaciones ? `\n${ev.observaciones}` : ''}`,
     ];
   });
-  renderTable(
+  let nextY = renderTable(
     doc,
     startY,
     headE,
     bodyE,
     'No hay eventualidades climáticas registradas.',
+    [8, 145, 178]
+  );
+  const fotosEv: PhotoGalleryItem[] = eventualidades
+    .filter((ev) => Boolean(ev.fotoEvidenciaDataUrl))
+    .map((ev) => ({
+      fecha: ev.fecha,
+      titulo: `${ev.tipo} (${ev.severidad})`,
+      detalle: `${ev.parcelasNombres?.length ? ev.parcelasNombres.join(', ') : 'Todo el predio'}${ev.danioEstimadoPct ? ` · Daño est.: ${ev.danioEstimadoPct}%` : ''}. ${str(ev.medidaMitigacion, '')}`,
+      dataUrl: ev.fotoEvidenciaDataUrl!,
+    }));
+  renderPhotoEvidenceGallery(
+    doc,
+    nextY,
+    'ANEXO FOTOGRÁFICO · EVENTUALIDADES CLIMÁTICAS Y HELADAS',
+    fotosEv,
     [8, 145, 178]
   );
   applyFooters(doc, explotacion?.nombreFundo || 'Eventualidades Climáticas');
@@ -1982,7 +2093,22 @@ export function exportControlHeladasPDF(
     explotacion,
     `${controles.length} turnos`
   );
-  renderControlHeladasSection(doc, startY, controles, config);
+  const nextY = renderControlHeladasSection(doc, startY, controles, config);
+  const fotosHelada: PhotoGalleryItem[] = controles
+    .filter((c) => Boolean(c.fotoEvidenciaDataUrl))
+    .map((c) => ({
+      fecha: c.fecha,
+      titulo: `${c.tipoHelada} · ${c.metodoControl}`,
+      detalle: `T° Mín Aire: ${num(c.tempMinimaAireC, 1)}°C · Cuarteles: ${c.parcelasNombres?.join(', ') || 'Todo el predio'}. ${str(c.observaciones, '')}`,
+      dataUrl: c.fotoEvidenciaDataUrl!,
+    }));
+  renderPhotoEvidenceGallery(
+    doc,
+    nextY,
+    'ANEXO FOTOGRÁFICO · CONTROL DE HELADAS EN TERRENO',
+    fotosHelada,
+    [8, 145, 178]
+  );
   applyFooters(doc, explotacion?.nombreFundo || 'Control de Heladas');
   doc.save(`control_heladas_${sanitizeFileName(explotacion?.nombreFundo || 'huerto')}.pdf`);
 }
@@ -1995,13 +2121,59 @@ export function exportOrdenesTrabajoPDF(
   const startY = drawDocumentHeader(
     doc,
     'ÓRDENES DE TRABAJO Y RECETAS FITOSANITARIAS',
-    'Prescripciones Agronómicas, Mezclas Multiproducto, Carencias SAG, EPP y Ejecución',
+    'Prescripciones Agronómicas, Mezclas Multiproducto, Carencias SAG, Ventana de Pulverización y Ejecución',
     explotacion,
     `${ordenes.length} órdenes`
   );
   renderOrdenesSection(doc, startY, ordenes);
   applyFooters(doc, explotacion?.nombreFundo || 'Órdenes Fitosanitarias');
   doc.save(`ordenes_fitosanitarias_${sanitizeFileName(explotacion?.nombreFundo || 'huerto')}.pdf`);
+}
+
+export function exportMonitoreosPDF(
+  monitoreos: RegistroLabor[],
+  explotacion?: ExplotacionAgricola
+): void {
+  const doc = createLandscapeDoc();
+  const startY = drawDocumentHeader(
+    doc,
+    'MONITOREO SANITARIO DE PLAGAS, PSA Y BOTRYTIS',
+    'Inspecciones en Cuarteles, Niveles de Severidad y Evidencia Fotográfica Georreferenciada (SAG / GlobalGAP)',
+    explotacion,
+    `${monitoreos.length} inspecciones`
+  );
+  const nextY = renderTable(
+    doc,
+    startY,
+    ['Fecha / Hora', 'Cuartel', 'Plaga / Enfermedad Objetivo', 'Detalle de Inspección', 'Inspector / Resp.', 'Foto'],
+    monitoreos.map((m) => [
+      `${m.fecha}${m.hora ? ` ${m.hora}` : ''}`,
+      m.parcelaNombre,
+      str(m.objetivoPlagaEnfermedad, 'Monitoreo General'),
+      m.descripcion,
+      m.registradoPor,
+      m.fotoEvidenciaDataUrl ? 'Adjunta en Anexo' : 'Sin foto',
+    ]),
+    'No hay inspecciones sanitarias registradas.',
+    [159, 18, 57]
+  );
+  const fotosMon: PhotoGalleryItem[] = monitoreos
+    .filter((m) => Boolean(m.fotoEvidenciaDataUrl))
+    .map((m) => ({
+      fecha: `${m.fecha}${m.hora ? ` ${m.hora}` : ''}`,
+      titulo: `${m.parcelaNombre} · ${str(m.objetivoPlagaEnfermedad, 'Monitoreo')}`,
+      detalle: m.descripcion,
+      dataUrl: m.fotoEvidenciaDataUrl!,
+    }));
+  renderPhotoEvidenceGallery(
+    doc,
+    nextY,
+    'ANEXO FOTOGRÁFICO · INSPECCIONES SANITARIAS DE TERRENO',
+    fotosMon,
+    [159, 18, 57]
+  );
+  applyFooters(doc, explotacion?.nombreFundo || 'Monitoreo Sanitario');
+  doc.save(`monitoreo_plagas_${sanitizeFileName(explotacion?.nombreFundo || 'huerto')}.pdf`);
 }
 
 export function exportLaboresPDF(
@@ -2020,7 +2192,22 @@ export function exportLaboresPDF(
     explotacion,
     `${labores.length} labores`
   );
-  renderLaboresSection(doc, startY, labores);
+  const nextY = renderLaboresSection(doc, startY, labores);
+  const fotosLab: PhotoGalleryItem[] = labores
+    .filter((l) => Boolean(l.fotoEvidenciaDataUrl))
+    .map((l) => ({
+      fecha: l.fecha,
+      titulo: `${l.tipoLabor.toUpperCase()} · ${l.parcelaNombre}`,
+      detalle: l.descripcion,
+      dataUrl: l.fotoEvidenciaDataUrl!,
+    }));
+  renderPhotoEvidenceGallery(
+    doc,
+    nextY,
+    'ANEXO FOTOGRÁFICO · LABORES Y MONITOREOS DE CAMPO',
+    fotosLab,
+    [6, 78, 59]
+  );
   applyFooters(doc, explotacion?.nombreFundo || 'Cuaderno de Labores');
   doc.save(`cuaderno_labores_${sanitizeFileName(explotacion?.nombreFundo || 'huerto')}.pdf`);
 }
@@ -2131,6 +2318,89 @@ export function exportLibroCompletoPDF(
         y = renderTareasTemporadasSection(doc, y, data);
         break;
     }
+  }
+
+  // Anexo fotográfico consolidado si existen imágenes adjuntas en las secciones incluidas
+  const fotosConsolidadas: PhotoGalleryItem[] = [];
+  if (sectionsToInclude.includes('labores')) {
+    (data.labores || []).forEach((l) => {
+      if (l.fotoEvidenciaDataUrl) {
+        fotosConsolidadas.push({
+          fecha: l.fecha,
+          titulo: `[Labor ${l.tipoLabor}] ${l.parcelaNombre}`,
+          detalle: l.descripcion,
+          dataUrl: l.fotoEvidenciaDataUrl,
+        });
+      }
+    });
+  }
+  if (sectionsToInclude.includes('clima_frio')) {
+    (data.eventualidades || []).forEach((ev) => {
+      if (ev.fotoEvidenciaDataUrl) {
+        fotosConsolidadas.push({
+          fecha: ev.fecha,
+          titulo: `[Eventualidad] ${ev.tipo} (${ev.severidad})`,
+          detalle: `${ev.parcelasNombres?.join(', ') || 'Todo el predio'}. ${str(ev.medidaMitigacion, '')}`,
+          dataUrl: ev.fotoEvidenciaDataUrl,
+        });
+      }
+    });
+  }
+  if (sectionsToInclude.includes('control_heladas')) {
+    (data.controlesHelada || []).forEach((c) => {
+      if (c.fotoEvidenciaDataUrl) {
+        fotosConsolidadas.push({
+          fecha: c.fecha,
+          titulo: `[Helada] ${c.tipoHelada}`,
+          detalle: `T° Mín: ${num(c.tempMinimaAireC, 1)}°C · ${c.metodoControl}`,
+          dataUrl: c.fotoEvidenciaDataUrl,
+        });
+      }
+    });
+  }
+  if (sectionsToInclude.includes('maquinaria')) {
+    (data.registrosMantencion || []).forEach((m) => {
+      if (m.fotoEvidenciaDataUrl) {
+        fotosConsolidadas.push({
+          fecha: m.fecha,
+          titulo: `[Mantención] ${m.maquinariaNombre}`,
+          detalle: `${m.tipoMantencion} · ${str(m.repuestosUtilizados, '')}`,
+          dataUrl: m.fotoEvidenciaDataUrl,
+        });
+      }
+    });
+  }
+  if (sectionsToInclude.includes('laboratorio_bpa')) {
+    (data.calibracionesEquipo || []).forEach((cal) => {
+      if (cal.fotoEvidenciaDataUrl) {
+        fotosConsolidadas.push({
+          fecha: cal.fechaCalibracion,
+          titulo: `[Calibración] ${cal.equipoNombre}`,
+          detalle: `${cal.resultado} · Desviación ${cal.desviacionPct}%`,
+          dataUrl: cal.fotoEvidenciaDataUrl,
+        });
+      }
+    });
+    (data.planillaBpa?.items || []).forEach((bpa) => {
+      if (bpa.evidenciaFotoDataUrl) {
+        fotosConsolidadas.push({
+          fecha: bpa.fechaVerificacion || data.planillaBpa?.fechaUltimaRevision || '',
+          titulo: `[BPA ${bpa.codigo}] ${bpa.seccion}`,
+          detalle: bpa.requisito,
+          dataUrl: bpa.evidenciaFotoDataUrl,
+        });
+      }
+    });
+  }
+
+  if (fotosConsolidadas.length > 0) {
+    renderPhotoEvidenceGallery(
+      doc,
+      y,
+      'ANEXO CONSOLIDADO DE EVIDENCIA FOTOGRÁFICA EN TERRENO',
+      fotosConsolidadas,
+      [6, 78, 59]
+    );
   }
 
   applyFooters(doc, data.explotacion?.nombreFundo || 'Reporte Integral del Huerto');

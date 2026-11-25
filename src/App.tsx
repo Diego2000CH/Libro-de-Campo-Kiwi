@@ -800,6 +800,56 @@ export default function App() {
     return results.some(Boolean) ? 'synced' : 'error';
   };
 
+  // Auto-sincronización periódica con estación meteorológica local (si está habilitada)
+  useEffect(() => {
+    const cfg = explotacion.estacionMeteoConfig;
+    if (!cfg?.habilitada || !cfg?.autoSincronizar || !cfg.codigoEstacion) return;
+    const cleanCode = cfg.codigoEstacion.trim();
+    if (!/^[a-zA-Z0-9_-]{3,48}$/.test(cleanCode)) return;
+
+    let cancelled = false;
+    const pollStation = async () => {
+      try {
+        const res = await fetch('/api/weather-station/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            stationCode: cleanCode,
+            provider: cfg.proveedor,
+            stationName: cfg.estacionNombre,
+          }),
+        });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (data?.reading?.clima && !cancelled) {
+          setClima((prev) => ({
+            ...prev,
+            ...data.reading.clima,
+            indiceUvActual: data.reading.clima.indiceUvActual ?? prev.indiceUvActual,
+            indiceUvMaximo: prev.indiceUvMaximo,
+            nivelRiesgoUv: prev.nivelRiesgoUv,
+            horaPicoUv: prev.horaPicoUv,
+          }));
+        }
+      } catch {
+        // Silencioso en segundo plano
+      }
+    };
+
+    void pollStation();
+    const intervalId = window.setInterval(pollStation, 180000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [
+    explotacion.estacionMeteoConfig?.habilitada,
+    explotacion.estacionMeteoConfig?.autoSincronizar,
+    explotacion.estacionMeteoConfig?.codigoEstacion,
+    explotacion.estacionMeteoConfig?.proveedor,
+    explotacion.estacionMeteoConfig?.estacionNombre,
+  ]);
+
   // 2. GUARDADO AUTOMÁTICO EN LA NUBE (Debounce de 800ms)
   const isFirstSyncRef = useRef(true);
   useEffect(() => {
@@ -954,7 +1004,7 @@ export default function App() {
     }
 
     if (!matched.password) {
-      setSwitchError('Esta cuenta inicia sesión únicamente con Google. Cierra sesión e ingresa con Google.');
+      setSwitchError('Esta cuenta no tiene clave asignada. Solicita una clave al Administrador.');
       return;
     }
 
@@ -980,21 +1030,6 @@ export default function App() {
     setPermissionErrorToast(null);
     try {
       sessionStorage.setItem('fundo_session_user', JSON.stringify(user));
-    } catch (e) {}
-  };
-
-  const handleGoogleLoginSuccess = async (user: FirebaseUser) => {
-    setFirebaseUser(user);
-    const mapped = mapFirebaseUserToPredio(user);
-    setCurrentUser(mapped);
-    setActiveUserId(mapped.id);
-    setPermissionErrorToast(null);
-    setUsuarios((prev) => {
-      if (prev.some((u) => u.id === mapped.id)) return prev;
-      return [mapped, ...prev];
-    });
-    try {
-      sessionStorage.setItem('fundo_session_user', JSON.stringify(mapped));
     } catch (e) {}
   };
 
@@ -1775,7 +1810,6 @@ export default function App() {
         <LoginView
           usuarios={usuarios}
           onLoginSuccess={handleLoginSuccess}
-          onGoogleLoginSuccess={handleGoogleLoginSuccess}
           fundoNombre={explotacion.nombreFundo}
         />
         <OfflineIndicator hasPendingSync={pendingOfflineSync} onRetrySync={handleForceSync} />
@@ -2004,6 +2038,7 @@ export default function App() {
             usuarios={usuarios}
             activeUser={activeUser}
             explotacion={explotacion}
+            clima={clima}
             canEdit={canEdit}
             onAddOrden={guardEdit(handleAddOrden)}
             onUpdateOrden={handleUpdateOrden}
@@ -2189,6 +2224,7 @@ export default function App() {
             eventualidades={eventualidades}
             parcelas={parcelas}
             explotacion={explotacion}
+            onUpdateExplotacion={guardEdit(setExplotacion)}
             activeUserName={activeUser?.nombre}
             onAddEventualidad={guardEdit((ev) => setEventualidades((prev) => [ev, ...prev]))}
             onUpdateEventualidad={guardEdit((ev) =>
@@ -2234,6 +2270,7 @@ export default function App() {
           <MonitoreoView
             labores={labores}
             parcelas={parcelas}
+            explotacion={explotacion}
             canEdit={canEdit}
             onOpenNewLaborWithDefaults={handleOpenNewLaborWithDefaults}
             onSaveQuickObservation={handleSaveLabor}
@@ -2489,7 +2526,7 @@ export default function App() {
                     type="text"
                     value={switchIdentifier}
                     onChange={(e) => setSwitchIdentifier(e.target.value)}
-                    placeholder="Ej. 12.845.219-4 o usuario@fundolacabana.cl"
+                    placeholder="Ej. 12.845.219-4 o correo@gmail.com"
                     className="w-full p-2.5 bg-white border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600"
                     required
                   />
