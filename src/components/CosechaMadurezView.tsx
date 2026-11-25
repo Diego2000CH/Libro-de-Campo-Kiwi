@@ -323,27 +323,27 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider mb-1">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-1">
             <Award className="w-3 h-3" />
             Resolución SAG · Trazabilidad QR &amp; Packing
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Cosecha, Madurez (°Brix), Trazabilidad QR &amp; Packing
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Control de sólidos solubles (mín. 6.2° Brix), pasaporte QR por guía con verificación automática de LMR y recepción de fruta en packing.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="p-1 bg-stone-100 rounded-xl border border-stone-200 text-xs font-semibold flex flex-wrap">
+          <div className="p-1 bg-stone-100 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-800 text-xs font-semibold flex flex-wrap">
             <button
               type="button"
               onClick={() => setActiveTabSub('madurez')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                activeTabSub === 'madurez' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+                activeTabSub === 'madurez' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
               }`}
             >
               °Brix & Madurez SAG
@@ -352,7 +352,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
               type="button"
               onClick={() => setActiveTabSub('cosecha_bins')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                activeTabSub === 'cosecha_bins' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+                activeTabSub === 'cosecha_bins' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
               }`}
             >
               Bins, Guías & QR ({cosechas.length})
@@ -361,7 +361,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
               type="button"
               onClick={() => setActiveTabSub('liquidaciones')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                activeTabSub === 'liquidaciones' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+                activeTabSub === 'liquidaciones' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
               }`}
             >
               Recepción Packing ({liquidaciones.length})
@@ -410,8 +410,8 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                 6.2°
               </div>
               <div>
-                <div className="font-bold text-sm text-emerald-950">Umbral Mínimo Obligatorio de Cosecha: 6.2° Brix</div>
-                <div className="text-[11px] text-emerald-800">
+                <div className="font-bold text-sm text-emerald-950 dark:text-emerald-100">Umbral Mínimo Obligatorio de Cosecha: 6.2° Brix</div>
+                <div className="text-[11px] text-emerald-800 dark:text-emerald-300">
                   Ningún lote de Kiwi Hayward puede cosecharse con menos de 6.2° Brix según normativa SAG y Comité del Kiwi. Firmeza objetivo: 14.0 a 16.5 lb.
                 </div>
               </div>
@@ -422,12 +422,12 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
           </div>
 
           {parcelas.length === 0 ? (
-            <div className="p-8 bg-white border border-stone-200 rounded-2xl text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center mx-auto text-xl">
+            <div className="p-8 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 flex items-center justify-center mx-auto text-xl">
                 🥝
               </div>
-              <h3 className="font-bold text-stone-800 text-sm">Tu huerto aún no tiene cuarteles creados</h3>
-              <p className="text-xs text-stone-500 max-w-md mx-auto">
+              <h3 className="font-bold text-stone-800 dark:text-stone-200 text-sm">Tu huerto aún no tiene cuarteles creados</h3>
+              <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto">
                 Para comenzar con tu huerto real, ve a la pestaña <strong>Cuarteles & Mapa</strong> y agrega tus cuarteles reales.
               </p>
             </div>
@@ -446,10 +446,10 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                     key={p.id}
                     className={`p-4 rounded-2xl border transition-all ${
                       !ultimoMuestreo
-                        ? 'bg-white border-stone-200 text-stone-800 shadow-2xs'
+                        ? 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-200 shadow-2xs'
                         : apto
-                        ? 'bg-emerald-50/70 border-emerald-300 text-emerald-950 shadow-2xs'
-                        : 'bg-amber-50/70 border-amber-300 text-amber-950 shadow-2xs'
+                        ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-950 dark:text-emerald-100 shadow-2xs'
+                        : 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 text-amber-950 dark:text-amber-100 shadow-2xs'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -457,7 +457,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
                           !ultimoMuestreo
-                            ? 'bg-stone-200 text-stone-700'
+                            ? 'bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-300'
                             : apto
                             ? 'bg-emerald-800 text-white'
                             : 'bg-amber-700 text-white'
@@ -493,23 +493,23 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
           )}
 
           {/* Historial de Muestreos */}
-          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
-            <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
-              <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                <Gauge className="w-4 h-4 text-emerald-700" />
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
+            <div className="px-5 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+              <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Gauge className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 Historial de Mediciones de Madurez y Refractómetro
               </h2>
               <span className="text-xs text-stone-400">{muestreos.length} muestreos oficiales</span>
             </div>
 
             {muestreos.length === 0 ? (
-              <div className="p-8 text-center text-xs text-stone-500">
+              <div className="p-8 text-center text-xs text-stone-500 dark:text-stone-400">
                 No hay muestreos de madurez registrados aún.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px]">
+                  <thead className="bg-stone-50 dark:bg-stone-800/70 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 font-bold uppercase text-[10px]">
                     <tr>
                       <th className="px-4 py-3">Fecha</th>
                       <th className="px-4 py-3">Cuartel</th>
@@ -522,13 +522,13 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                       {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-stone-700">
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-stone-700 dark:text-stone-300">
                     {muestreos.map((m) => (
-                      <tr key={m.id} className="hover:bg-stone-50 transition-colors">
+                      <tr key={m.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/70 transition-colors">
                         <td className="px-4 py-3 font-mono font-medium">{m.fecha}</td>
-                        <td className="px-4 py-3 font-semibold text-stone-900">{m.parcelaNombre}</td>
-                        <td className="px-4 py-3 font-bold text-sm text-emerald-900">{m.gradosBrixPromedio}°</td>
-                        <td className="px-4 py-3 font-mono text-[11px] text-stone-500">
+                        <td className="px-4 py-3 font-semibold text-stone-900 dark:text-stone-100">{m.parcelaNombre}</td>
+                        <td className="px-4 py-3 font-bold text-sm text-emerald-900 dark:text-emerald-200">{m.gradosBrixPromedio}°</td>
+                        <td className="px-4 py-3 font-mono text-[11px] text-stone-500 dark:text-stone-400">
                           {m.solidoSolubleMin}° - {m.solidoSolubleMax}°
                         </td>
                         <td className="px-4 py-3 font-mono">{m.firmezaPulpaLb} lb</td>
@@ -536,19 +536,19 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                         <td className="px-4 py-3">
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              m.aptoParaCosechaSAG ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                              m.aptoParaCosechaSAG ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
                             }`}
                           >
                             {m.aptoParaCosechaSAG ? 'Apto SAG (≥6.2°)' : 'Bajo 6.2° Brix'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-stone-600">{m.muestreadoPor}</td>
+                        <td className="px-4 py-3 text-stone-600 dark:text-stone-400">{m.muestreadoPor}</td>
                         {canEdit && (
                           <td className="px-4 py-3 text-right">
                             <button
                               type="button"
                               onClick={() => onDeleteMuestreo(m.id)}
-                              className="p-1 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50 cursor-pointer"
+                              className="p-1 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 rounded hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer"
                               title="Eliminar registro"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -569,48 +569,48 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
       {activeTabSub === 'cosecha_bins' && (
         <div className="space-y-5">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+            <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Total Bins Cosechados</div>
-              <div className="text-2xl font-black text-stone-900 mt-1">{totalBinsCosechados} bins</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">~390 kg de fruta limpia / bin</div>
+              <div className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-1">{totalBinsCosechados} bins</div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">~390 kg de fruta limpia / bin</div>
             </div>
 
-            <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+            <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Kilos Netos Estimados</div>
-              <div className="text-2xl font-black text-emerald-900 mt-1">{(totalKilosCosechados / 1000).toFixed(1)} ton</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">{totalKilosCosechados.toLocaleString('es-CL')} kg despachados</div>
+              <div className="text-2xl font-black text-emerald-900 dark:text-emerald-200 mt-1">{(totalKilosCosechados / 1000).toFixed(1)} ton</div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">{totalKilosCosechados.toLocaleString('es-CL')} kg despachados</div>
             </div>
 
-            <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+            <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Último Packing Destino</div>
-              <div className="text-base font-bold text-stone-900 mt-1 truncate">{ultimoPacking}</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">Exportadora registrada</div>
+              <div className="text-base font-bold text-stone-900 dark:text-stone-100 mt-1 truncate">{ultimoPacking}</div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Exportadora registrada</div>
             </div>
 
-            <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+            <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Último Calibre Declarado</div>
-              <div className="text-base font-bold text-stone-900 mt-1 truncate">{ultimoCalibre}</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">Según despacho más reciente</div>
+              <div className="text-base font-bold text-stone-900 dark:text-stone-100 mt-1 truncate">{ultimoCalibre}</div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Según despacho más reciente</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
-            <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
-              <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                <Truck className="w-4 h-4 text-emerald-700" />
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
+            <div className="px-5 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+              <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Truck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 Guías de Despacho & Pasaporte QR de Trazabilidad
               </h2>
               <span className="text-xs text-stone-400">{cosechas.length} despachos registrados</span>
             </div>
 
             {cosechas.length === 0 ? (
-              <div className="p-8 text-center text-xs text-stone-500">
+              <div className="p-8 text-center text-xs text-stone-500 dark:text-stone-400">
                 Aún no hay guías de despacho registradas. Registra un despacho para generar su etiqueta QR de trazabilidad completa.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px]">
+                  <thead className="bg-stone-50 dark:bg-stone-800/70 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 font-bold uppercase text-[10px]">
                     <tr>
                       <th className="px-4 py-3">Fecha</th>
                       <th className="px-4 py-3">Guía Despacho</th>
@@ -621,18 +621,18 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                       <th className="px-4 py-3 text-right">Trazabilidad QR</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-stone-700">
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-stone-700 dark:text-stone-300">
                     {cosechas.map((c) => (
-                      <tr key={c.id} className="hover:bg-stone-50 transition-colors">
+                      <tr key={c.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/70 transition-colors">
                         <td className="px-4 py-3 font-mono font-medium">{c.fecha}</td>
-                        <td className="px-4 py-3 font-mono font-bold text-emerald-950">{c.numeroGuiaDespacho}</td>
-                        <td className="px-4 py-3 font-semibold text-stone-900">{c.parcelaNombre}</td>
+                        <td className="px-4 py-3 font-mono font-bold text-emerald-950 dark:text-emerald-100">{c.numeroGuiaDespacho}</td>
+                        <td className="px-4 py-3 font-semibold text-stone-900 dark:text-stone-100">{c.parcelaNombre}</td>
                         <td className="px-4 py-3">
-                          <span className="font-bold text-stone-900">{c.cantidadBins} bins</span>
-                          <div className="font-mono text-[10px] text-stone-500">{c.pesoNetoKgEstimado.toLocaleString('es-CL')} kg</div>
+                          <span className="font-bold text-stone-900 dark:text-stone-100">{c.cantidadBins} bins</span>
+                          <div className="font-mono text-[10px] text-stone-500 dark:text-stone-400">{c.pesoNetoKgEstimado.toLocaleString('es-CL')} kg</div>
                         </td>
-                        <td className="px-4 py-3 font-medium text-stone-900">{c.packingDestino}</td>
-                        <td className="px-4 py-3 text-stone-600 text-[11px]">
+                        <td className="px-4 py-3 font-medium text-stone-900 dark:text-stone-100">{c.packingDestino}</td>
+                        <td className="px-4 py-3 text-stone-600 dark:text-stone-400 text-[11px]">
                           <div>{c.choferCamion || '—'}</div>
                           <div className="font-mono text-stone-400">{c.patenteCamion || '—'}</div>
                         </td>
@@ -650,7 +650,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => onDeleteCosecha(c.id)}
-                                className="p-1.5 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50 cursor-pointer"
+                                className="p-1.5 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 rounded hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer"
                                 title="Eliminar despacho"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -672,47 +672,47 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
       {activeTabSub === 'liquidaciones' && (
         <div className="space-y-5">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+            <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Kilos Recibidos Packing</div>
-              <div className="text-2xl font-black text-stone-900 mt-1 font-mono tabular-nums">{totalKgRecibidosLiq.toLocaleString('es-CL')} kg</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">{liquidaciones.length} recepciones</div>
+              <div className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-1 font-mono tabular-nums">{totalKgRecibidosLiq.toLocaleString('es-CL')} kg</div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">{liquidaciones.length} recepciones</div>
             </div>
 
-            <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+            <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Embalaje Exportación</div>
-              <div className="text-2xl font-black text-emerald-900 mt-1 font-mono tabular-nums">{pctExportableGlobal}%</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">{totalKgExportablesLiq.toLocaleString('es-CL')} kg embalados</div>
+              <div className="text-2xl font-black text-emerald-900 dark:text-emerald-200 mt-1 font-mono tabular-nums">{pctExportableGlobal}%</div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">{totalKgExportablesLiq.toLocaleString('es-CL')} kg embalados</div>
             </div>
 
-            <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+            <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Cajas Embaladas</div>
-              <div className="text-2xl font-black text-emerald-800 mt-1 font-mono tabular-nums">{totalCajasExportables.toLocaleString('es-CL')}</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">Cajas exportación acumuladas</div>
+              <div className="text-2xl font-black text-emerald-800 dark:text-emerald-300 mt-1 font-mono tabular-nums">{totalCajasExportables.toLocaleString('es-CL')}</div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Cajas exportación acumuladas</div>
             </div>
 
-            <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+            <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
               <div className="text-[10px] text-stone-400 font-bold uppercase">Fruta Descarte / Merma</div>
-              <div className="text-2xl font-black text-stone-900 mt-1 font-mono tabular-nums">{totalKgDescarte.toLocaleString('es-CL')} kg</div>
-              <div className="text-[11px] text-stone-500 mt-0.5">Diferencia recepción vs embalado</div>
+              <div className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-1 font-mono tabular-nums">{totalKgDescarte.toLocaleString('es-CL')} kg</div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Diferencia recepción vs embalado</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
-            <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
-              <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                <Package className="w-4 h-4 text-emerald-700" />
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
+            <div className="px-5 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+              <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Package className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 Cartolas de Recepción y Embalaje en Packing
               </h2>
             </div>
 
             {liquidaciones.length === 0 ? (
-              <div className="p-8 text-center text-xs text-stone-500">
+              <div className="p-8 text-center text-xs text-stone-500 dark:text-stone-400">
                 No hay recepciones de packing registradas aún. Registra los kilos recibidos, exportables, cajas y calibres de tus guías de despacho.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px]">
+                  <thead className="bg-stone-50 dark:bg-stone-800/70 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 font-bold uppercase text-[10px]">
                     <tr>
                       <th className="px-4 py-3">Fecha Recepción</th>
                       <th className="px-4 py-3">Guía / Cuartel</th>
@@ -723,30 +723,30 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                       {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100">
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
                     {liquidaciones.map((l) => (
-                      <tr key={l.id} className="hover:bg-stone-50">
+                      <tr key={l.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/70">
                         <td className="px-4 py-3 font-mono">{l.fechaLiquidacion}</td>
                         <td className="px-4 py-3">
-                          <div className="font-mono font-bold text-emerald-950">{l.numeroGuiaDespacho}</div>
-                          <div className="text-[11px] text-stone-500">{l.parcelaNombre}</div>
+                          <div className="font-mono font-bold text-emerald-950 dark:text-emerald-100">{l.numeroGuiaDespacho}</div>
+                          <div className="text-[11px] text-stone-500 dark:text-stone-400">{l.parcelaNombre}</div>
                         </td>
-                        <td className="px-4 py-3 font-semibold text-stone-800">{l.packingExportadora}</td>
+                        <td className="px-4 py-3 font-semibold text-stone-800 dark:text-stone-200">{l.packingExportadora}</td>
                         <td className="px-4 py-3 font-mono">
                           <div>{l.kilosRecibidosKg.toLocaleString('es-CL')} kg rec.</div>
-                          <div className="text-emerald-800 font-bold">
+                          <div className="text-emerald-800 dark:text-emerald-300 font-bold">
                             {l.kilosEmbaladosExportacionKg.toLocaleString('es-CL')} kg ({l.porcentajeExportable}%)
                           </div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-bold">{l.cajasExportables} cajas</div>
-                          <div className="text-[10px] text-stone-500">{l.distribucionCalibres || '—'}</div>
+                          <div className="text-[10px] text-stone-500 dark:text-stone-400">{l.distribucionCalibres || '—'}</div>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-mono font-semibold text-stone-800">
+                          <div className="font-mono font-semibold text-stone-800 dark:text-stone-200">
                             {(l.kilosDescarteKg ?? Math.max(0, l.kilosRecibidosKg - l.kilosEmbaladosExportacionKg)).toLocaleString('es-CL')} kg desc.
                           </div>
-                          <div className="text-[10px] text-emerald-800 font-semibold">
+                          <div className="text-[10px] text-emerald-800 dark:text-emerald-300 font-semibold">
                             {l.estado === 'Liquidado' ? 'Embalado Final' : 'En Proceso'}
                           </div>
                         </td>
@@ -755,7 +755,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                             <button
                               type="button"
                               onClick={() => onDeleteLiquidacion(l.id)}
-                              className="p-1 text-stone-400 hover:text-rose-700 cursor-pointer"
+                              className="p-1 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -773,8 +773,8 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
 
       {/* MODAL PASAPORTE QR DE TRAZABILIDAD */}
       {qrLoteSeleccionado && trazabilidadLote && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/70 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl border border-stone-200 overflow-hidden max-h-[92vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/70 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl w-full max-w-xl border border-stone-200 dark:border-stone-800 overflow-hidden max-h-[92vh] flex flex-col">
             <div className="no-print bg-emerald-950 text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <QrCode className="w-4 h-4 text-emerald-400" />
@@ -786,25 +786,25 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
             </div>
 
             <div className="p-5 space-y-4 overflow-y-auto text-xs">
-              <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-stone-50 rounded-2xl border border-stone-200">
+              <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-stone-50 dark:bg-stone-800/70 rounded-2xl border border-stone-200 dark:border-stone-800">
                 {qrDataUrl && (
-                  <div className="p-2 bg-white rounded-xl border border-stone-200 shadow-2xs shrink-0">
+                  <div className="p-2 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs shrink-0">
                     <img src={qrDataUrl} alt={`QR Guía ${qrLoteSeleccionado.numeroGuiaDespacho}`} className="w-40 h-40" />
                   </div>
                 )}
                 <div className="space-y-1.5 flex-1 text-center sm:text-left">
-                  <div className="text-[10px] font-bold uppercase text-emerald-800">{fundoNombre}</div>
-                  <div className="text-lg font-black text-stone-900 font-mono">
+                  <div className="text-[10px] font-bold uppercase text-emerald-800 dark:text-emerald-300">{fundoNombre}</div>
+                  <div className="text-lg font-black text-stone-900 dark:text-stone-100 font-mono">
                     {qrLoteSeleccionado.numeroGuiaDespacho}
                   </div>
-                  <div className="text-xs font-bold text-stone-700">
+                  <div className="text-xs font-bold text-stone-700 dark:text-stone-300">
                     Cuartel: {qrLoteSeleccionado.parcelaNombre}
                   </div>
-                  <div className="text-[11px] text-stone-600">
+                  <div className="text-[11px] text-stone-600 dark:text-stone-400">
                     Fecha Cosecha: <strong className="font-mono">{qrLoteSeleccionado.fecha}</strong> ·{' '}
                     <strong>{qrLoteSeleccionado.cantidadBins} bins</strong> ({qrLoteSeleccionado.pesoNetoKgEstimado.toLocaleString('es-CL')} kg)
                   </div>
-                  <div className="text-[11px] text-stone-600">
+                  <div className="text-[11px] text-stone-600 dark:text-stone-400">
                     Destino: <strong>{qrLoteSeleccionado.packingDestino || 'Sin especificar'}</strong>
                   </div>
                 </div>
@@ -815,8 +815,8 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                 <div
                   className={`p-3.5 rounded-xl border ${
                     trazabilidadLote.brixOk === true
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
-                      : 'bg-amber-50 border-amber-200 text-amber-950'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/80 text-emerald-950 dark:text-emerald-100'
+                      : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/80 text-amber-950 dark:text-amber-100'
                   }`}
                 >
                   <div className="text-[10px] font-bold uppercase opacity-75">Madurez Pre-Cosecha</div>
@@ -835,20 +835,20 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                 <div
                   className={`p-3.5 rounded-xl border ${
                     trazabilidadLote.lmrCumple
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
-                      : 'bg-rose-50 border-rose-300 text-rose-950'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/80 text-emerald-950 dark:text-emerald-100'
+                      : 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-700 text-rose-950 dark:text-rose-100'
                   }`}
                 >
                   <div className="text-[10px] font-bold uppercase opacity-75">Verificación Carencia SAG (LMR)</div>
                   <div className="font-black text-sm mt-0.5 flex items-center gap-1.5">
                     {trazabilidadLote.lmrCumple ? (
                       <>
-                        <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                        <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                         <span>LMR CUMPLE (0 días carencia)</span>
                       </>
                     ) : (
                       <>
-                        <AlertTriangle className="w-4 h-4 text-rose-700" />
+                        <AlertTriangle className="w-4 h-4 text-rose-700 dark:text-rose-400" />
                         <span>ALERTA CARENCIA ACTIVA</span>
                       </>
                     )}
@@ -862,7 +862,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
               </div>
 
               {trazabilidadLote.liquidacionAsociada && (
-                <div className="p-3.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-950">
+                <div className="p-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/80 text-indigo-950 dark:text-indigo-100">
                   <div className="text-[10px] font-bold uppercase">Recepción de Packing Vinculada</div>
                   <div className="font-bold text-xs mt-1">
                     {trazabilidadLote.liquidacionAsociada.kilosEmbaladosExportacionKg.toLocaleString('es-CL')} kg exportables ({trazabilidadLote.liquidacionAsociada.porcentajeExportable}%) ·{' '}
@@ -872,7 +872,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                 </div>
               )}
 
-              <div className="no-print flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="no-print flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => window.print()}
@@ -884,7 +884,7 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setQrLoteSeleccionado(null)}
-                  className="px-4 py-2 border border-stone-300 rounded-xl text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-xl text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cerrar
                 </button>
@@ -896,24 +896,24 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
 
       {/* Modal Nuevo Muestreo °Brix */}
       {isNewMuestreoOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Registrar Nuevo Muestreo de °Brix (Refractómetro)</h3>
               <button type="button" onClick={() => setIsNewMuestreoOpen(false)} className="text-emerald-200 hover:text-white cursor-pointer">✕</button>
             </div>
             <form onSubmit={handleGuardarMuestreo} className="p-5 space-y-3.5 text-xs">
               {parcelas.length === 0 ? (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs">
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-xl text-amber-900 dark:text-amber-200 text-xs">
                   ⚠️ No tienes cuarteles registrados. Primero debes crear al menos un cuartel en <strong>Cuarteles & Mapa</strong>.
                 </div>
               ) : (
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cuartel Muestreado:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cuartel Muestreado:</label>
                   <select
                     value={muestreoForm.parcelaId || (parcelas[0]?.id ?? '')}
                     onChange={(e) => setMuestreoForm({ ...muestreoForm, parcelaId: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     required
                   >
                     {parcelas.map((p) => (
@@ -925,38 +925,38 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">°Brix Promedio:</label>
-                  <input type="number" step="0.1" value={muestreoForm.gradosBrixPromedio} onChange={(e) => setMuestreoForm({ ...muestreoForm, gradosBrixPromedio: parseFloat(e.target.value) || 0 })} className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-emerald-900" required />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">°Brix Promedio:</label>
+                  <input type="number" step="0.1" value={muestreoForm.gradosBrixPromedio} onChange={(e) => setMuestreoForm({ ...muestreoForm, gradosBrixPromedio: parseFloat(e.target.value) || 0 })} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-emerald-900 dark:text-emerald-200" required />
                   <span className="text-[10px] text-stone-400">SAG Mín: 6.2°</span>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Mínimo:</label>
-                  <input type="number" step="0.1" value={muestreoForm.solidoSolubleMin} onChange={(e) => setMuestreoForm({ ...muestreoForm, solidoSolubleMin: parseFloat(e.target.value) || 0 })} className="w-full p-2 bg-white border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Mínimo:</label>
+                  <input type="number" step="0.1" value={muestreoForm.solidoSolubleMin} onChange={(e) => setMuestreoForm({ ...muestreoForm, solidoSolubleMin: parseFloat(e.target.value) || 0 })} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Máximo:</label>
-                  <input type="number" step="0.1" value={muestreoForm.solidoSolubleMax} onChange={(e) => setMuestreoForm({ ...muestreoForm, solidoSolubleMax: parseFloat(e.target.value) || 0 })} className="w-full p-2 bg-white border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Máximo:</label>
+                  <input type="number" step="0.1" value={muestreoForm.solidoSolubleMax} onChange={(e) => setMuestreoForm({ ...muestreoForm, solidoSolubleMax: parseFloat(e.target.value) || 0 })} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Firmeza Penetrómetro (lb):</label>
-                  <input type="number" step="0.1" value={muestreoForm.firmezaPulpaLb} onChange={(e) => setMuestreoForm({ ...muestreoForm, firmezaPulpaLb: parseFloat(e.target.value) || 0 })} className="w-full p-2 bg-white border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Firmeza Penetrómetro (lb):</label>
+                  <input type="number" step="0.1" value={muestreoForm.firmezaPulpaLb} onChange={(e) => setMuestreoForm({ ...muestreoForm, firmezaPulpaLb: parseFloat(e.target.value) || 0 })} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Materia Seca (% MS):</label>
-                  <input type="number" step="0.1" value={muestreoForm.porcentajeMateriaSeca} onChange={(e) => setMuestreoForm({ ...muestreoForm, porcentajeMateriaSeca: parseFloat(e.target.value) || 0 })} className="w-full p-2 bg-white border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Materia Seca (% MS):</label>
+                  <input type="number" step="0.1" value={muestreoForm.porcentajeMateriaSeca} onChange={(e) => setMuestreoForm({ ...muestreoForm, porcentajeMateriaSeca: parseFloat(e.target.value) || 0 })} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100" />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones / Calibración Refractómetro:</label>
-                <textarea value={muestreoForm.observaciones} onChange={(e) => setMuestreoForm({ ...muestreoForm, observaciones: e.target.value })} rows={2} className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs" />
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones / Calibración Refractómetro:</label>
+                <textarea value={muestreoForm.observaciones} onChange={(e) => setMuestreoForm({ ...muestreoForm, observaciones: e.target.value })} rows={2} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100" />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
-                <button type="button" onClick={() => setIsNewMuestreoOpen(false)} className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer">Cancelar</button>
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
+                <button type="button" onClick={() => setIsNewMuestreoOpen(false)} className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer">Cancelar</button>
                 <button type="submit" className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs cursor-pointer">Guardar Muestreo Oficial</button>
               </div>
             </form>
@@ -966,8 +966,8 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
 
       {/* Modal Nuevo Despacho Bins */}
       {isNewCosechaOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Registrar Despacho de Bins de Cosecha</h3>
               <button type="button" onClick={() => setIsNewCosechaOpen(false)} className="text-emerald-200 hover:text-white cursor-pointer">✕</button>
@@ -975,11 +975,11 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
             <form onSubmit={handleGuardarCosecha} className="p-5 space-y-3.5 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cuartel Origen:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cuartel Origen:</label>
                   {parcelas.length === 0 ? (
-                    <input type="text" value={cosechaForm.parcelaId} onChange={(e) => setCosechaForm({ ...cosechaForm, parcelaId: e.target.value })} placeholder="Nombre cuartel" className="w-full p-2 border border-stone-300 rounded-lg" required />
+                    <input type="text" value={cosechaForm.parcelaId} onChange={(e) => setCosechaForm({ ...cosechaForm, parcelaId: e.target.value })} placeholder="Nombre cuartel" className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" required />
                   ) : (
-                    <select value={cosechaForm.parcelaId || (parcelas[0]?.id ?? '')} onChange={(e) => setCosechaForm({ ...cosechaForm, parcelaId: e.target.value })} className="w-full p-2 bg-white border border-stone-300 rounded-lg" required>
+                    <select value={cosechaForm.parcelaId || (parcelas[0]?.id ?? '')} onChange={(e) => setCosechaForm({ ...cosechaForm, parcelaId: e.target.value })} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100" required>
                       {parcelas.map((p) => (
                         <option key={p.id} value={p.id}>{p.nombre}</option>
                       ))}
@@ -988,47 +988,47 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cantidad de Bins:</label>
-                  <input type="number" min="1" value={cosechaForm.cantidadBins} onChange={(e) => setCosechaForm({ ...cosechaForm, cantidadBins: parseInt(e.target.value) || 0 })} className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-emerald-900" required />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cantidad de Bins:</label>
+                  <input type="number" min="1" value={cosechaForm.cantidadBins} onChange={(e) => setCosechaForm({ ...cosechaForm, cantidadBins: parseInt(e.target.value) || 0 })} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-emerald-900 dark:text-emerald-200" required />
                   <span className="text-[10px] text-stone-400">Total: {(cosechaForm.cantidadBins * 390).toLocaleString('es-CL')} kg netos</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">N° Guía de Despacho:</label>
-                  <input type="text" value={cosechaForm.numeroGuiaDespacho} onChange={(e) => setCosechaForm({ ...cosechaForm, numeroGuiaDespacho: e.target.value })} className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono" required />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">N° Guía de Despacho:</label>
+                  <input type="text" value={cosechaForm.numeroGuiaDespacho} onChange={(e) => setCosechaForm({ ...cosechaForm, numeroGuiaDespacho: e.target.value })} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100" required />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Packing / Exportadora:</label>
-                  <input type="text" value={cosechaForm.packingDestino} onChange={(e) => setCosechaForm({ ...cosechaForm, packingDestino: e.target.value })} placeholder="Nombre packing" className="w-full p-2 bg-white border border-stone-300 rounded-lg" required />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Packing / Exportadora:</label>
+                  <input type="text" value={cosechaForm.packingDestino} onChange={(e) => setCosechaForm({ ...cosechaForm, packingDestino: e.target.value })} placeholder="Nombre packing" className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100" required />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Chofer del Camión:</label>
-                  <input type="text" value={cosechaForm.choferCamion} onChange={(e) => setCosechaForm({ ...cosechaForm, choferCamion: e.target.value })} className="w-full p-2 bg-white border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Chofer del Camión:</label>
+                  <input type="text" value={cosechaForm.choferCamion} onChange={(e) => setCosechaForm({ ...cosechaForm, choferCamion: e.target.value })} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Patente Camión:</label>
-                  <input type="text" value={cosechaForm.patenteCamion} onChange={(e) => setCosechaForm({ ...cosechaForm, patenteCamion: e.target.value })} className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono uppercase" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Patente Camión:</label>
+                  <input type="text" value={cosechaForm.patenteCamion} onChange={(e) => setCosechaForm({ ...cosechaForm, patenteCamion: e.target.value })} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono uppercase dark:text-stone-100" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Calibre Predominante:</label>
-                  <input type="text" value={cosechaForm.calibrePredominante} onChange={(e) => setCosechaForm({ ...cosechaForm, calibrePredominante: e.target.value })} placeholder="Ej. Calibre 30" className="w-full p-2 bg-white border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Calibre Predominante:</label>
+                  <input type="text" value={cosechaForm.calibrePredominante} onChange={(e) => setCosechaForm({ ...cosechaForm, calibrePredominante: e.target.value })} placeholder="Ej. Calibre 30" className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cuadrilla Cosecha:</label>
-                  <input type="text" value={cosechaForm.cuadrilla} onChange={(e) => setCosechaForm({ ...cosechaForm, cuadrilla: e.target.value })} placeholder="Ej. Cuadrilla 1" className="w-full p-2 bg-white border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cuadrilla Cosecha:</label>
+                  <input type="text" value={cosechaForm.cuadrilla} onChange={(e) => setCosechaForm({ ...cosechaForm, cuadrilla: e.target.value })} placeholder="Ej. Cuadrilla 1" className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100" />
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
-                <button type="button" onClick={() => setIsNewCosechaOpen(false)} className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer">Cancelar</button>
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
+                <button type="button" onClick={() => setIsNewCosechaOpen(false)} className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer">Cancelar</button>
                 <button type="submit" className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs cursor-pointer">Registrar Despacho</button>
               </div>
             </form>
@@ -1038,8 +1038,8 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
 
       {/* Modal Nueva Liquidación Packing */}
       {isNewLiquidacionOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Registrar Recepción y Embalaje de Packing</h3>
               <button type="button" onClick={() => setIsNewLiquidacionOpen(false)} className="text-emerald-200 hover:text-white cursor-pointer">✕</button>
@@ -1047,8 +1047,8 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
             <form onSubmit={handleGuardarLiquidacion} className="p-5 space-y-3.5 text-xs">
               {cosechas.length > 0 && (
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Vincular Guía Despacho (opcional):</label>
-                  <select value={liqForm.cosechaLoteId} onChange={(e) => handleSelectLoteParaLiq(e.target.value)} className="w-full p-2 bg-white border border-stone-300 rounded-lg">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Vincular Guía Despacho (opcional):</label>
+                  <select value={liqForm.cosechaLoteId} onChange={(e) => handleSelectLoteParaLiq(e.target.value)} className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100">
                     <option value="">Ingreso manual</option>
                     {cosechas.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -1061,23 +1061,23 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">N° Guía Despacho:</label>
-                  <input type="text" value={liqForm.numeroGuiaDespacho} onChange={(e) => setLiqForm({ ...liqForm, numeroGuiaDespacho: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg font-mono" required />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">N° Guía Despacho:</label>
+                  <input type="text" value={liqForm.numeroGuiaDespacho} onChange={(e) => setLiqForm({ ...liqForm, numeroGuiaDespacho: e.target.value })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono bg-white dark:bg-stone-800 dark:text-stone-100" required />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Recepción:</label>
-                  <input type="date" value={liqForm.fechaLiquidacion} onChange={(e) => setLiqForm({ ...liqForm, fechaLiquidacion: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg" required />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha Recepción:</label>
+                  <input type="date" value={liqForm.fechaLiquidacion} onChange={(e) => setLiqForm({ ...liqForm, fechaLiquidacion: e.target.value })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" required />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Packing / Exportadora:</label>
-                  <input type="text" value={liqForm.packingExportadora} onChange={(e) => setLiqForm({ ...liqForm, packingExportadora: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg" required />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Packing / Exportadora:</label>
+                  <input type="text" value={liqForm.packingExportadora} onChange={(e) => setLiqForm({ ...liqForm, packingExportadora: e.target.value })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" required />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cuartel:</label>
-                  <select value={liqForm.parcelaId} onChange={(e) => setLiqForm({ ...liqForm, parcelaId: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cuartel:</label>
+                  <select value={liqForm.parcelaId} onChange={(e) => setLiqForm({ ...liqForm, parcelaId: e.target.value })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100">
                     {parcelas.map((p) => (
                       <option key={p.id} value={p.id}>{p.nombre}</option>
                     ))}
@@ -1088,50 +1088,50 @@ export const CosechaMadurezView: React.FC<CosechaMadurezViewProps> = ({
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Kg Recibidos:</label>
-                  <input type="number" min="0" value={liqForm.kilosRecibidosKg} onChange={(e) => setLiqForm({ ...liqForm, kilosRecibidosKg: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg font-mono" required />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Kg Recibidos:</label>
+                  <input type="number" min="0" value={liqForm.kilosRecibidosKg} onChange={(e) => setLiqForm({ ...liqForm, kilosRecibidosKg: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono bg-white dark:bg-stone-800 dark:text-stone-100" required />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Kg Exportables:</label>
-                  <input type="number" min="0" value={liqForm.kilosEmbaladosExportacionKg} onChange={(e) => setLiqForm({ ...liqForm, kilosEmbaladosExportacionKg: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg font-mono font-bold text-emerald-900" required />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Kg Exportables:</label>
+                  <input type="number" min="0" value={liqForm.kilosEmbaladosExportacionKg} onChange={(e) => setLiqForm({ ...liqForm, kilosEmbaladosExportacionKg: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-emerald-900 dark:text-emerald-200 bg-white dark:bg-stone-800" required />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cajas Embaladas:</label>
-                  <input type="number" min="0" value={liqForm.cajasExportables} onChange={(e) => setLiqForm({ ...liqForm, cajasExportables: parseInt(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg font-mono" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cajas Embaladas:</label>
+                  <input type="number" min="0" value={liqForm.cajasExportables} onChange={(e) => setLiqForm({ ...liqForm, cajasExportables: parseInt(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono bg-white dark:bg-stone-800 dark:text-stone-100" />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Distribución de Calibres:</label>
-                <input type="text" value={liqForm.distribucionCalibres} onChange={(e) => setLiqForm({ ...liqForm, distribucionCalibres: e.target.value })} placeholder="Ej. C27: 25%, C30: 45%, C33: 20%, C36: 10%" className="w-full p-2 border border-stone-300 rounded-lg" />
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Distribución de Calibres:</label>
+                <input type="text" value={liqForm.distribucionCalibres} onChange={(e) => setLiqForm({ ...liqForm, distribucionCalibres: e.target.value })} placeholder="Ej. C27: 25%, C30: 45%, C33: 20%, C36: 10%" className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Estado Recepción:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado Recepción:</label>
                   <select
                     value={liqForm.estado}
                     onChange={(e) => setLiqForm({ ...liqForm, estado: e.target.value as LiquidacionPacking['estado'] })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   >
                     <option value="Liquidado">Embalado Final</option>
                     <option value="En Proceso">En Proceso</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Observaciones de Recepción:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones de Recepción:</label>
                   <input
                     type="text"
                     value={liqForm.observaciones}
                     onChange={(e) => setLiqForm({ ...liqForm, observaciones: e.target.value })}
                     placeholder="Condición de fruta, firmeza en línea..."
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
-                <button type="button" onClick={() => setIsNewLiquidacionOpen(false)} className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer">Cancelar</button>
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
+                <button type="button" onClick={() => setIsNewLiquidacionOpen(false)} className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer">Cancelar</button>
                 <button type="submit" className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs cursor-pointer">Guardar Recepción</button>
               </div>
             </form>

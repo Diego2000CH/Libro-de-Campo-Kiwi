@@ -483,7 +483,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
       return {
         nivel: 'ESPERANDO LECTURA DE SENSOR',
         badgeClass: 'bg-stone-700 text-white',
-        cardClass: 'bg-stone-50 border-stone-200 text-stone-900',
+        cardClass: 'bg-stone-50 dark:bg-stone-800/70 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100',
         mensaje: `Sin lectura activa del sensor térmico. Sincroniza la estación en vivo o ingresa la lectura de terreno para evaluar el umbral crítico configurado (${umbralCriticoActivo.toFixed(1)}°C).`,
       };
     }
@@ -492,7 +492,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
       return {
         nivel: 'UMBRAL CRÍTICO / ACCIÓN INMEDIATA',
         badgeClass: 'bg-rose-600 text-white',
-        cardClass: 'bg-rose-50 border-rose-300 text-rose-950',
+        cardClass: 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-700 text-rose-950 dark:text-rose-100',
         mensaje: `Sensor en ${clima.temperaturaActual.toFixed(1)}°C (bulbo húmedo ${twActual.toFixed(1)}°C, mínima ${clima.tempMinima.toFixed(1)}°C) bajo umbral crítico configurado (${umbralCriticoActivo.toFixed(1)}°C). Activar defensa antihelada y notificar al equipo.`,
       };
     }
@@ -500,14 +500,14 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
       return {
         nivel: 'ALERTA PREVENTIVA NOCTURNA',
         badgeClass: 'bg-amber-600 text-white',
-        cardClass: 'bg-amber-50 border-amber-300 text-amber-950',
+        cardClass: 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 text-amber-950 dark:text-amber-100',
         mensaje: `Condición de riesgo térmico (Sensor ${clima.temperaturaActual.toFixed(1)}°C · Mín ${clima.tempMinima.toFixed(1)}°C · Punto rocío ${tdActual.toFixed(1)}°C · Viento ${clima.velocidadVientoKmH} km/h). Preparar equipos y cuadrilla.`,
       };
     }
     return {
       nivel: 'SIN RIESGO INMINENTE',
       badgeClass: 'bg-emerald-700 text-white',
-      cardClass: 'bg-emerald-50/70 border-emerald-200 text-emerald-950',
+      cardClass: 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/80 text-emerald-950 dark:text-emerald-100',
       mensaje: `Temperaturas sobre umbral crítico (${umbralCriticoActivo.toFixed(1)}°C) y preventivo (${config.umbralAlertaC.toFixed(1)}°C). Monitoreo automático activo.`,
     };
   }, [clima, config, evalSensor, twActual, twMinima, tdActual, umbralCriticoActivo]);
@@ -841,16 +841,16 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Encabezado del Módulo */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-5 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-cyan-800 text-[11px] font-bold uppercase tracking-wider mb-1">
-            <ThermometerSnowflake className="w-4 h-4 text-cyan-700" />
+          <div className="flex items-center gap-2 text-cyan-800 dark:text-cyan-300 text-[11px] font-bold uppercase tracking-wider mb-1">
+            <ThermometerSnowflake className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
             <span>Defensa Activa Antiheladas · Kiwi Hayward</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Control de Heladas &amp; Protocolo Térmico Nocturno
           </h1>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
             Monitoreo de umbrales críticos por fenología, temperatura de bulbo húmedo, turnos de aspersión/torres, caudalímetros y evaluación post-evento.
           </p>
         </div>
@@ -860,9 +860,9 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
             <button
               type="button"
               onClick={openConfigPanel}
-              className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
             >
-              <Settings2 className="w-3.5 h-3.5 text-stone-700" />
+              <Settings2 className="w-3.5 h-3.5 text-stone-700 dark:text-stone-300" />
               <span>Configurar Umbrales</span>
             </button>
           )}
@@ -876,9 +876,9 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 filtroAnio !== 'todos' ? `Año ${filtroAnio}` : undefined
               )
             }
-            className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+            className="px-3 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
           >
-            <Download className="w-3.5 h-3.5 text-cyan-700" />
+            <Download className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
             <span>Exportar PDF</span>
           </button>
           {canEdit && (
@@ -924,7 +924,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigateTab('clima')}
-                className="px-3 py-2 bg-white/80 hover:bg-white text-stone-900 border border-stone-300 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                className="px-3 py-2 bg-white/80 dark:bg-stone-900/90 hover:bg-white dark:hover:bg-stone-800 text-stone-900 dark:text-stone-100 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
               >
                 <CloudSun className="w-3.5 h-3.5 text-amber-600" />
                 <span>Ver Pronóstico en Clima</span>
@@ -934,39 +934,39 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-          <div className="p-3 bg-white/85 rounded-xl border border-stone-200/80">
-            <div className="text-[10px] font-bold uppercase text-stone-500">T° Aire / Mín</div>
-            <div className="text-base font-black text-stone-900 font-mono tabular-nums mt-0.5">
+          <div className="p-3 bg-white/85 dark:bg-stone-900/90 rounded-xl border border-stone-200/80 dark:border-stone-800">
+            <div className="text-[10px] font-bold uppercase text-stone-500 dark:text-stone-400">T° Aire / Mín</div>
+            <div className="text-base font-black text-stone-900 dark:text-stone-100 font-mono tabular-nums mt-0.5">
               {clima.temperaturaActual.toFixed(1)}° / {clima.tempMinima.toFixed(1)}°C
             </div>
           </div>
-          <div className="p-3 bg-white/85 rounded-xl border border-stone-200/80">
-            <div className="text-[10px] font-bold uppercase text-stone-500">Bulbo Húmedo Est.</div>
-            <div className="text-base font-black text-cyan-900 font-mono tabular-nums mt-0.5">
+          <div className="p-3 bg-white/85 dark:bg-stone-900/90 rounded-xl border border-stone-200/80 dark:border-stone-800">
+            <div className="text-[10px] font-bold uppercase text-stone-500 dark:text-stone-400">Bulbo Húmedo Est.</div>
+            <div className="text-base font-black text-cyan-900 dark:text-cyan-200 font-mono tabular-nums mt-0.5">
               {twActual.toFixed(1)}° / Mín {twMinima.toFixed(1)}°C
             </div>
           </div>
-          <div className="p-3 bg-white/85 rounded-xl border border-stone-200/80">
-            <div className="text-[10px] font-bold uppercase text-stone-500">Punto de Rocío</div>
-            <div className="text-base font-black text-stone-900 font-mono tabular-nums mt-0.5">
+          <div className="p-3 bg-white/85 dark:bg-stone-900/90 rounded-xl border border-stone-200/80 dark:border-stone-800">
+            <div className="text-[10px] font-bold uppercase text-stone-500 dark:text-stone-400">Punto de Rocío</div>
+            <div className="text-base font-black text-stone-900 dark:text-stone-100 font-mono tabular-nums mt-0.5">
               {tdActual.toFixed(1)}°C
             </div>
           </div>
-          <div className="p-3 bg-white/85 rounded-xl border border-stone-200/80">
-            <div className="text-[10px] font-bold uppercase text-stone-500">HR &amp; Viento</div>
-            <div className="text-sm font-black text-stone-900 font-mono tabular-nums mt-0.5">
+          <div className="p-3 bg-white/85 dark:bg-stone-900/90 rounded-xl border border-stone-200/80 dark:border-stone-800">
+            <div className="text-[10px] font-bold uppercase text-stone-500 dark:text-stone-400">HR &amp; Viento</div>
+            <div className="text-sm font-black text-stone-900 dark:text-stone-100 font-mono tabular-nums mt-0.5">
               {hrLive}% · {clima.velocidadVientoKmH} km/h
             </div>
           </div>
-          <div className="p-3 bg-white/85 rounded-xl border border-stone-200/80">
-            <div className="text-[10px] font-bold uppercase text-stone-500">Umbral Encendido</div>
-            <div className="text-base font-black text-rose-800 font-mono tabular-nums mt-0.5">
+          <div className="p-3 bg-white/85 dark:bg-stone-900/90 rounded-xl border border-stone-200/80 dark:border-stone-800">
+            <div className="text-[10px] font-bold uppercase text-stone-500 dark:text-stone-400">Umbral Encendido</div>
+            <div className="text-base font-black text-rose-800 dark:text-rose-300 font-mono tabular-nums mt-0.5">
               ≤ {config.umbralEncendidoC.toFixed(1)}°C
             </div>
           </div>
-          <div className="p-3 bg-white/85 rounded-xl border border-stone-200/80">
-            <div className="text-[10px] font-bold uppercase text-stone-500">Umbral Apagado</div>
-            <div className="text-base font-black text-emerald-800 font-mono tabular-nums mt-0.5">
+          <div className="p-3 bg-white/85 dark:bg-stone-900/90 rounded-xl border border-stone-200/80 dark:border-stone-800">
+            <div className="text-[10px] font-bold uppercase text-stone-500 dark:text-stone-400">Umbral Apagado</div>
+            <div className="text-base font-black text-emerald-800 dark:text-emerald-300 font-mono tabular-nums mt-0.5">
               ≥ {config.umbralApagadoC.toFixed(1)}°C
             </div>
           </div>
@@ -977,22 +977,22 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
       {showConfigPanel && canEdit && (
         <form
           onSubmit={handleSaveConfig}
-          className="bg-white rounded-2xl border border-cyan-300 p-5 shadow-xs space-y-4"
+          className="bg-white dark:bg-stone-900 rounded-2xl border border-cyan-300 dark:border-cyan-700 p-5 shadow-xs space-y-4"
         >
-          <div className="flex items-center justify-between border-b border-stone-200 pb-3">
+          <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
             <div>
-              <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                <Settings2 className="w-4 h-4 text-cyan-700" />
+              <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Settings2 className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
                 <span>Configuración de Protocolo, Umbral Crítico y Notificaciones Proactivas</span>
               </h2>
-              <p className="text-[11px] text-stone-500 mt-0.5">
-                Base predeterminada definida en <span className="font-mono text-stone-700">src/config/heladasConfig.ts</span> (Umbral crítico inicial: {HELADAS_CONFIG.umbralCriticoC.toFixed(1)}°C).
+              <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                Base predeterminada definida en <span className="font-mono text-stone-700 dark:text-stone-300">src/config/heladasConfig.ts</span> (Umbral crítico inicial: {HELADAS_CONFIG.umbralCriticoC.toFixed(1)}°C).
               </p>
             </div>
             <button
               type="button"
               onClick={() => setShowConfigPanel(false)}
-              className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
+              className="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -1000,7 +1000,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
             <div>
-              <label className="block font-bold text-stone-700 mb-1">
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                 Umbral Crítico Notificación Sensor (°C):
               </label>
               <input
@@ -1013,13 +1013,13 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                     umbralCriticoC: Number(e.target.value),
                   })
                 }
-                className="w-full p-2.5 bg-white border border-rose-300 rounded-xl font-mono font-bold text-rose-900"
+                className="w-full p-2.5 bg-white dark:bg-stone-800 border border-rose-300 dark:border-rose-700 rounded-xl font-mono font-bold text-rose-900 dark:text-rose-200"
                 required
               />
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 mb-1">
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                 Umbral Alerta Preventiva (°C):
               </label>
               <input
@@ -1029,13 +1029,13 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 onChange={(e) =>
                   setDraftConfig({ ...draftConfig, umbralAlertaC: Number(e.target.value) })
                 }
-                className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-mono"
+                className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                 required
               />
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 mb-1">
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                 Umbral Encendido Sistemas (°C):
               </label>
               <input
@@ -1045,13 +1045,13 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 onChange={(e) =>
                   setDraftConfig({ ...draftConfig, umbralEncendidoC: Number(e.target.value) })
                 }
-                className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-mono"
+                className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                 required
               />
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 mb-1">
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                 Umbral Apagado Seguro (°C):
               </label>
               <input
@@ -1061,13 +1061,13 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 onChange={(e) =>
                   setDraftConfig({ ...draftConfig, umbralApagadoC: Number(e.target.value) })
                 }
-                className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-mono"
+                className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                 required
               />
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 mb-1">
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                 Método Principal del Predio:
               </label>
               <select
@@ -1078,7 +1078,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                     metodoPrincipalPredio: e.target.value as MetodoControlHelada,
                   })
                 }
-                className="w-full p-2.5 bg-white border border-stone-300 rounded-xl"
+                className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl dark:text-stone-100"
               >
                 {METODOS_CONTROL.map((m) => (
                   <option key={m} value={m}>
@@ -1089,7 +1089,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 mb-1">
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                 Estado Fenológico de Referencia:
               </label>
               <select
@@ -1097,7 +1097,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 onChange={(e) =>
                   setDraftConfig({ ...draftConfig, estadoFenologicoReferencia: e.target.value })
                 }
-                className="w-full p-2.5 bg-white border border-stone-300 rounded-xl"
+                className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl dark:text-stone-100"
               >
                 {estadosFenologicosOpciones.map((op) => (
                   <option key={op} value={op}>
@@ -1113,14 +1113,14 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-3 text-xs">
-            <div className="font-bold text-stone-800 flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 space-y-3 text-xs">
+            <div className="font-bold text-stone-800 dark:text-stone-200 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <BellRing className="w-4 h-4 text-cyan-700" />
+                <BellRing className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
                 Reglas de Envío Proactivo (Administrador y Usuarios)
               </span>
               <div className="flex items-center gap-2">
-                <label className="text-[11px] font-semibold text-stone-600">Cooldown (min):</label>
+                <label className="text-[11px] font-semibold text-stone-600 dark:text-stone-400">Cooldown (min):</label>
                 <input
                   type="number"
                   min={1}
@@ -1136,7 +1136,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       },
                     })
                   }
-                  className="w-20 p-1.5 bg-white border border-stone-300 rounded-lg font-mono text-center"
+                  className="w-20 p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono text-center dark:text-stone-100"
                 />
               </div>
             </div>
@@ -1156,7 +1156,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 return (
                   <label
                     key={opt.key}
-                    className="flex items-center gap-2 p-2 bg-white border border-stone-200 rounded-xl cursor-pointer hover:border-cyan-300"
+                    className="flex items-center gap-2 p-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl cursor-pointer hover:border-cyan-300"
                   >
                     <input
                       type="checkbox"
@@ -1171,9 +1171,9 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                           },
                         })
                       }
-                      className="rounded border-stone-300 text-cyan-800"
+                      className="rounded border-stone-300 dark:border-stone-700 text-cyan-800 dark:text-cyan-300 bg-white dark:bg-stone-800"
                     />
-                    <span className="text-[11px] font-semibold text-stone-700">{opt.label}</span>
+                    <span className="text-[11px] font-semibold text-stone-700 dark:text-stone-300">{opt.label}</span>
                   </label>
                 );
               })}
@@ -1181,7 +1181,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
           </div>
 
           <div className="text-xs">
-            <label className="block font-bold text-stone-700 mb-1">
+            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
               Protocolo / Notas de Operación de Emergencia:
             </label>
             <textarea
@@ -1190,7 +1190,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
               onChange={(e) =>
                 setDraftConfig({ ...draftConfig, protocoloEmergenciaNotas: e.target.value })
               }
-              className="w-full p-2.5 bg-white border border-stone-300 rounded-xl text-xs"
+              className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-xs dark:text-stone-100"
             />
           </div>
 
@@ -1198,7 +1198,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
             <button
               type="button"
               onClick={() => setShowConfigPanel(false)}
-              className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold cursor-pointer whitespace-nowrap shrink-0"
+              className="px-3.5 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-xl text-xs font-bold cursor-pointer whitespace-nowrap shrink-0"
             >
               Cancelar
             </button>
@@ -1213,20 +1213,20 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
       )}
 
       {/* Centro de Notificaciones Proactivas (Administrador & Todos los Usuarios) */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-5 shadow-2xs space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-stone-100 dark:border-stone-800 pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <BellRing className="w-4 h-4 text-rose-700 shrink-0" />
-              <h2 className="font-bold text-sm sm:text-base text-stone-900">
+              <BellRing className="w-4 h-4 text-rose-700 dark:text-rose-400 shrink-0" />
+              <h2 className="font-bold text-sm sm:text-base text-stone-900 dark:text-stone-100">
                 Notificaciones Proactivas · Sensor vs Umbral Crítico
               </h2>
-              <span className="text-[11px] font-mono tabular-nums font-bold text-stone-600">
+              <span className="text-[11px] font-mono tabular-nums font-bold text-stone-600 dark:text-stone-400">
                 Umbral configurado: &lt; {umbralCriticoActivo.toFixed(1)}°C
               </span>
             </div>
-            <p className="text-xs text-stone-500">
-              Envía aviso automático al <strong className="text-stone-700">Administrador</strong> ({adminsConfigurados.length}) y a <strong className="text-stone-700">todos los usuarios</strong> ({otrosUsuariosConfigurados.length}) cuando la temperatura del sensor cae bajo el umbral crítico de <span className="font-mono text-stone-700">heladasConfig.ts</span>.
+            <p className="text-xs text-stone-500 dark:text-stone-400">
+              Envía aviso automático al <strong className="text-stone-700 dark:text-stone-300">Administrador</strong> ({adminsConfigurados.length}) y a <strong className="text-stone-700 dark:text-stone-300">todos los usuarios</strong> ({otrosUsuariosConfigurados.length}) cuando la temperatura del sensor cae bajo el umbral crítico de <span className="font-mono text-stone-700 dark:text-stone-300">heladasConfig.ts</span>.
             </p>
           </div>
 
@@ -1236,10 +1236,10 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
               onClick={handleRequestBrowserPush}
               className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
                 browserPermission === 'granted'
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/80 text-emerald-900 dark:text-emerald-200'
                   : browserPermission === 'denied'
-                  ? 'bg-stone-100 border-stone-200 text-stone-600'
-                  : 'bg-white hover:bg-stone-50 border-stone-300 text-stone-800'
+                  ? 'bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400'
+                  : 'bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800/70 border-stone-300 dark:border-stone-700 text-stone-800 dark:text-stone-200'
               }`}
             >
               <Bell className="w-3.5 h-3.5" />
@@ -1259,9 +1259,9 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 type="button"
                 disabled={isSyncingSensor}
                 onClick={handleSyncSensorLive}
-                className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0 disabled:opacity-60"
+                className="px-3 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0 disabled:opacity-60"
               >
-                <RefreshCw className={`w-3.5 h-3.5 text-cyan-800 ${isSyncingSensor ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 text-cyan-800 dark:text-cyan-300 ${isSyncingSensor ? 'animate-spin' : ''}`} />
                 <span>{isSyncingSensor ? 'Sincronizando...' : 'Sincronizar Sensor en Vivo'}</span>
               </button>
             )}
@@ -1281,13 +1281,13 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
 
         {/* Estado en vivo + Lectura directa sensor de terreno */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <div className="lg:col-span-5 p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
+          <div className="lg:col-span-5 p-3.5 rounded-xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-stone-800 flex items-center gap-1.5">
-                <Thermometer className="w-4 h-4 text-cyan-800" />
+              <span className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                <Thermometer className="w-4 h-4 text-cyan-800 dark:text-cyan-300" />
                 Lectura de Sensor Térmico
               </span>
-              <span className="text-[11px] text-stone-500 font-mono truncate max-w-[200px]" title={clima.estacionNombre || clima.direccionViento}>
+              <span className="text-[11px] text-stone-500 dark:text-stone-400 font-mono truncate max-w-[200px]" title={clima.estacionNombre || clima.direccionViento}>
                 {evalSensor.sensorActivo
                   ? clima.fuenteDatos && clima.fuenteDatos !== 'Open-Meteo Satelital'
                     ? `${clima.fuenteDatos}${clima.estacionNombre ? ` · ${clima.estacionNombre}` : ''}`
@@ -1297,57 +1297,57 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-xs">
-              <div className="p-2.5 bg-white rounded-xl border border-stone-200">
-                <div className="text-[10px] font-bold uppercase text-stone-500">Sensor Aire</div>
+              <div className="p-2.5 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800">
+                <div className="text-[10px] font-bold uppercase text-stone-500 dark:text-stone-400">Sensor Aire</div>
                 <div
                   className={`text-base font-black font-mono tabular-nums mt-0.5 ${
                     evalSensor.sensorActivo && evalSensor.tempSensorC < umbralCriticoActivo
-                      ? 'text-rose-700'
-                      : 'text-stone-900'
+                      ? 'text-rose-700 dark:text-rose-400'
+                      : 'text-stone-900 dark:text-stone-100'
                   }`}
                 >
                   {evalSensor.sensorActivo ? `${evalSensor.tempSensorC.toFixed(1)}°C` : '—'}
                 </div>
               </div>
-              <div className="p-2.5 bg-white rounded-xl border border-stone-200">
-                <div className="text-[10px] font-bold uppercase text-stone-500">Bulbo Húmedo</div>
+              <div className="p-2.5 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800">
+                <div className="text-[10px] font-bold uppercase text-stone-500 dark:text-stone-400">Bulbo Húmedo</div>
                 <div
                   className={`text-base font-black font-mono tabular-nums mt-0.5 ${
                     evalSensor.sensorActivo && evalSensor.tempBulboHumedoC < umbralCriticoActivo
-                      ? 'text-rose-700'
-                      : 'text-cyan-900'
+                      ? 'text-rose-700 dark:text-rose-400'
+                      : 'text-cyan-900 dark:text-cyan-200'
                   }`}
                 >
                   {evalSensor.sensorActivo ? `${evalSensor.tempBulboHumedoC.toFixed(1)}°C` : '—'}
                 </div>
               </div>
-              <div className="p-2.5 bg-white rounded-xl border border-stone-200">
-                <div className="text-[10px] font-bold uppercase text-stone-500">Umbral Crítico</div>
-                <div className="text-base font-black font-mono tabular-nums text-rose-800 mt-0.5">
+              <div className="p-2.5 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800">
+                <div className="text-[10px] font-bold uppercase text-stone-500 dark:text-stone-400">Umbral Crítico</div>
+                <div className="text-base font-black font-mono tabular-nums text-rose-800 dark:text-rose-300 mt-0.5">
                   &lt; {umbralCriticoActivo.toFixed(1)}°C
                 </div>
               </div>
             </div>
 
             {canEdit && onUpdateClima && (
-              <form onSubmit={handleApplySensorTerreno} className="pt-2 border-t border-stone-200 space-y-2">
-                <div className="text-[11px] font-bold text-stone-700">
+              <form onSubmit={handleApplySensorTerreno} className="pt-2 border-t border-stone-200 dark:border-stone-800 space-y-2">
+                <div className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
                   Ingresar Lectura Manual de Sensor en Terreno:
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
-                    <label className="block text-[10px] text-stone-500 mb-0.5">T° Sensor (°C)</label>
+                    <label className="block text-[10px] text-stone-500 dark:text-stone-400 mb-0.5">T° Sensor (°C)</label>
                     <input
                       type="number"
                       step="0.1"
                       value={sensorTempInput}
                       onChange={(e) => setSensorTempInput(e.target.value)}
                       placeholder="Ej. 0.2"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono text-xs dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-stone-500 mb-0.5">Humedad (%)</label>
+                    <label className="block text-[10px] text-stone-500 dark:text-stone-400 mb-0.5">Humedad (%)</label>
                     <input
                       type="number"
                       step="1"
@@ -1355,18 +1355,18 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       max="100"
                       value={sensorHrInput}
                       onChange={(e) => setSensorHrInput(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono text-xs dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-stone-500 mb-0.5">Viento (km/h)</label>
+                    <label className="block text-[10px] text-stone-500 dark:text-stone-400 mb-0.5">Viento (km/h)</label>
                     <input
                       type="number"
                       step="0.5"
                       min="0"
                       value={sensorVientoInput}
                       onChange={(e) => setSensorVientoInput(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono text-xs dark:text-stone-100"
                     />
                   </div>
                 </div>
@@ -1381,30 +1381,30 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
           </div>
 
           {/* Destinatarios configurados: Administrador + Todos los Usuarios */}
-          <div className="lg:col-span-7 p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
+          <div className="lg:col-span-7 p-3.5 rounded-xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-stone-800 flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-cyan-800" />
+              <span className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-cyan-800 dark:text-cyan-300" />
                 Destinatarios de Alerta Proactiva ({destinatariosConfigurados.length} configurados)
               </span>
-              <span className="text-[11px] font-mono text-stone-500">
+              <span className="text-[11px] font-mono text-stone-500 dark:text-stone-400">
                 {notifPolicy.habilitadas ? 'Despacho automático ACTIVO' : 'Despacho automático PAUSADO'} · Cooldown {notifPolicy.cooldownMinutos} min
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-white rounded-xl border border-stone-200 space-y-1.5">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-rose-800">
+              <div className="p-3 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 space-y-1.5">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-rose-800 dark:text-rose-300">
                   Administrador del Predio ({adminsConfigurados.length})
                 </div>
                 {adminsConfigurados.length === 0 ? (
-                  <p className="text-[11px] text-stone-500">Sin administrador asignado.</p>
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400">Sin administrador asignado.</p>
                 ) : (
-                  <div className="divide-y divide-stone-100">
+                  <div className="divide-y divide-stone-100 dark:divide-stone-800">
                     {adminsConfigurados.map((adm) => (
                       <div key={adm.usuarioId} className="py-1.5 first:pt-0 last:pb-0">
-                        <div className="font-bold text-stone-900">{adm.nombre}</div>
-                        <div className="text-[11px] text-stone-500">
+                        <div className="font-bold text-stone-900 dark:text-stone-100">{adm.nombre}</div>
+                        <div className="text-[11px] text-stone-500 dark:text-stone-400">
                           {adm.email || 'Sin correo'} {adm.telefono ? `· ${adm.telefono}` : ''}
                         </div>
                       </div>
@@ -1413,23 +1413,23 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 )}
               </div>
 
-              <div className="p-3 bg-white rounded-xl border border-stone-200 space-y-1.5">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-stone-600">
+              <div className="p-3 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 space-y-1.5">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
                   Todos los Usuarios del Equipo ({otrosUsuariosConfigurados.length})
                 </div>
                 {otrosUsuariosConfigurados.length === 0 ? (
-                  <p className="text-[11px] text-stone-500">
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400">
                     {notifPolicy.notificarTodosUsuarios
                       ? 'No hay usuarios adicionales registrados en Equipo & Usuarios.'
                       : 'Envío a usuarios adicionales desactivado en configuración.'}
                   </p>
                 ) : (
-                  <div className="divide-y divide-stone-100 max-h-32 overflow-y-auto pr-1">
+                  <div className="divide-y divide-stone-100 dark:divide-stone-800 max-h-32 overflow-y-auto pr-1">
                     {otrosUsuariosConfigurados.map((usr) => (
                       <div key={usr.usuarioId} className="py-1.5 first:pt-0 last:pb-0 flex items-center justify-between gap-2">
                         <div className="min-w-0">
-                          <div className="font-semibold text-stone-900 truncate">{usr.nombre}</div>
-                          <div className="text-[10px] text-stone-500 truncate">
+                          <div className="font-semibold text-stone-900 dark:text-stone-100 truncate">{usr.nombre}</div>
+                          <div className="text-[10px] text-stone-500 dark:text-stone-400 truncate">
                             {usr.rol.replace(/_/g, ' ')} {usr.telefono ? `· ${usr.telefono}` : ''}
                           </div>
                         </div>
@@ -1443,12 +1443,12 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
         </div>
 
         {sensorFeedback && (
-          <div className="p-3 rounded-xl bg-cyan-50 border border-cyan-200 text-xs text-cyan-950 flex items-center justify-between gap-2">
+          <div className="p-3 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/80 text-xs text-cyan-950 dark:text-cyan-100 flex items-center justify-between gap-2">
             <span className="font-medium">{sensorFeedback}</span>
             <button
               type="button"
               onClick={() => setSensorFeedback(null)}
-              className="text-cyan-800 hover:text-cyan-950 p-0.5 cursor-pointer"
+              className="text-cyan-800 dark:text-cyan-300 hover:text-cyan-950 dark:hover:text-cyan-100 p-0.5 cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -1456,16 +1456,16 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
         )}
 
         {/* Historial de Notificaciones Proactivas Despachadas */}
-        <div className="space-y-2.5 pt-2 border-t border-stone-100">
+        <div className="space-y-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-600">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
               Bitácora de Notificaciones Enviadas ({historialNotificaciones.length})
             </h3>
             {canEdit && historialNotificaciones.length > 0 && (
               <button
                 type="button"
                 onClick={handleClearHistorialNotificaciones}
-                className="text-[11px] font-bold text-stone-500 hover:text-rose-700 cursor-pointer whitespace-nowrap"
+                className="text-[11px] font-bold text-stone-500 dark:text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer whitespace-nowrap"
               >
                 Limpiar historial
               </button>
@@ -1473,9 +1473,9 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
           </div>
 
           {historialNotificaciones.length === 0 ? (
-            <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-500">
+            <div className="p-4 rounded-xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 text-xs text-stone-500 dark:text-stone-400">
               No se han emitido notificaciones críticas aún. Cuando el sensor baje de{' '}
-              <span className="font-mono font-bold text-stone-700">{umbralCriticoActivo.toFixed(1)}°C</span>, el sistema generará un aviso automático para el Administrador y todo el equipo.
+              <span className="font-mono font-bold text-stone-700 dark:text-stone-300">{umbralCriticoActivo.toFixed(1)}°C</span>, el sistema generará un aviso automático para el Administrador y todo el equipo.
             </div>
           ) : (
             <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
@@ -1497,8 +1497,8 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                     key={notif.id}
                     className={`p-3.5 rounded-xl border space-y-2.5 ${
                       notif.severidad === 'critica'
-                        ? 'bg-rose-50/50 border-rose-200'
-                        : 'bg-amber-50/50 border-amber-200'
+                        ? 'bg-rose-50/50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/80'
+                        : 'bg-amber-50/50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/80'
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1506,13 +1506,13 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
                             className={`text-xs font-black ${
-                              notif.severidad === 'critica' ? 'text-rose-900' : 'text-amber-900'
+                              notif.severidad === 'critica' ? 'text-rose-900 dark:text-rose-200' : 'text-amber-900 dark:text-amber-200'
                             }`}
                           >
                             {notif.titulo}
                           </span>
                         </div>
-                        <div className="text-[11px] text-stone-600 font-mono tabular-nums">
+                        <div className="text-[11px] text-stone-600 dark:text-stone-400 font-mono tabular-nums">
                           {fechaFmt} · Sensor: {notif.tempSensorC.toFixed(1)}°C · Umbral Crítico:{' '}
                           {notif.umbralCriticoConfiguradoC.toFixed(1)}°C
                           {notif.tempBulboHumedoC !== undefined
@@ -1523,7 +1523,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[11px] font-mono tabular-nums font-bold text-stone-700">
+                        <span className="text-[11px] font-mono tabular-nums font-bold text-stone-700 dark:text-stone-300">
                           Confirmados {leidosCount}/{notif.destinatarios.length}
                         </span>
                         {onAcknowledgeNotificacion && miRegistro && miRegistro.estadoEntrega !== 'leida' && (
@@ -1539,7 +1539,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleCopyNotificacion(notif)}
-                          className="px-2.5 py-1 bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
+                          className="px-2.5 py-1 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-800 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
                         >
                           <Copy className="w-3 h-3" />
                           <span>{copiedNotifId === notif.id ? 'Copiado' : 'Copiar Aviso'}</span>
@@ -1547,23 +1547,23 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       </div>
                     </div>
 
-                    <p className="text-xs text-stone-800 leading-relaxed">{notif.mensaje}</p>
+                    <p className="text-xs text-stone-800 dark:text-stone-200 leading-relaxed">{notif.mensaje}</p>
 
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-stone-600 pt-1 border-t border-stone-200/70">
-                      <span className="font-semibold text-stone-700">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-stone-600 dark:text-stone-400 pt-1 border-t border-stone-200/70 dark:border-stone-800">
+                      <span className="font-semibold text-stone-700 dark:text-stone-300">
                         Canales: {notif.canales.join(' · ')}
                       </span>
                       <span className="text-stone-400">|</span>
-                      <span className="font-semibold text-stone-700">Destinatarios:</span>
+                      <span className="font-semibold text-stone-700 dark:text-stone-300">Destinatarios:</span>
                       {notif.destinatarios.map((d) => (
                         <span key={d.usuarioId} className="inline-flex items-center gap-1">
-                          <span className={d.esAdministrador ? 'font-bold text-rose-900' : 'text-stone-800'}>
+                          <span className={d.esAdministrador ? 'font-bold text-rose-900 dark:text-rose-300' : 'text-stone-800 dark:text-stone-200'}>
                             {d.nombre}
                             {d.esAdministrador ? ' (Admin)' : ''}
                           </span>
                           <span
                             className={`font-mono text-[10px] ${
-                              d.estadoEntrega === 'leida' ? 'text-emerald-700 font-bold' : 'text-stone-500'
+                              d.estadoEntrega === 'leida' ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-stone-500 dark:text-stone-400'
                             }`}
                           >
                             [{d.estadoEntrega === 'leida' ? 'Leída' : 'Enviada'}]
@@ -1582,22 +1582,22 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
       {/* Doble Columna: Umbrales Críticos Kiwi Hayward + Checklist Operacional Pre-Helada */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Tabla Umbrales Críticos por Fenología */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+        <div className="lg:col-span-7 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-5 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3">
             <div>
-              <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                <Thermometer className="w-4 h-4 text-cyan-700" />
+              <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Thermometer className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
                 <span>Umbrales Críticos por Estado Fenológico (Kiwi Hayward)</span>
               </h2>
-              <p className="text-[11px] text-stone-500 mt-0.5">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
                 Temperaturas letales T10 (inicio daño) y T90 (daño severo). Haz clic en &ldquo;Usar&rdquo; para ajustar los umbrales del predio.
               </p>
             </div>
           </div>
 
-          <div className="overflow-x-auto border border-stone-200 rounded-xl">
+          <div className="overflow-x-auto border border-stone-200 dark:border-stone-800 rounded-xl">
             <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-stone-50 text-stone-600 font-bold uppercase text-[10px] border-b border-stone-200">
+              <thead className="bg-stone-50 dark:bg-stone-800/70 text-stone-600 dark:text-stone-400 font-bold uppercase text-[10px] border-b border-stone-200 dark:border-stone-800">
                 <tr>
                   <th className="p-2.5">Estado Fenológico</th>
                   <th className="p-2.5 font-mono">T10 Daño</th>
@@ -1606,7 +1606,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                   <th className="p-2.5 text-right">Acción</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
                 {UMBRALES_KIWI_HAYWARD.map((u) => {
                   const isCurrent = config.estadoFenologicoReferencia
                     .toLowerCase()
@@ -1614,23 +1614,23 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                   return (
                     <tr
                       key={u.bbch}
-                      className={isCurrent ? 'bg-cyan-50/70' : 'hover:bg-stone-50/60'}
+                      className={isCurrent ? 'bg-cyan-50/70 dark:bg-cyan-950/40' : 'hover:bg-stone-50/60 dark:hover:bg-stone-800/50'}
                     >
                       <td className="p-2.5">
-                        <div className="font-bold text-stone-900">
-                          {u.etapa} <span className="text-[10px] font-mono text-stone-500">({u.bbch})</span>
+                        <div className="font-bold text-stone-900 dark:text-stone-100">
+                          {u.etapa} <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400">({u.bbch})</span>
                         </div>
-                        <div className="text-[10px] text-stone-500 leading-snug mt-0.5">
+                        <div className="text-[10px] text-stone-500 dark:text-stone-400 leading-snug mt-0.5">
                           {u.notaAgronomica}
                         </div>
                       </td>
-                      <td className="p-2.5 font-mono tabular-nums font-bold text-amber-800 whitespace-nowrap">
+                      <td className="p-2.5 font-mono tabular-nums font-bold text-amber-800 dark:text-amber-300 whitespace-nowrap">
                         {u.t10C.toFixed(1)}°C
                       </td>
-                      <td className="p-2.5 font-mono tabular-nums font-bold text-rose-700 whitespace-nowrap">
+                      <td className="p-2.5 font-mono tabular-nums font-bold text-rose-700 dark:text-rose-400 whitespace-nowrap">
                         {u.t90C.toFixed(1)}°C
                       </td>
-                      <td className="p-2.5 font-mono tabular-nums font-bold text-cyan-800 whitespace-nowrap">
+                      <td className="p-2.5 font-mono tabular-nums font-bold text-cyan-800 dark:text-cyan-300 whitespace-nowrap">
                         ≤ {u.encendidoSugeridoC.toFixed(1)}°C
                       </td>
                       <td className="p-2.5 text-right">
@@ -1641,7 +1641,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                             className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-colors ${
                               isCurrent
                                 ? 'bg-cyan-900 text-white'
-                                : 'bg-stone-100 hover:bg-cyan-100 text-stone-800'
+                                : 'bg-stone-100 dark:bg-stone-800 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 text-stone-800 dark:text-stone-200'
                             }`}
                           >
                             {isCurrent ? 'Activo' : 'Usar'}
@@ -1661,14 +1661,14 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
         </div>
 
         {/* Checklist Operacional Pre-Helada */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+        <div className="lg:col-span-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-5 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3">
             <div>
-              <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+              <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 <span>Checklist Pre-Helada (Alistamiento)</span>
               </h2>
-              <p className="text-[11px] text-stone-500 mt-0.5">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
                 {config.checklist.fechaUltimaVerificacion
                   ? `Último chequeo: ${config.checklist.fechaUltimaVerificacion} (${config.checklist.responsableChecklist || 'Equipo'})`
                   : 'Verifica los puntos críticos antes del pronóstico nocturno.'}
@@ -1677,8 +1677,8 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
             <span
               className={`px-2 py-0.5 rounded font-mono tabular-nums text-xs font-black border ${
                 checklistCompletados === checklistItems.length
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                  : 'bg-amber-50 text-amber-800 border-amber-200'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/80'
+                  : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/80'
               }`}
             >
               {checklistCompletados}/{checklistItems.length}
@@ -1696,18 +1696,18 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                   onClick={() => handleToggleChecklistItem(item.key)}
                   className={`w-full text-left p-2.5 rounded-xl border transition-colors flex items-start gap-2.5 ${
                     checked
-                      ? 'bg-emerald-50/70 border-emerald-200 text-stone-900'
-                      : 'bg-stone-50/60 border-stone-200 text-stone-700 hover:bg-stone-100'
+                      ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/80 text-stone-900 dark:text-stone-100'
+                      : 'bg-stone-50/60 dark:bg-stone-800/70 border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
                   } ${canEdit ? 'cursor-pointer' : 'cursor-default'}`}
                 >
                   {checked ? (
-                    <CheckSquare className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                    <CheckSquare className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                   ) : (
                     <Square className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" />
                   )}
                   <div className="min-w-0">
                     <div className="text-xs font-bold leading-snug">{item.label}</div>
-                    <div className="text-[10px] text-stone-500 leading-snug mt-0.5">
+                    <div className="text-[10px] text-stone-500 dark:text-stone-400 leading-snug mt-0.5">
                       {item.detail}
                     </div>
                   </div>
@@ -1717,8 +1717,8 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
           </div>
 
           {config.protocoloEmergenciaNotas && (
-            <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 text-[11px] text-stone-700 leading-relaxed">
-              <strong className="text-stone-900 block mb-0.5">Nota técnica de operación:</strong>
+            <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 text-[11px] text-stone-700 dark:text-stone-300 leading-relaxed">
+              <strong className="text-stone-900 dark:text-stone-100 block mb-0.5">Nota técnica de operación:</strong>
               {config.protocoloEmergenciaNotas}
             </div>
           )}
@@ -1727,57 +1727,57 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
 
       {/* KPIs de Operación Antihelada */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
             Turnos Controlados
           </div>
-          <div className="text-2xl font-black text-stone-900 font-mono tabular-nums mt-1">
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 font-mono tabular-nums mt-1">
             {kpis.totalTurnos}
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
             Mínima Absoluta
           </div>
-          <div className="text-2xl font-black text-cyan-900 font-mono tabular-nums mt-1">
+          <div className="text-2xl font-black text-cyan-900 dark:text-cyan-200 font-mono tabular-nums mt-1">
             {kpis.minAbsoluta !== null ? `${kpis.minAbsoluta.toFixed(1)}°C` : '—'}
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
             Horas de Defensa
           </div>
-          <div className="text-2xl font-black text-stone-900 font-mono tabular-nums mt-1">
-            {kpis.totalHoras} <span className="text-xs font-semibold text-stone-500">hrs</span>
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 font-mono tabular-nums mt-1">
+            {kpis.totalHoras} <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">hrs</span>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
             Agua Antihelada
           </div>
-          <div className="text-2xl font-black text-blue-900 font-mono tabular-nums mt-1">
-            {kpis.totalAguaM3.toLocaleString('es-CL')} <span className="text-xs font-semibold text-stone-500">m³</span>
+          <div className="text-2xl font-black text-blue-900 dark:text-blue-200 font-mono tabular-nums mt-1">
+            {kpis.totalAguaM3.toLocaleString('es-CL')} <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">m³</span>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs col-span-2 sm:col-span-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs col-span-2 sm:col-span-1">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
             Daño Prom. Post-Evento
           </div>
-          <div className="text-2xl font-black text-emerald-800 font-mono tabular-nums mt-1">
+          <div className="text-2xl font-black text-emerald-800 dark:text-emerald-300 font-mono tabular-nums mt-1">
             {kpis.promDanio}%
           </div>
         </div>
       </div>
 
       {/* Bitácora Operacional de Turnos de Control de Heladas */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-5 shadow-2xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-stone-100 dark:border-stone-800 pb-4">
           <div>
-            <h2 className="font-bold text-base text-stone-900 flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-cyan-700" />
+            <h2 className="font-bold text-base text-stone-900 dark:text-stone-100 flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
               <span>Bitácora de Operación de Control Activo de Heladas</span>
             </h2>
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-stone-500 dark:text-stone-400">
               Registro detallado de encendido, temperaturas críticas, consumo de agua o combustible, sectores protegidos y tratamiento post-helada.
             </p>
           </div>
@@ -1790,14 +1790,14 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar cuartel, operador..."
-                className="pl-8 pr-3 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-cyan-700"
+                className="pl-8 pr-3 py-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-cyan-700 dark:text-stone-100"
               />
             </div>
 
             <select
               value={filtroAnio}
               onChange={(e) => setFiltroAnio(e.target.value)}
-              className="px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold"
+              className="px-2.5 py-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-xl text-xs font-semibold dark:text-stone-100"
             >
               <option value="todos">Todos los años</option>
               {aniosDisponibles.map((a) => (
@@ -1810,7 +1810,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
             <select
               value={filtroMetodo}
               onChange={(e) => setFiltroMetodo(e.target.value)}
-              className="px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold"
+              className="px-2.5 py-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-xl text-xs font-semibold dark:text-stone-100"
             >
               <option value="todos">Todos los métodos</option>
               {METODOS_CONTROL.map((m) => (
@@ -1823,7 +1823,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
             <select
               value={filtroEstado}
               onChange={(e) => setFiltroEstado(e.target.value)}
-              className="px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold"
+              className="px-2.5 py-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-xl text-xs font-semibold dark:text-stone-100"
             >
               <option value="todos">Todos los estados</option>
               {ESTADOS_TURNO.map((est) => (
@@ -1836,12 +1836,12 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
         </div>
 
         {controlesFiltrados.length === 0 ? (
-          <div className="p-8 rounded-2xl border border-dashed border-stone-300 bg-stone-50 text-center space-y-2.5">
-            <Snowflake className="w-8 h-8 text-cyan-700 mx-auto opacity-75" />
-            <div className="text-sm font-bold text-stone-800">
+          <div className="p-8 rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/70 text-center space-y-2.5">
+            <Snowflake className="w-8 h-8 text-cyan-700 dark:text-cyan-400 mx-auto opacity-75" />
+            <div className="text-sm font-bold text-stone-800 dark:text-stone-200">
               No hay turnos de control de heladas registrados
             </div>
-            <p className="text-xs text-stone-500 max-w-md mx-auto">
+            <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto">
               Registra aquí cada noche en que actives aspersión antiheladas, torres de viento, calefactores o riego nocturno para respaldar tu trazabilidad BPA/SAG.
             </p>
             {canEdit && (
@@ -1862,17 +1862,17 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
               return (
                 <div
                   key={reg.id}
-                  className="p-4 rounded-2xl border border-stone-200 bg-stone-50/40 hover:bg-white transition-colors space-y-3"
+                  className="p-4 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50/40 dark:bg-stone-800/70 hover:bg-white dark:hover:bg-stone-800 transition-colors space-y-3"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono tabular-nums font-black text-sm text-stone-900">
+                      <span className="font-mono tabular-nums font-black text-sm text-stone-900 dark:text-stone-100">
                         {reg.fecha}
                       </span>
-                      <span className="px-2 py-0.5 rounded bg-stone-100 border border-stone-200 text-[11px] font-semibold text-stone-700">
+                      <span className="px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 text-[11px] font-semibold text-stone-700 dark:text-stone-300">
                         {reg.tipoHelada}
                       </span>
-                      <span className="px-2 py-0.5 rounded bg-cyan-50 border border-cyan-200 text-[11px] font-bold text-cyan-900">
+                      <span className="px-2 py-0.5 rounded bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/80 text-[11px] font-bold text-cyan-900 dark:text-cyan-200">
                         {reg.metodoControl}
                       </span>
                       <span
@@ -1880,8 +1880,8 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                           reg.estadoTurno === 'Activo en Operación'
                             ? 'bg-rose-600 text-white'
                             : reg.estadoTurno === 'En Alerta'
-                            ? 'bg-amber-100 text-amber-900 border border-amber-200'
-                            : 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+                            ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800/80'
+                            : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800/80'
                         }`}
                       >
                         {reg.estadoTurno}
@@ -1889,7 +1889,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="font-mono tabular-nums text-stone-600 flex items-center gap-1">
+                      <span className="font-mono tabular-nums text-stone-600 dark:text-stone-400 flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5 text-stone-400" />
                         {reg.horaInicio}
                         {reg.horaTermino ? ` → ${reg.horaTermino}` : ''} ({reg.duracionHoras} hrs)
@@ -1899,7 +1899,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                           <button
                             type="button"
                             onClick={() => handleOpenEditModal(reg)}
-                            className="p-1.5 rounded-lg bg-white border border-stone-200 hover:bg-stone-100 text-stone-700 cursor-pointer"
+                            className="p-1.5 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 cursor-pointer"
                             title="Editar turno"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
@@ -1919,7 +1919,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => setConfirmDeleteId(null)}
-                                className="px-2 py-1 rounded-lg bg-stone-200 text-stone-700 text-[11px] font-bold cursor-pointer"
+                                className="px-2 py-1 rounded-lg bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-300 text-[11px] font-bold cursor-pointer"
                               >
                                 No
                               </button>
@@ -1928,7 +1928,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                             <button
                               type="button"
                               onClick={() => setConfirmDeleteId(reg.id)}
-                              className="p-1.5 rounded-lg bg-white border border-stone-200 hover:bg-rose-50 hover:text-rose-700 text-stone-500 cursor-pointer"
+                              className="p-1.5 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-700 dark:hover:text-rose-400 text-stone-500 dark:text-stone-400 cursor-pointer"
                               title="Eliminar registro"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1940,46 +1940,46 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5 text-xs">
-                    <div className="p-2.5 rounded-xl bg-white border border-stone-200">
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
                       <div className="text-[10px] font-bold uppercase text-stone-400">
                         T° Mínima Aire
                       </div>
                       <div
                         className={`font-mono tabular-nums font-black text-sm mt-0.5 ${
-                          isDangerTemp ? 'text-rose-700' : 'text-cyan-900'
+                          isDangerTemp ? 'text-rose-700 dark:text-rose-400' : 'text-cyan-900 dark:text-cyan-200'
                         }`}
                       >
                         {reg.tempMinimaAireC.toFixed(1)}°C
                       </div>
-                      <div className="text-[10px] text-stone-500 font-mono">
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400 font-mono">
                         Enc: {reg.tempEncendidoC.toFixed(1)}°C
                         {reg.tempApagadoC !== undefined ? ` · Apag: ${reg.tempApagadoC.toFixed(1)}°C` : ''}
                       </div>
                     </div>
 
-                    <div className="p-2.5 rounded-xl bg-white border border-stone-200">
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
                       <div className="text-[10px] font-bold uppercase text-stone-400">
                         Bulbo Húmedo / Atm
                       </div>
-                      <div className="font-mono tabular-nums font-bold text-stone-900 mt-0.5">
+                      <div className="font-mono tabular-nums font-bold text-stone-900 dark:text-stone-100 mt-0.5">
                         {reg.tempBulboHumedoC !== undefined
                           ? `${reg.tempBulboHumedoC.toFixed(1)}°C BH`
                           : 'BH —'}
                       </div>
-                      <div className="text-[10px] text-stone-500 font-mono">
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400 font-mono">
                         {reg.vientoKmH !== undefined ? `${reg.vientoKmH} km/h` : 'Viento —'} ·{' '}
                         {reg.humedadRelativaPct !== undefined ? `HR ${reg.humedadRelativaPct}%` : 'HR —'}
                       </div>
                     </div>
 
-                    <div className="p-2.5 rounded-xl bg-white border border-stone-200">
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
                       <div className="text-[10px] font-bold uppercase text-stone-400">
                         Agua / Caudalímetro
                       </div>
-                      <div className="font-mono tabular-nums font-bold text-blue-900 mt-0.5">
+                      <div className="font-mono tabular-nums font-bold text-blue-900 dark:text-blue-200 mt-0.5">
                         {reg.volumenAguaM3 !== undefined ? `${reg.volumenAguaM3} m³` : '—'}
                       </div>
-                      <div className="text-[10px] text-stone-500 font-mono truncate">
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400 font-mono truncate">
                         {reg.caudalimetroInicialM3 !== undefined || reg.caudalimetroFinalM3 !== undefined
                           ? `${reg.caudalimetroInicialM3 ?? '—'} → ${reg.caudalimetroFinalM3 ?? '—'}`
                           : reg.presionOperacionBar !== undefined
@@ -1988,59 +1988,59 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       </div>
                     </div>
 
-                    <div className="p-2.5 rounded-xl bg-white border border-stone-200">
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
                       <div className="text-[10px] font-bold uppercase text-stone-400">
                         Equipo / Combustible
                       </div>
-                      <div className="font-mono tabular-nums font-bold text-stone-900 mt-0.5">
+                      <div className="font-mono tabular-nums font-bold text-stone-900 dark:text-stone-100 mt-0.5">
                         {reg.horasEquipo !== undefined ? `${reg.horasEquipo} hrs eq.` : `${reg.duracionHoras} hrs`}
                       </div>
-                      <div className="text-[10px] text-stone-500 font-mono">
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400 font-mono">
                         {reg.litrosCombustible !== undefined ? `${reg.litrosCombustible} L comb.` : reg.presionOperacionBar !== undefined ? `${reg.presionOperacionBar} bar` : '—'}
                       </div>
                     </div>
 
-                    <div className="p-2.5 rounded-xl bg-white border border-stone-200">
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
                       <div className="text-[10px] font-bold uppercase text-stone-400">
                         Cuarteles Protegidos
                       </div>
-                      <div className="font-bold text-stone-900 truncate mt-0.5" title={reg.parcelasNombres.join(', ')}>
+                      <div className="font-bold text-stone-900 dark:text-stone-100 truncate mt-0.5" title={reg.parcelasNombres.join(', ')}>
                         {reg.parcelasNombres.join(', ')}
                       </div>
-                      <div className="text-[10px] text-stone-500 font-mono truncate">
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400 font-mono truncate">
                         {reg.superficieProtegidaHa} ha · {reg.estadoFenologico}
                       </div>
                     </div>
 
-                    <div className="p-2.5 rounded-xl bg-white border border-stone-200">
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
                       <div className="text-[10px] font-bold uppercase text-stone-400">
                         Post-Evento &amp; Resp.
                       </div>
                       <div
                         className={`font-mono tabular-nums font-bold mt-0.5 ${
-                          (reg.danioEstimadoPct || 0) > 10 ? 'text-rose-700' : 'text-emerald-800'
+                          (reg.danioEstimadoPct || 0) > 10 ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-800 dark:text-emerald-300'
                         }`}
                       >
                         Daño est.: {reg.danioEstimadoPct ?? 0}%
                       </div>
-                      <div className="text-[10px] text-stone-500 truncate">
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400 truncate">
                         {reg.operadorResponsable}
                       </div>
                     </div>
                   </div>
 
                   {(reg.tratamientoPostHelada || reg.observaciones || reg.fotoEvidenciaDataUrl) && (
-                    <div className="text-[11px] text-stone-600 bg-white px-3 py-2 rounded-xl border border-stone-200/80 flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-[11px] text-stone-600 dark:text-stone-400 bg-white dark:bg-stone-900 px-3 py-2 rounded-xl border border-stone-200/80 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2">
                       <div className="flex flex-wrap gap-x-4 gap-y-1">
                         {reg.tratamientoPostHelada && (
                           <span>
-                            <strong className="text-stone-800">Tratamiento Post-Helada:</strong>{' '}
+                            <strong className="text-stone-800 dark:text-stone-200">Tratamiento Post-Helada:</strong>{' '}
                             {reg.tratamientoPostHelada}
                           </span>
                         )}
                         {reg.observaciones && (
                           <span>
-                            <strong className="text-stone-800">Obs:</strong> {reg.observaciones}
+                            <strong className="text-stone-800 dark:text-stone-200">Obs:</strong> {reg.observaciones}
                           </span>
                         )}
                       </div>
@@ -2048,12 +2048,12 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                         <button
                           type="button"
                           onClick={() => setFotoZoomUrl(reg.fotoEvidenciaDataUrl!)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 border border-stone-200 text-[10px] font-bold text-stone-800 cursor-pointer shrink-0"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-800 text-[10px] font-bold text-stone-800 dark:text-stone-200 cursor-pointer shrink-0"
                         >
                           <img
                             src={reg.fotoEvidenciaDataUrl}
                             alt="Evidencia control heladas"
-                            className="w-6 h-6 rounded object-cover border border-stone-300"
+                            className="w-6 h-6 rounded object-cover border border-stone-300 dark:border-stone-700"
                           />
                           <span>Ver Evidencia Fotográfica</span>
                         </button>
@@ -2069,14 +2069,14 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
 
       {/* Vinculación con Eventualidades de Helada en Clima */}
       {eventualidadesHelada.length > 0 && (
-        <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-3">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-5 shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-sm text-stone-900 flex items-center gap-2">
+              <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
                 <span>Eventualidades de Helada Registradas en Clima ({eventualidadesHelada.length})</span>
               </h3>
-              <p className="text-[11px] text-stone-500">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 Eventos climáticos anotados en la bitácora anual del módulo Clima.
               </p>
             </div>
@@ -2084,7 +2084,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigateTab('clima')}
-                className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold cursor-pointer"
+                className="px-3 py-1.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-xl text-xs font-bold cursor-pointer"
               >
                 Abrir Clima →
               </button>
@@ -2092,19 +2092,19 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
             {eventualidadesHelada.slice(0, 6).map((ev) => (
-              <div key={ev.id} className="p-3 rounded-xl bg-stone-50 border border-stone-200 space-y-1">
-                <div className="flex items-center justify-between font-bold text-stone-900">
+              <div key={ev.id} className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 space-y-1">
+                <div className="flex items-center justify-between font-bold text-stone-900 dark:text-stone-100">
                   <span className="font-mono tabular-nums">{ev.fecha}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-900">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950/60 text-cyan-900 dark:text-cyan-200">
                     {ev.tipo}
                   </span>
                 </div>
-                <div className="text-[11px] text-stone-600 font-mono">
+                <div className="text-[11px] text-stone-600 dark:text-stone-400 font-mono">
                   Mín: {ev.tempMinimaC ?? '—'}°C · Severidad: {ev.severidad}
                   {ev.danioEstimadoPct !== undefined ? ` · Daño ${ev.danioEstimadoPct}%` : ''}
                 </div>
                 {ev.medidaMitigacion && (
-                  <div className="text-[11px] text-stone-500 truncate">{ev.medidaMitigacion}</div>
+                  <div className="text-[11px] text-stone-500 dark:text-stone-400 truncate">{ev.medidaMitigacion}</div>
                 )}
               </div>
             ))}
@@ -2114,8 +2114,8 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
 
       {/* Modal de Registro / Edición de Control de Helada */}
       {isModalOpen && canEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/70 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl border border-stone-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/70 dark:bg-black/75 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-3xl border border-stone-200 dark:border-stone-800 overflow-hidden my-auto max-h-[92vh] flex flex-col">
             <div className="bg-cyan-950 text-white p-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <ThermometerSnowflake className="w-5 h-5 text-cyan-300" />
@@ -2134,7 +2134,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
 
             <form onSubmit={handleSaveForm} className="p-5 space-y-4 overflow-y-auto text-xs">
               {formError && (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 font-semibold flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 text-rose-800 dark:text-rose-300 font-semibold flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
                   <span>{formError}</span>
                 </div>
@@ -2143,7 +2143,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
               {/* Datos Base y Método */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Evento *:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha Evento *:</label>
                   <input
                     type="date"
                     value={fFecha}
@@ -2151,26 +2151,26 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       setFFecha(e.target.value);
                       setFTemporada(getTemporadaPorFecha(e.target.value));
                     }}
-                    className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-mono"
+                    className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Temporada:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Temporada:</label>
                   <input
                     type="text"
                     value={fTemporada}
                     onChange={(e) => setFTemporada(e.target.value)}
                     placeholder="2025-2026"
-                    className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-mono"
+                    className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Estado del Turno:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado del Turno:</label>
                   <select
                     value={fEstadoTurno}
                     onChange={(e) => setFEstadoTurno(e.target.value as EstadoTurnoHelada)}
-                    className="w-full p-2.5 bg-white border border-stone-300 rounded-xl"
+                    className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl dark:text-stone-100"
                   >
                     {ESTADOS_TURNO.map((est) => (
                       <option key={est} value={est}>
@@ -2181,13 +2181,13 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Tipo de Helada:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Tipo de Helada:</label>
                   <select
                     value={fTipoHelada}
                     onChange={(e) =>
                       setFTipoHelada(e.target.value as ControlHeladaRegistro['tipoHelada'])
                     }
-                    className="w-full p-2.5 bg-white border border-stone-300 rounded-xl"
+                    className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl dark:text-stone-100"
                   >
                     <option value="Helada Radiativa">Helada Radiativa (Inversión / Sin viento)</option>
                     <option value="Helada Advectiva">Helada Advectiva (Masa polar + viento)</option>
@@ -2196,11 +2196,11 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-bold text-stone-700 mb-1">Método de Control Antihelada *:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Método de Control Antihelada *:</label>
                   <select
                     value={fMetodo}
                     onChange={(e) => setFMetodo(e.target.value as MetodoControlHelada)}
-                    className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-semibold"
+                    className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-semibold dark:text-stone-100"
                   >
                     {METODOS_CONTROL.map((m) => (
                       <option key={m} value={m}>
@@ -2212,13 +2212,13 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
               </div>
 
               {/* Horarios & Temperaturas */}
-              <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-stone-600">
+              <div className="p-3.5 rounded-xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 space-y-3">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
                   Ventana Horaria &amp; Registro Térmico
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Hora Encendido *:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Hora Encendido *:</label>
                     <input
                       type="time"
                       value={fHoraInicio}
@@ -2226,12 +2226,12 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                         setFHoraInicio(e.target.value);
                         recalcDuracion(e.target.value, fHoraTermino);
                       }}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Hora Término:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Hora Término:</label>
                     <input
                       type="time"
                       value={fHoraTermino}
@@ -2239,89 +2239,89 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                         setFHoraTermino(e.target.value);
                         recalcDuracion(fHoraInicio, e.target.value);
                       }}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Duración (hrs):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Duración (hrs):</label>
                     <input
                       type="number"
                       step="0.1"
                       min="0"
                       value={fDuracionHoras}
                       onChange={(e) => setFDuracionHoras(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Operador Responsable:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Operador Responsable:</label>
                     <input
                       type="text"
                       value={fOperador}
                       onChange={(e) => setFOperador(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl dark:text-stone-100"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">T° Encendido (°C) *:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">T° Encendido (°C) *:</label>
                     <input
                       type="number"
                       step="0.1"
                       value={fTempEncendido}
                       onChange={(e) => setFTempEncendido(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">T° Mínima Aire (°C) *:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">T° Mínima Aire (°C) *:</label>
                     <input
                       type="number"
                       step="0.1"
                       value={fTempMinima}
                       onChange={(e) => setFTempMinima(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">T° Bulbo Húmedo (°C):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">T° Bulbo Húmedo (°C):</label>
                     <input
                       type="number"
                       step="0.1"
                       value={fTempBulboHumedo}
                       onChange={(e) => setFTempBulboHumedo(e.target.value)}
                       placeholder="Opcional"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">T° Apagado (°C):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">T° Apagado (°C):</label>
                     <input
                       type="number"
                       step="0.1"
                       value={fTempApagado}
                       onChange={(e) => setFTempApagado(e.target.value)}
                       placeholder="Opcional"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Viento (km/h):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Viento (km/h):</label>
                     <input
                       type="number"
                       step="0.1"
                       min="0"
                       value={fViento}
                       onChange={(e) => setFViento(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Humedad Relativa (%):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Humedad Relativa (%):</label>
                     <input
                       type="number"
                       step="1"
@@ -2329,21 +2329,21 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       max="100"
                       value={fHumedad}
                       onChange={(e) => setFHumedad(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Consumo Hídrico / Caudalímetro / Energía */}
-              <div className="p-3.5 rounded-xl bg-blue-50/50 border border-blue-200 space-y-3">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
-                  <Droplet className="w-3.5 h-3.5 text-blue-700" />
+              <div className="p-3.5 rounded-xl bg-blue-50/50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 space-y-3">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                  <Droplet className="w-3.5 h-3.5 text-blue-700 dark:text-blue-400" />
                   <span>Medición Hídrica (Caudalímetro / Presión) &amp; Consumo Equipos</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Caudalímetro Inicial (m³):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Caudalímetro Inicial (m³):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -2354,11 +2354,11 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                         recalcAguaFromCaudalimetros(e.target.value, fCaudFin);
                       }}
                       placeholder="Lectura m³"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Caudalímetro Final (m³):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Caudalímetro Final (m³):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -2369,11 +2369,11 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                         recalcAguaFromCaudalimetros(fCaudIni, e.target.value);
                       }}
                       placeholder="Lectura m³"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Volumen Agua Aplicado (m³):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Volumen Agua Aplicado (m³):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -2381,11 +2381,11 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       value={fVolumenAgua}
                       onChange={(e) => setFVolumenAgua(e.target.value)}
                       placeholder="Auto o manual"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono font-bold text-blue-900"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono font-bold text-blue-900 dark:text-blue-200"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Presión Aspersión (bar):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Presión Aspersión (bar):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -2393,11 +2393,11 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       value={fPresionBar}
                       onChange={(e) => setFPresionBar(e.target.value)}
                       placeholder="Ej. 3.2"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Horas Equipo / Bomba:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Horas Equipo / Bomba:</label>
                     <input
                       type="number"
                       step="0.1"
@@ -2405,11 +2405,11 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       value={fHorasEquipo}
                       onChange={(e) => setFHorasEquipo(e.target.value)}
                       placeholder="Hrs operación"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Combustible (Litros):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Combustible (Litros):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -2417,7 +2417,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       value={fCombustible}
                       onChange={(e) => setFCombustible(e.target.value)}
                       placeholder="Diésel / Gas L"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                 </div>
@@ -2426,7 +2426,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
               {/* Cuarteles Protegidos & Evaluación Post-Evento */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="font-bold text-stone-700">
+                  <label className="font-bold text-stone-700 dark:text-stone-300">
                     Cuarteles Protegidos ({fParcelasIds.length} seleccionados):
                   </label>
                   {parcelas.length > 0 && (
@@ -2438,7 +2438,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                           setFParcelasIds(all);
                           recalcSuperficieFromParcelas(all);
                         }}
-                        className="text-[11px] font-bold text-cyan-800 hover:underline cursor-pointer"
+                        className="text-[11px] font-bold text-cyan-800 dark:text-cyan-300 hover:underline cursor-pointer"
                       >
                         Todos
                       </button>
@@ -2448,7 +2448,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                           setFParcelasIds([]);
                           recalcSuperficieFromParcelas([]);
                         }}
-                        className="text-[11px] font-bold text-stone-500 hover:underline cursor-pointer"
+                        className="text-[11px] font-bold text-stone-500 dark:text-stone-400 hover:underline cursor-pointer"
                       >
                         Limpiar
                       </button>
@@ -2468,7 +2468,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                           className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold cursor-pointer transition-colors ${
                             active
                               ? 'bg-cyan-900 text-white border-cyan-900'
-                              : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
+                              : 'bg-stone-50 dark:bg-stone-800/70 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800'
                           }`}
                         >
                           {p.nombre} ({p.superficieHa} ha)
@@ -2480,22 +2480,22 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Superficie Protegida (ha):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Superficie Protegida (ha):</label>
                     <input
                       type="number"
                       step="0.01"
                       min="0"
                       value={fSuperficieHa}
                       onChange={(e) => setFSuperficieHa(e.target.value)}
-                      className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Estado Fenológico:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado Fenológico:</label>
                     <select
                       value={fEstadoFenologico}
                       onChange={(e) => setFEstadoFenologico(e.target.value)}
-                      className="w-full p-2.5 bg-white border border-stone-300 rounded-xl"
+                      className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl dark:text-stone-100"
                     >
                       {estadosFenologicosOpciones.map((op) => (
                         <option key={op} value={op}>
@@ -2508,7 +2508,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                     </select>
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Daño Post-Evento Estimado (%):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Daño Post-Evento Estimado (%):</label>
                     <input
                       type="number"
                       step="1"
@@ -2516,13 +2516,13 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                       max="100"
                       value={fDanioPct}
                       onChange={(e) => setFDanioPct(e.target.value)}
-                      className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-mono"
+                      className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl font-mono dark:text-stone-100"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                     Medida / Tratamiento Post-Helada (si aplica):
                   </label>
                   <input
@@ -2530,28 +2530,28 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                     value={fTratamientoPost}
                     onChange={(e) => setFTratamientoPost(e.target.value)}
                     placeholder="Ej. Aplicación preventiva de Cobre + Bioestimulante / Aminoácidos para cicatrización"
-                    className="w-full p-2.5 bg-white border border-stone-300 rounded-xl"
+                    className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl dark:text-stone-100"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Observaciones del Turno:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones del Turno:</label>
                   <textarea
                     rows={2}
                     value={fObservaciones}
                     onChange={(e) => setFObservaciones(e.target.value)}
                     placeholder="Notas sobre inversión térmica, comportamiento de aspersores, cobertura de hielo o sectores fríos..."
-                    className="w-full p-2.5 bg-white border border-stone-300 rounded-xl"
+                    className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl dark:text-stone-100"
                   />
                 </div>
 
-                <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
-                  <label className="block font-bold text-stone-700">
+                <div className="p-3 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300">
                     Evidencia Fotográfica desde Celular (hielo, aspersores, daño en yemas — se incluye en PDF):
                   </label>
                   <div className="flex flex-wrap items-center gap-3">
-                    <label className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-300 rounded-xl text-xs font-bold text-stone-800 inline-flex items-center gap-1.5 cursor-pointer">
-                      <Camera className="w-4 h-4 text-cyan-800" />
+                    <label className="px-3 py-2 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-bold text-stone-800 dark:text-stone-200 inline-flex items-center gap-1.5 cursor-pointer">
+                      <Camera className="w-4 h-4 text-cyan-800 dark:text-cyan-300" />
                       <span>{fFotoEvidenciaDataUrl ? 'Cambiar Foto' : 'Tomar / Subir Foto'}</span>
                       <input
                         type="file"
@@ -2575,13 +2575,13 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                         <img
                           src={fFotoEvidenciaDataUrl}
                           alt="Evidencia helada"
-                          className="w-14 h-14 rounded-lg object-cover border border-stone-300 cursor-pointer"
+                          className="w-14 h-14 rounded-lg object-cover border border-stone-300 dark:border-stone-700 cursor-pointer"
                           onClick={() => setFotoZoomUrl(fFotoEvidenciaDataUrl)}
                         />
                         <button
                           type="button"
                           onClick={() => setFFotoEvidenciaDataUrl('')}
-                          className="px-2 py-1 text-[11px] font-bold text-rose-700 hover:bg-rose-50 rounded cursor-pointer"
+                          className="px-2 py-1 text-[11px] font-bold text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded cursor-pointer"
                         >
                           Quitar
                         </button>
@@ -2591,11 +2591,11 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-bold cursor-pointer"
+                  className="px-4 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-xl font-bold cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -2618,7 +2618,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
           onClick={() => setFotoZoomUrl(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-stone-200"
+            className="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-stone-200 dark:border-stone-800"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-3 bg-stone-900 text-white flex items-center justify-between text-xs font-bold">
@@ -2631,7 +2631,7 @@ export const ControlHeladasView: React.FC<ControlHeladasViewProps> = ({
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-3 bg-stone-100 flex items-center justify-center">
+            <div className="p-3 bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
               <img
                 src={fotoZoomUrl}
                 alt="Evidencia control heladas"

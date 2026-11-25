@@ -158,9 +158,9 @@ export function evaluarVentanaPulverizacion(
       resumen: `Condiciones fuera de rango en: ${bloqueantes}.`,
       recomendacion:
         'Suspende o reprograma la aplicación fitosanitaria para evitar deriva hacia deslindes, pérdida de eficacia o lavado del producto.',
-      badgeClass: 'bg-rose-100 text-rose-900 border border-rose-300',
-      cardClass: 'bg-rose-50/75 border-rose-300',
-      textClass: 'text-rose-900',
+      badgeClass: 'bg-rose-100 dark:bg-rose-900/50 text-rose-900 dark:text-rose-200 border border-rose-300 dark:border-rose-700/80',
+      cardClass: 'bg-rose-50/75 dark:bg-rose-950/35 border-rose-300 dark:border-rose-700/80',
+      textClass: 'text-rose-900 dark:text-rose-200',
       factores,
     };
   }
@@ -176,9 +176,9 @@ export function evaluarVentanaPulverizacion(
       resumen: `Vigilar parámetros ajustados: ${alertas}.`,
       recomendacion:
         'Aplica solo con boquillas de baja deriva/baja presión, ajusta velocidad del tractor y evalúa agregar coadyuvante.',
-      badgeClass: 'bg-amber-100 text-amber-950 border border-amber-300',
-      cardClass: 'bg-amber-50/70 border-amber-300',
-      textClass: 'text-amber-900',
+      badgeClass: 'bg-amber-100 dark:bg-amber-900/50 text-amber-950 dark:text-amber-100 border border-amber-300 dark:border-amber-700/80',
+      cardClass: 'bg-amber-50/70 dark:bg-amber-950/35 border-amber-300 dark:border-amber-700/80',
+      textClass: 'text-amber-900 dark:text-amber-200',
       factores,
     };
   }
@@ -189,9 +189,9 @@ export function evaluarVentanaPulverizacion(
     resumen: `Viento ${viento.toFixed(1)} km/h · HR ${Math.round(humedad)}% · ${temp.toFixed(1)}°C · ${probLluvia}% lluvia.`,
     recomendacion:
       'Condiciones ideales para pulverización uniforme con mínima deriva y excelente adherencia foliar.',
-    badgeClass: 'bg-emerald-100 text-emerald-900 border border-emerald-300',
-    cardClass: 'bg-emerald-50/70 border-emerald-200',
-    textClass: 'text-emerald-900',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700/80',
+    cardClass: 'bg-emerald-50/70 dark:bg-emerald-950/35 border-emerald-200 dark:border-emerald-800/70',
+    textClass: 'text-emerald-900 dark:text-emerald-200',
     factores,
   };
 }

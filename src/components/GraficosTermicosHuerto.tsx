@@ -157,14 +157,14 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
     const activePt = hoveredIdx !== null && points[hoveredIdx] ? points[hoveredIdx] : null;
 
     return (
-      <div className="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 shadow-2xs space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-3">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 sm:p-5 shadow-2xs space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 dark:border-stone-800 pb-3">
           <div>
-            <h3 className="font-extrabold text-sm text-stone-900 flex items-center gap-2">
+            <h3 className="font-extrabold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
               {isHF ? (
-                <Snowflake className="w-4 h-4 text-blue-700" />
+                <Snowflake className="w-4 h-4 text-blue-700 dark:text-blue-400" />
               ) : (
-                <Flame className="w-4 h-4 text-amber-600" />
+                <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               )}
               <span>
                 {isHF
@@ -172,7 +172,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                   : `Curva de Grados Día (Base ${horasFrio.tempBaseGddC ?? 10}°C)`}
               </span>
             </h3>
-            <p className="text-[11px] text-stone-500">
+            <p className="text-[11px] text-stone-500 dark:text-stone-400">
               {isHF
                 ? `Ventana estacional: ${formatShortDate(iniHF)} – ${formatShortDate(finHF)} · Meta varietal: ${metaHF} HF`
                 : `Ventana estacional: ${formatShortDate(iniGD)} – ${formatShortDate(finGD)} · Meta madurez: ${metaGD} °D`}
@@ -180,14 +180,14 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
           </div>
 
           <div className="flex items-center gap-2 text-[10px] font-bold">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 text-stone-700">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200">
               <span
                 className="w-2.5 h-2.5 rounded-xs inline-block"
                 style={{ backgroundColor: isHF ? '#93c5fd' : '#fcd34d' }}
               />
               Por período
             </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 text-stone-700">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200">
               <span
                 className="w-3 h-0.5 inline-block"
                 style={{ backgroundColor: isHF ? '#1d4ed8' : '#d97706' }}
@@ -198,9 +198,9 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
         </div>
 
         {points.length === 0 ? (
-          <div className="h-52 flex flex-col items-center justify-center text-center text-stone-400 text-xs bg-stone-50 rounded-xl border border-dashed border-stone-200 p-4">
-            <BarChart3 className="w-7 h-7 text-stone-300 mb-1.5" />
-            <p className="font-semibold text-stone-600">
+          <div className="h-52 flex flex-col items-center justify-center text-center text-stone-400 dark:text-stone-500 text-xs bg-stone-50 dark:bg-stone-800/60 rounded-xl border border-dashed border-stone-200 dark:border-stone-700 p-4">
+            <BarChart3 className="w-7 h-7 text-stone-300 dark:text-stone-600 mb-1.5" />
+            <p className="font-semibold text-stone-600 dark:text-stone-300">
               Sin registros {filtroPeriodo !== 'todos' ? `de tipo «${filtroPeriodo}» ` : ''}para graficar en esta ventana.
             </p>
             <p className="text-[11px] mt-0.5">
@@ -232,7 +232,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                       y1={y}
                       x2={W - PAD.right}
                       y2={y}
-                      stroke="#e7e5e4"
+                      className="stroke-stone-200 dark:stroke-stone-700"
                       strokeWidth="1"
                     />
                     <text
@@ -240,7 +240,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                       y={y + 3}
                       textAnchor="end"
                       fontSize="10"
-                      fill="#78716c"
+                      className="fill-stone-500 dark:fill-stone-400"
                       fontFamily="monospace"
                     >
                       {tick}
@@ -287,7 +287,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                     y1={getY(meta)}
                     x2={W - PAD.right}
                     y2={getY(meta)}
-                    stroke={isHF ? '#1e40af' : '#b45309'}
+                    className={isHF ? 'stroke-blue-700 dark:stroke-blue-400' : 'stroke-amber-700 dark:stroke-amber-400'}
                     strokeWidth="1.5"
                     strokeDasharray="5 4"
                   />
@@ -296,7 +296,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                     y={getY(meta) - 5}
                     fontSize="9.5"
                     fontWeight="800"
-                    fill={isHF ? '#1e40af' : '#b45309'}
+                    className={isHF ? 'fill-blue-700 dark:fill-blue-300' : 'fill-amber-700 dark:fill-amber-300'}
                   >
                     Meta {isHF ? `${meta} HF` : `${meta} °D (Madurez)`}
                   </text>
@@ -332,7 +332,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                 <path
                   d={linePath}
                   fill="none"
-                  stroke={isHF ? '#1d4ed8' : '#d97706'}
+                  className={isHF ? 'stroke-blue-700 dark:stroke-blue-400' : 'stroke-amber-600 dark:stroke-amber-400'}
                   strokeWidth="2.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -366,8 +366,9 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                       cx={x}
                       cy={y}
                       r={isActive ? 6 : 4}
-                      fill="#ffffff"
-                      stroke={isHF ? '#1d4ed8' : '#d97706'}
+                      className={`fill-white dark:fill-stone-900 ${
+                        isHF ? 'stroke-blue-700 dark:stroke-blue-400' : 'stroke-amber-600 dark:stroke-amber-400'
+                      }`}
                       strokeWidth={isActive ? 3 : 2.2}
                     />
                     {showXLabel && (
@@ -377,7 +378,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                         textAnchor="middle"
                         fontSize="9.5"
                         fontWeight={isActive ? '800' : '600'}
-                        fill="#57534e"
+                        className="fill-stone-600 dark:fill-stone-400"
                       >
                         {p.label.length > 13 ? `${p.label.slice(0, 12)}…` : p.label}
                       </text>
@@ -389,7 +390,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
 
             {/* Tooltip / Detalle del punto seleccionado */}
             {activePt ? (
-              <div className="mt-2 p-2.5 rounded-xl bg-stone-900 text-white text-[11px] flex flex-wrap items-center justify-between gap-2">
+              <div className="mt-2 p-2.5 rounded-xl bg-stone-900 dark:bg-stone-800 border border-stone-800 dark:border-stone-700 text-white text-[11px] flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <span className="font-black text-emerald-300">{activePt.label}</span>
                   <span className="text-stone-400 ml-2 font-mono text-[10px]">
@@ -417,7 +418,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="mt-1 text-[10px] text-stone-400 text-right">
+              <div className="mt-1 text-[10px] text-stone-400 dark:text-stone-500 text-right">
                 Pasa el cursor o toca un punto del gráfico para ver el detalle del período.
               </div>
             )}
@@ -430,16 +431,16 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
   return (
     <div className="space-y-4">
       {/* Barra de controles de gráficos */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center">
             <TrendingUp className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="font-extrabold text-sm text-stone-900">
+            <h2 className="font-extrabold text-sm text-stone-900 dark:text-stone-100">
               Gráficos de Acumulación Térmica del Huerto
             </h2>
-            <p className="text-[11px] text-stone-500">
+            <p className="text-[11px] text-stone-500 dark:text-stone-400">
               Visualización interactiva por granularidad diaria, semanal o mensual frente a las metas de Kiwi Hayward.
             </p>
           </div>
@@ -447,7 +448,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
 
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {/* Filtro de granularidad */}
-          <div className="inline-flex bg-stone-100 p-1 rounded-xl border border-stone-200">
+          <div className="inline-flex bg-stone-100 dark:bg-stone-800 p-1 rounded-xl border border-stone-200 dark:border-stone-700">
             {(
               [
                 { id: 'todos', label: 'Todos' },
@@ -466,8 +467,8 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                 }}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
                   filtroPeriodo === opt.id
-                    ? 'bg-stone-900 text-white shadow-2xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-950 shadow-2xs'
+                    : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
                 {opt.label}
@@ -476,7 +477,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
           </div>
 
           {/* Selector de series */}
-          <div className="inline-flex bg-stone-100 p-1 rounded-xl border border-stone-200">
+          <div className="inline-flex bg-stone-100 dark:bg-stone-800 p-1 rounded-xl border border-stone-200 dark:border-stone-700">
             {(
               [
                 { id: 'ambos', label: 'Ambos Gráficos' },
@@ -491,7 +492,7 @@ export const GraficosTermicosHuerto: React.FC<GraficosTermicosHuertoProps> = ({
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
                   modoSerie === opt.id
                     ? 'bg-emerald-800 text-white shadow-2xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
                 {opt.label}

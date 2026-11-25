@@ -53,9 +53,9 @@ export function clasificarRiesgoUv(uv: number): ClasificacionUv {
   if (val >= 11) {
     return {
       nivel: 'Extremo',
-      badgeClass: 'bg-purple-100 text-purple-950 border border-purple-300',
-      cardClass: 'bg-purple-50/70 border-purple-300',
-      textClass: 'text-purple-900',
+      badgeClass: 'bg-purple-100 dark:bg-purple-900/50 text-purple-950 dark:text-purple-100 border border-purple-300 dark:border-purple-700/80',
+      cardClass: 'bg-purple-50/70 dark:bg-purple-950/35 border-purple-300 dark:border-purple-700/80',
+      textClass: 'text-purple-900 dark:text-purple-200',
       requiereEpp: true,
       recomendacion:
         'Radiación UV Extrema (Ley 20.096): Bloqueador FPS 50+ cada 2 hrs, polera manga larga UV, sombrero legionario con cubre-nuca, lentes filtro UV400 y pausas obligatorias bajo sombra entre 11:00 y 16:00 hrs.',
@@ -64,9 +64,9 @@ export function clasificarRiesgoUv(uv: number): ClasificacionUv {
   if (val >= 8) {
     return {
       nivel: 'Muy Alto',
-      badgeClass: 'bg-rose-100 text-rose-900 border border-rose-300',
-      cardClass: 'bg-rose-50/70 border-rose-300',
-      textClass: 'text-rose-800',
+      badgeClass: 'bg-rose-100 dark:bg-rose-900/50 text-rose-900 dark:text-rose-200 border border-rose-300 dark:border-rose-700/80',
+      cardClass: 'bg-rose-50/70 dark:bg-rose-950/35 border-rose-300 dark:border-rose-700/80',
+      textClass: 'text-rose-800 dark:text-rose-300',
       requiereEpp: true,
       recomendacion:
         'Radiación UV Muy Alta: Uso obligatorio en cuadrillas de FPS 50+, sombrero ala ancha/legionario, ropa manga larga y rehidratación frecuente. Evitar exposición directa prolongada entre 11:30 y 15:30 hrs.',
@@ -75,9 +75,9 @@ export function clasificarRiesgoUv(uv: number): ClasificacionUv {
   if (val >= 6) {
     return {
       nivel: 'Alto',
-      badgeClass: 'bg-amber-100 text-amber-950 border border-amber-300',
-      cardClass: 'bg-amber-50/70 border-amber-300',
-      textClass: 'text-amber-800',
+      badgeClass: 'bg-amber-100 dark:bg-amber-900/50 text-amber-950 dark:text-amber-100 border border-amber-300 dark:border-amber-700/80',
+      cardClass: 'bg-amber-50/70 dark:bg-amber-950/35 border-amber-300 dark:border-amber-700/80',
+      textClass: 'text-amber-800 dark:text-amber-300',
       requiereEpp: true,
       recomendacion:
         'Radiación UV Alta: Aplicar protector solar FPS 30+ / 50+ antes de iniciar faenas, usar gorro legionario y lentes UV en labores de poda verde, raleo o riego.',
@@ -86,9 +86,9 @@ export function clasificarRiesgoUv(uv: number): ClasificacionUv {
   if (val >= 3) {
     return {
       nivel: 'Moderado',
-      badgeClass: 'bg-yellow-100 text-yellow-900 border border-yellow-300',
-      cardClass: 'bg-yellow-50/60 border-yellow-300',
-      textClass: 'text-yellow-800',
+      badgeClass: 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-900 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-700/80',
+      cardClass: 'bg-yellow-50/60 dark:bg-yellow-950/35 border-yellow-300 dark:border-yellow-700/80',
+      textClass: 'text-yellow-800 dark:text-yellow-300',
       requiereEpp: false,
       recomendacion:
         'Radiación UV Moderada: Se recomienda uso de gorro y protector solar FPS 30+ durante el bloque de mayor sol alrededor del mediodía.',
@@ -96,9 +96,9 @@ export function clasificarRiesgoUv(uv: number): ClasificacionUv {
   }
   return {
     nivel: 'Bajo',
-    badgeClass: 'bg-emerald-100 text-emerald-900 border border-emerald-300',
-    cardClass: 'bg-emerald-50/60 border-emerald-200',
-    textClass: 'text-emerald-800',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700/80',
+    cardClass: 'bg-emerald-50/60 dark:bg-emerald-950/35 border-emerald-200 dark:border-emerald-800/70',
+    textClass: 'text-emerald-800 dark:text-emerald-300',
     requiereEpp: false,
     recomendacion:
       'Radiación UV Baja: Condición segura para labores al aire libre. Mantener hidratación habitual de cuadrillas.',

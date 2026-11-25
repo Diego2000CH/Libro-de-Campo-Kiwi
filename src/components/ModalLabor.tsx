@@ -402,8 +402,8 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-stone-200 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl w-full max-w-2xl border border-stone-200 dark:border-stone-800 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-950 to-stone-900 text-white p-4 sm:p-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -431,31 +431,31 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
           {/* Fila 1: Fecha, Hora y Cuartel */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block font-bold text-stone-700 mb-1">Fecha de la Labor:</label>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha de la Labor:</label>
               <input
                 type="date"
                 value={fecha}
                 onChange={(e) => setFecha(e.target.value)}
-                className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono text-xs"
+                className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono text-xs dark:text-stone-100"
                 required
               />
             </div>
             <div>
-              <label className="block font-bold text-stone-700 mb-1">Hora Inicio:</label>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Hora Inicio:</label>
               <input
                 type="time"
                 value={hora}
                 onChange={(e) => setHora(e.target.value)}
-                className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-mono text-xs"
+                className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono text-xs dark:text-stone-100"
               />
             </div>
             <div>
-              <label className="block font-bold text-stone-700 mb-1">Cuartel Destino:</label>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cuartel Destino:</label>
               {parcelas.length > 0 ? (
                 <select
                   value={parcelaId}
                   onChange={(e) => handleParcelaChange(e.target.value)}
-                  className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-medium text-xs"
+                  className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium text-xs dark:text-stone-100"
                 >
                   {parcelas.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -470,7 +470,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                   value={sectorGeneralNombre}
                   onChange={(e) => setSectorGeneralNombre(e.target.value)}
                   placeholder="Ej. Cuartel 1 / Huerto General"
-                  className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg font-medium text-xs"
+                  className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium text-xs dark:text-stone-100"
                   required
                 />
               )}
@@ -478,9 +478,9 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
           </div>
 
           {!selectedParcela && (
-            <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-amber-900">
+            <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-amber-900 dark:text-amber-200">
               <div className="flex items-center gap-1.5">
-                <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
+                <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
                 <span>
                   {parcelas.length === 0
                     ? 'Aún no has creado cuarteles en "Cuarteles & Mapa". Puedes registrar esta labor indicando sector y hectáreas:'
@@ -495,7 +495,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                   value={superficieManualHa}
                   emptyFallback={0}
                   onChangeNumber={(val) => handleSuperficieManualChange(val)}
-                  className="w-20 p-1 bg-white border border-amber-300 rounded text-xs font-bold font-mono tabular-nums"
+                  className="w-20 p-1 bg-white dark:bg-stone-800 border border-amber-300 dark:border-amber-700 rounded text-xs font-bold font-mono tabular-nums dark:text-stone-100"
                 />
               </div>
             </div>
@@ -503,7 +503,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
           {/* Fila 2: Tipo de Labor */}
           <div>
-            <label className="block font-bold text-stone-700 mb-1">Tipo de Labor Agronómica:</label>
+            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Tipo de Labor Agronómica:</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
                 { id: 'fitosanitario', label: 'Fitosanitario' },
@@ -522,7 +522,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                   className={`p-2 rounded-lg font-bold text-xs border transition-all cursor-pointer ${
                     tipoLabor === t.id
                       ? 'bg-emerald-800 text-white border-emerald-900 shadow-2xs'
-                      : 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100'
+                      : 'bg-stone-50 dark:bg-stone-800/70 border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
                   }`}
                 >
                   {t.label}
@@ -533,9 +533,9 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
           {/* Campos específicos para APLICACIÓN FITOSANITARIA */}
           {tipoLabor === 'fitosanitario' && (
-            <div className="p-3.5 bg-purple-50/70 border border-purple-200 rounded-xl space-y-3">
-              <div className="font-bold text-purple-950 text-xs flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-purple-700" />
+            <div className="p-3.5 bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 rounded-xl space-y-3">
+              <div className="font-bold text-purple-950 dark:text-purple-100 text-xs flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-purple-700 dark:text-purple-400" />
                 <span>Parámetros de Aplicación Fitosanitaria (Producto, Ingrediente Activo, Agua & Aplicador)</span>
               </div>
 
@@ -554,11 +554,11 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
               {productosSelectorList.length > 0 ? (
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Producto en Bodega:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Producto en Bodega:</label>
                   <select
                     value={insumoId}
                     onChange={(e) => handleInsumoChange(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                   >
                     {productosSelectorList.map((i) => (
                       <option key={i.id} value={i.id}>
@@ -569,7 +569,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                   </select>
                 </div>
               ) : (
-                <div className="text-[11px] text-purple-900 bg-white/80 p-2 rounded-lg border border-purple-200">
+                <div className="text-[11px] text-purple-900 dark:text-purple-200 bg-white/80 dark:bg-stone-900/90 p-2 rounded-lg border border-purple-200 dark:border-purple-800/80">
                   Tu Bodega Fitosanitaria está vacía. Puedes ingresar el nombre del producto manualmente o agregarlo primero en <strong>Bodega Fitosanitarios</strong>.
                 </div>
               )}
@@ -577,21 +577,21 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
               {!selectedInsumo && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="sm:col-span-2">
-                    <label className="block font-bold text-stone-700 mb-1">Producto Comercial (Nombre):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Producto Comercial (Nombre):</label>
                     <input
                       type="text"
                       value={nombreInsumoManual}
                       onChange={(e) => setNombreInsumoManual(e.target.value)}
                       placeholder="Ej. Oxicloruro de Cobre / Nordox 75 WG"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-medium"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Unidad:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Unidad:</label>
                     <select
                       value={unidadManual}
                       onChange={(e) => setUnidadManual(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                     >
                       <option value="Litros">Litros</option>
                       <option value="Kg">Kg</option>
@@ -605,92 +605,92 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
               {/* Ingrediente Activo */}
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Ingrediente Activo:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Ingrediente Activo:</label>
                 <input
                   type="text"
                   value={ingredienteActivo}
                   onChange={(e) => setIngredienteActivo(e.target.value)}
                   placeholder="Ej. Óxido Cuproso 75% / Ciprodinil + Fludioxonil"
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-medium"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium dark:text-stone-100"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Dosis por Ha:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Dosis por Ha:</label>
                   <NumericInput
                     step="0.01"
                     min="0"
                     value={dosisPorHa}
                     onChangeNumber={(val) => setDosisPorHa(val)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold font-mono tabular-nums text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold font-mono tabular-nums text-xs dark:text-stone-100"
                     required
                   />
-                  <span className="text-[10px] text-stone-500 font-mono tabular-nums">
+                  <span className="text-[10px] text-stone-500 dark:text-stone-400 font-mono tabular-nums">
                     Total: {totalInsumoCalculado} {unidadMostrada}
                   </span>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Mojamiento (L/ha):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Mojamiento (L/ha):</label>
                   <NumericInput
                     integer
                     min="0"
                     value={volumenCaldoLHa}
                     onChangeNumber={(val) => handleVolumenCaldoChange(val)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono tabular-nums text-xs dark:text-stone-100"
                     placeholder="1000"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Total Agua Aplicada (L):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Total Agua Aplicada (L):</label>
                   <NumericInput
                     min="0"
                     step="1"
                     value={totalAguaAplicadaL}
                     onChangeNumber={(val) => setTotalAguaAplicadaL(val)}
-                    className="w-full p-2 bg-white border border-purple-300 rounded-lg font-bold font-mono text-purple-950 tabular-nums text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-purple-300 dark:border-purple-700 rounded-lg font-bold font-mono text-purple-950 dark:text-purple-100 tabular-nums text-xs"
                     required
                   />
-                  <span className="text-[10px] text-stone-500 font-mono tabular-nums">
+                  <span className="text-[10px] text-stone-500 dark:text-stone-400 font-mono tabular-nums">
                     Base {superficieBase} ha
                   </span>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Carencia SAG:</label>
-                  <div className="p-2 bg-white border border-stone-300 rounded-lg font-bold text-amber-900">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Carencia SAG:</label>
+                  <div className="p-2 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-amber-900 dark:text-amber-200">
                     {carenciaMostrada > 0 ? `${carenciaMostrada} días LMR` : 'Sin carencia'}
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Objetivo Fitopatológico / Plaga:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Objetivo Fitopatológico / Plaga:</label>
                 <input
                   type="text"
                   value={objetivoPlaga}
                   onChange={(e) => setObjetivoPlaga(e.target.value)}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                   placeholder="Ej. Control preventivo de Botrytis cinerea"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Maquinaria / Pulverizador:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Maquinaria / Pulverizador:</label>
                   <input
                     type="text"
                     value={metodoAplicacion}
                     onChange={(e) => setMetodoAplicacion(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Aplicador Responsable:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Aplicador Responsable:</label>
                   <select
                     value={aplicadorSelect}
                     onChange={(e) => setAplicadorSelect(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-semibold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-semibold dark:text-stone-100"
                   >
                     {usuarios.map((u) => (
                       <option key={u.id} value={u.nombre}>
@@ -705,19 +705,19 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                       value={aplicadorManual}
                       onChange={(e) => setAplicadorManual(e.target.value)}
                       placeholder="Nombre completo del aplicador"
-                      className="w-full mt-1.5 p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                      className="w-full mt-1.5 p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                       required
                     />
                   )}
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Tractor / Equipo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Tractor / Equipo:</label>
                   <input
                     type="text"
                     value={tractoristaMaquinaria}
                     onChange={(e) => setTractoristaMaquinaria(e.target.value)}
                     placeholder="Ej. Tractor + Nebulizador"
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                   />
                 </div>
               </div>
@@ -726,19 +726,19 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
           {/* Campos específicos para FERTILIZACIÓN (AL VOLEO / LOCALIZADA / FOLIAR) */}
           {tipoLabor === 'fertilizacion' && (
-            <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-3">
-              <div className="font-bold text-emerald-950 text-xs flex items-center gap-1.5">
-                <Sprout className="w-4 h-4 text-emerald-700" />
+            <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl space-y-3">
+              <div className="font-bold text-emerald-950 dark:text-emerald-100 text-xs flex items-center gap-1.5">
+                <Sprout className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 <span>Fertilización al Voleo / Suelo (Método, Dosis/ha, Dosis/planta & Composición Química)</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Método de Fertilización:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Método de Fertilización:</label>
                   <select
                     value={metodoAplicacion}
                     onChange={(e) => setMetodoAplicacion(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-xs dark:text-stone-100"
                   >
                     <option value="Al Voleo Manual">Al Voleo Manual</option>
                     <option value="Al Voleo con Trompo / Abonadora">Al Voleo con Trompo / Abonadora</option>
@@ -749,11 +749,11 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Producto Comercial (Bodega o Manual):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Producto Comercial (Bodega o Manual):</label>
                   <select
                     value={insumoId}
                     onChange={(e) => handleInsumoChange(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                   >
                     {productosSelectorList.map((i) => (
                       <option key={i.id} value={i.id}>
@@ -768,22 +768,22 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
               {!selectedInsumo && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="sm:col-span-2">
-                    <label className="block font-bold text-stone-700 mb-1">Nombre del Producto Comercial:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre del Producto Comercial:</label>
                     <input
                       type="text"
                       value={nombreInsumoManual}
                       onChange={(e) => setNombreInsumoManual(e.target.value)}
                       placeholder="Ej. Urea Granulada 46% / Nitrato de Amonio / Basacote"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-medium"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Unidad:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Unidad:</label>
                     <select
                       value={unidadManual}
                       onChange={(e) => setUnidadManual(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                     >
                       <option value="Kg">Kg</option>
                       <option value="Litros">Litros</option>
@@ -794,20 +794,20 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
               )}
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Composición Química (N-P-K / Nutrientes):</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Composición Química (N-P-K / Nutrientes):</label>
                 <input
                   type="text"
                   value={composicionQuimica}
                   onChange={(e) => setComposicionQuimica(e.target.value)}
                   placeholder="Ej. 46-0-0 (46% N) o N 15.5% - CaO 26% - B 0.3%"
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-mono"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-mono dark:text-stone-100"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                     Dosis / Hectárea ({unidadMostrada}/ha):
                   </label>
                   <NumericInput
@@ -818,16 +818,16 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                       setDosisPorHa(val);
                       setDosisPorPlanta(convertHaToPlanta(val, plantasPorHaRef, unidadDosisPlanta));
                     }}
-                    className="w-full p-2 bg-white border border-emerald-300 rounded-lg font-bold font-mono tabular-nums text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-emerald-300 dark:border-emerald-700 rounded-lg font-bold font-mono tabular-nums text-xs dark:text-stone-100"
                     required
                   />
-                  <span className="text-[10px] text-emerald-900 font-bold font-mono tabular-nums">
+                  <span className="text-[10px] text-emerald-900 dark:text-emerald-200 font-bold font-mono tabular-nums">
                     Total ({superficieBase} ha): {totalInsumoCalculado} {unidadMostrada}
                   </span>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Dosis por Planta:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Dosis por Planta:</label>
                   <NumericInput
                     step="0.1"
                     min="0"
@@ -836,13 +836,13 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                       setDosisPorPlanta(val);
                       setDosisPorHa(convertPlantaToHa(val, plantasPorHaRef, unidadDosisPlanta));
                     }}
-                    className="w-full p-2 bg-white border border-emerald-300 rounded-lg font-bold font-mono tabular-nums text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-emerald-300 dark:border-emerald-700 rounded-lg font-bold font-mono tabular-nums text-xs dark:text-stone-100"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Unidad / Planta:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Unidad / Planta:</label>
                   <select
                     value={unidadDosisPlanta}
                     onChange={(e) => {
@@ -850,7 +850,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                       setUnidadDosisPlanta(nextUnit);
                       setDosisPorPlanta(convertHaToPlanta(dosisPorHa, plantasPorHaRef, nextUnit));
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium dark:text-stone-100"
                   >
                     <option value="g/planta">g / planta</option>
                     <option value="kg/planta">kg / planta</option>
@@ -860,7 +860,7 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Plantas / Ha Ref.:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Plantas / Ha Ref.:</label>
                   <NumericInput
                     integer
                     min="1"
@@ -871,18 +871,18 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                       setPlantasPorHaRef(pHa);
                       setDosisPorPlanta(convertHaToPlanta(dosisPorHa, pHa, unidadDosisPlanta));
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono tabular-nums text-xs dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Aplicador / Operador:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Aplicador / Operador:</label>
                   <select
                     value={aplicadorSelect}
                     onChange={(e) => setAplicadorSelect(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs font-semibold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-semibold dark:text-stone-100"
                   >
                     {usuarios.map((u) => (
                       <option key={u.id} value={u.nombre}>
@@ -897,18 +897,18 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                       value={aplicadorManual}
                       onChange={(e) => setAplicadorManual(e.target.value)}
                       placeholder="Nombre del aplicador"
-                      className="w-full mt-1.5 p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                      className="w-full mt-1.5 p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                     />
                   )}
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Objetivo Nutricional / Equipo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Objetivo Nutricional / Equipo:</label>
                   <input
                     type="text"
                     value={objetivoPlaga}
                     onChange={(e) => setObjetivoPlaga(e.target.value)}
                     placeholder="Ej. Corrección de N y K en brotación"
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                   />
                 </div>
               </div>
@@ -917,32 +917,32 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
           {/* Campos condicionales para Riego */}
           {tipoLabor === 'riego' && (
-            <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl space-y-3">
-              <div className="font-bold text-blue-950 text-xs flex items-center gap-1.5">
-                <Droplet className="w-4 h-4 text-blue-700" />
+            <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 rounded-xl space-y-3">
+              <div className="font-bold text-blue-950 dark:text-blue-100 text-xs flex items-center gap-1.5">
+                <Droplet className="w-4 h-4 text-blue-700 dark:text-blue-400" />
                 Parámetros de Riego y Registro en Pozo Profundo
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Volumen Extraído (m³):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Volumen Extraído (m³):</label>
                   <NumericInput
                     min="0"
                     value={volumenM3}
                     onChangeNumber={(val) => setVolumenM3(val)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-blue-900 font-mono text-sm"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-blue-900 dark:text-blue-200 font-mono text-sm"
                     required
                   />
                   <span className="text-[10px] text-stone-400">{(volumenM3 * 1000).toLocaleString('es-CL')} Litros</span>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Duración Bombeo (Horas):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Duración Bombeo (Horas):</label>
                   <NumericInput
                     min="0"
                     step="0.5"
                     value={duracionRiegoHoras}
                     onChangeNumber={(val) => setDuracionRiegoHoras(val)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-xs dark:text-stone-100"
                     required
                   />
                 </div>
@@ -952,42 +952,42 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
 
           {/* Descripción y Observaciones */}
           <div>
-            <label className="block font-bold text-stone-700 mb-1">Descripción Detallada de la Labor:</label>
+            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Descripción Detallada de la Labor:</label>
             <textarea
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
               rows={2}
-              className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg text-xs"
+              className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
               placeholder="Detalle de la labor realizada en campo..."
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <label className="block font-bold text-stone-700 mb-1">Registrado Por (Responsable):</label>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Registrado Por (Responsable):</label>
               <input
                 type="text"
                 value={registradoPor}
                 onChange={(e) => setRegistradoPor(e.target.value)}
-                className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg text-xs font-medium"
+                className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium dark:text-stone-100"
                 required
               />
             </div>
             <div>
-              <label className="block font-bold text-stone-700 mb-1">Observaciones Adicionales:</label>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones Adicionales:</label>
               <input
                 type="text"
                 value={observaciones}
                 onChange={(e) => setObservaciones(e.target.value)}
-                className="w-full p-2 bg-stone-50 border border-stone-300 rounded-lg text-xs"
+                className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
               />
             </div>
           </div>
 
           {/* Evidencia fotográfica desde celular */}
-          <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
-            <label className="block font-bold text-stone-700 flex items-center gap-1.5">
-              <Camera className="w-3.5 h-3.5 text-emerald-700" />
+          <div className="p-3 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2">
+            <label className="block font-bold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
+              <Camera className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
               <span>Evidencia Fotográfica desde el Celular (opcional):</span>
             </label>
             <div className="flex flex-wrap items-center gap-3">
@@ -996,19 +996,19 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
                 accept="image/*"
                 capture="environment"
                 onChange={handlePhotoUpload}
-                className="text-[11px] text-stone-600"
+                className="text-[11px] text-stone-600 dark:text-stone-400 bg-white dark:bg-stone-800"
               />
               {fotoEvidenciaDataUrl && (
                 <div className="flex items-center gap-2">
                   <img
                     src={fotoEvidenciaDataUrl}
                     alt="Evidencia de labor"
-                    className="h-14 w-14 rounded-lg border border-stone-300 object-cover"
+                    className="h-14 w-14 rounded-lg border border-stone-300 dark:border-stone-700 object-cover"
                   />
                   <button
                     type="button"
                     onClick={() => setFotoEvidenciaDataUrl('')}
-                    className="px-2 py-1 text-[10px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 cursor-pointer"
+                    className="px-2 py-1 text-[10px] font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded border border-rose-200 dark:border-rose-800/80 cursor-pointer"
                   >
                     Quitar foto
                   </button>
@@ -1019,11 +1019,11 @@ export const ModalLabor: React.FC<ModalLaborProps> = ({
           </div>
 
           {/* Footer modal */}
-          <div className="pt-3 border-t border-stone-200 flex justify-end gap-2">
+          <div className="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-stone-300 rounded-xl text-stone-700 font-bold hover:bg-stone-50 cursor-pointer"
+              className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-xl text-stone-700 dark:text-stone-300 font-bold hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
             >
               Cancelar
             </button>

@@ -369,16 +369,16 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider mb-1">
-            <FlaskConical className="w-3 h-3 text-emerald-700" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-1">
+            <FlaskConical className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
             Bodega Exclusiva de Fitosanitarios (SAG)
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Bodega de Fitosanitarios
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Control fitosanitario oficial de Herbicidas, Fungicidas, Acaricidas, Insecticidas, Coadyuvantes, Bactericidas, Bioestimulantes, Fitorreguladores, Elicitor PSA, Enmiendas y Fertilizantes.
           </p>
         </div>
@@ -391,9 +391,9 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               const filtro = selectedCategoria !== 'todos' || searchTerm ? `${catName || 'Todos'}${searchTerm ? ` · "${searchTerm}"` : ''}` : undefined;
               exportBodegaFitosanitariosPDF(fitoFiltrados, explotacion, filtro);
             }}
-            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            className="px-3.5 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
           >
-            <Download className="w-4 h-4 text-emerald-800" />
+            <Download className="w-4 h-4 text-emerald-800 dark:text-emerald-300" />
             <span>Exportar PDF ({fitoFiltrados.length})</span>
           </button>
 
@@ -411,12 +411,12 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
       {/* Alerta de Stock Crítico */}
       {lowStockCount > 0 && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-950 text-xs flex flex-wrap items-center justify-between gap-3">
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-2xl text-rose-950 dark:text-rose-100 text-xs flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
             <div>
               <strong className="font-bold">Alerta Fitosanitaria: {lowStockCount} productos bajo el umbral mínimo de seguridad.</strong>
-              <div className="text-[11px] text-rose-800 mt-0.5">
+              <div className="text-[11px] text-rose-800 dark:text-rose-300 mt-0.5">
                 Revise stock de fungicidas de floración y bactericidas de cobre previo a eventos de lluvia o poda.
               </div>
             </div>
@@ -426,12 +426,12 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               <button
                 type="button"
                 onClick={onOpenAlertsModal}
-                className="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-100 text-rose-900 border border-rose-300 font-bold text-[11px] cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-white dark:bg-stone-900 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-900 dark:text-rose-200 border border-rose-300 dark:border-rose-700 font-bold text-[11px] cursor-pointer"
               >
                 Gestionar / Eliminar avisos
               </button>
             )}
-            <span className="px-2.5 py-1 rounded-full bg-rose-200 text-rose-900 font-bold text-[10px] uppercase">
+            <span className="px-2.5 py-1 rounded-full bg-rose-200 dark:bg-rose-900/50 text-rose-900 dark:text-rose-200 font-bold text-[10px] uppercase">
               Reposición SAG Requerida
             </span>
           </div>
@@ -440,35 +440,35 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
       {/* Tarjetas de Métricas de Agroquímicos */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Total Productos Registrados</div>
-          <div className="text-2xl font-black text-stone-900 mt-1">{fitosanitarios.length}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Agroquímicos con registro SAG</div>
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-1">{fitosanitarios.length}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Agroquímicos con registro SAG</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Stock en Nivel Óptimo</div>
-          <div className="text-2xl font-black text-emerald-950 mt-1 font-mono tabular-nums">{stockOptimoCount}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Productos sobre umbral mínimo</div>
+          <div className="text-2xl font-black text-emerald-950 dark:text-emerald-100 mt-1 font-mono tabular-nums">{stockOptimoCount}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Productos sobre umbral mínimo</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Bajo Stock Mínimo</div>
-          <div className={`text-2xl font-black mt-1 ${lowStockCount > 0 ? 'text-rose-700' : 'text-emerald-800'}`}>
+          <div className={`text-2xl font-black mt-1 ${lowStockCount > 0 ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-800 dark:text-emerald-300'}`}>
             {lowStockCount}
           </div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Alertas automáticas activas</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Alertas automáticas activas</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Productos Filtrados</div>
-          <div className="text-2xl font-black text-blue-950 mt-1">{fitoFiltrados.length}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Visibles en vista actual</div>
+          <div className="text-2xl font-black text-blue-950 dark:text-blue-100 mt-1">{fitoFiltrados.length}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Visibles en vista actual</div>
         </div>
       </div>
 
       {/* Pestañas de las 11 Categorías Exigidas */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-2 shadow-2xs overflow-x-auto">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-2 shadow-2xs overflow-x-auto">
         <div className="flex items-center gap-1.5 min-w-max">
           {CATEGORIAS_FITOSANITARIOS.map((cat) => {
             const isSelected = selectedCategoria === cat.id;
@@ -479,7 +479,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                 className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
                   isSelected
                     ? 'bg-emerald-900 text-white shadow-xs'
-                    : 'bg-stone-50 text-stone-700 hover:bg-stone-100 hover:text-stone-900'
+                    : 'bg-stone-50 dark:bg-stone-800/70 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100'
                 }`}
               >
                 <span>{cat.icon}</span>
@@ -491,7 +491,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       </div>
 
       {/* Filtros por Destino y Búsqueda */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
         <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
           <input
@@ -499,7 +499,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nombre comercial, ingrediente activo, composición, registro SAG o lote..."
-            className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-700"
+            className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:text-stone-100"
           />
         </div>
 
@@ -509,7 +509,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
           <button
             onClick={() => setSelectedDestino('todos')}
             className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-              selectedDestino === 'todos' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              selectedDestino === 'todos' ? 'bg-stone-900 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
             }`}
           >
             Todos
@@ -519,7 +519,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               key={d.id}
               onClick={() => setSelectedDestino(d.id)}
               className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors flex items-center gap-1 ${
-                selectedDestino === d.id ? 'bg-emerald-800 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                selectedDestino === d.id ? 'bg-emerald-800 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
               }`}
             >
               <span>{d.icon}</span>
@@ -532,10 +532,10 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
       {/* Grid de Productos Fitosanitarios */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {fitoFiltrados.length === 0 ? (
-          <div className="col-span-full p-8 sm:p-10 bg-white rounded-2xl border border-dashed border-stone-300 text-center space-y-3">
+          <div className="col-span-full p-8 sm:p-10 bg-white dark:bg-stone-900 rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 text-center space-y-3">
             <FlaskConical className="w-10 h-10 text-stone-300 mx-auto" />
-            <h3 className="font-bold text-stone-800 text-sm">No hay productos en Bodega de Fitosanitarios</h3>
-            <p className="text-xs text-stone-500 max-w-md mx-auto">
+            <h3 className="font-bold text-stone-800 dark:text-stone-200 text-sm">No hay productos en Bodega de Fitosanitarios</h3>
+            <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto">
               Puedes ingresar productos agroquímicos reales (Herbicidas, Fungicidas, Acaricidas, etc.) con sus unidades exactas en Kg, Litros, cc, ml o gramos.
             </p>
             {canEdit && (
@@ -558,38 +558,38 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
             return (
               <div
                 key={item.id}
-                className={`bg-white rounded-2xl border p-5 shadow-2xs flex flex-col justify-between transition-all ${
-                  isLow ? 'border-rose-300 ring-1 ring-rose-200' : 'border-stone-200 hover:border-emerald-300'
+                className={`bg-white dark:bg-stone-900 rounded-2xl border p-5 shadow-2xs flex flex-col justify-between transition-all ${
+                  isLow ? 'border-rose-300 dark:border-rose-700 ring-1 ring-rose-200 dark:ring-rose-800/60' : 'border-stone-200 dark:border-stone-800 hover:border-emerald-300 dark:hover:border-emerald-700'
                 }`}
               >
                 <div>
                   {/* Header producto */}
-                  <div className="flex items-start justify-between gap-2 border-b border-stone-100 pb-2.5">
+                  <div className="flex items-start justify-between gap-2 border-b border-stone-100 dark:border-stone-800 pb-2.5">
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-mono text-[10px] text-stone-500 font-bold uppercase bg-stone-100 px-1.5 py-0.5 rounded">
+                        <span className="font-mono text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 rounded">
                           {item.numeroRegistroSAG || 'SAG N/A'}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 uppercase">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 uppercase">
                           {(item.categoriaFito || item.tipo).replace('_', ' ')}
                         </span>
                         {!hasCarencia && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 uppercase">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200 uppercase">
                             Exento SAG
                           </span>
                         )}
                       </div>
-                      <h3 className="font-black text-stone-900 text-sm mt-1">{item.nombreComercial}</h3>
-                      <div className="text-[11px] text-stone-500 font-medium">{item.fabricante}</div>
+                      <h3 className="font-black text-stone-900 dark:text-stone-100 text-sm mt-1">{item.nombreComercial}</h3>
+                      <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">{item.fabricante}</div>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                         isLow
-                          ? 'bg-rose-100 text-rose-800'
+                          ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300'
                           : isStockBajo
-                          ? 'bg-stone-100 text-stone-600'
-                          : 'bg-emerald-100 text-emerald-800'
+                          ? 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400'
+                          : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                       }`}>
                         {isLow ? 'STOCK BAJO' : isStockBajo ? 'AVISO OCULTO' : 'OK'}
                       </span>
@@ -597,7 +597,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                         <button
                           type="button"
                           onClick={() => onUpdateInsumo({ ...item, alertaStockOculta: true })}
-                          className="p-1 rounded-lg text-stone-400 hover:text-stone-800 hover:bg-stone-100 cursor-pointer"
+                          className="p-1 rounded-lg text-stone-400 hover:text-stone-800 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
                           title="Eliminar notificación de stock bajo"
                         >
                           <BellOff className="w-3.5 h-3.5" />
@@ -607,7 +607,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                         <button
                           type="button"
                           onClick={() => onUpdateInsumo({ ...item, alertaStockOculta: false })}
-                          className="p-1 rounded-lg text-stone-400 hover:text-emerald-800 hover:bg-emerald-50 cursor-pointer"
+                          className="p-1 rounded-lg text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
                           title="Reactivar notificación de stock bajo"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
@@ -617,28 +617,28 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                   </div>
 
                   {/* Ingrediente Activo O Composición de Fertilizante */}
-                  <div className="mt-3 p-2.5 bg-emerald-50/50 rounded-xl border border-emerald-100 text-xs">
+                  <div className="mt-3 p-2.5 bg-emerald-50/50 dark:bg-emerald-950/40 rounded-xl border border-emerald-100 dark:border-emerald-900/60 text-xs">
                     {isFertilizante ? (
                       <div>
-                        <div className="flex items-center justify-between text-[10px] text-emerald-900 font-bold uppercase mb-1">
+                        <div className="flex items-center justify-between text-[10px] text-emerald-900 dark:text-emerald-200 font-bold uppercase mb-1">
                           <span>Fertilizante Nutricional</span>
                           <div className="flex items-center gap-1">
-                            <span className="px-1.5 py-0.2 rounded bg-emerald-200/80 text-emerald-950 font-bold">
+                            <span className="px-1.5 py-0.2 rounded bg-emerald-200/80 dark:bg-emerald-900/50 text-emerald-950 dark:text-emerald-100 font-bold">
                               {item.estadoFertilizante === 'liquido' ? 'Líquido' : 'Granulado'}
                             </span>
-                            <span className="px-1.5 py-0.2 rounded bg-blue-100 text-blue-900 font-bold">
+                            <span className="px-1.5 py-0.2 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200 font-bold">
                               {item.solubilidadFertilizante === 'no_soluble' ? 'No Soluble' : 'Soluble'}
                             </span>
                           </div>
                         </div>
-                        <div className="font-mono font-bold text-stone-800 text-[11px]">
+                        <div className="font-mono font-bold text-stone-800 dark:text-stone-200 text-[11px]">
                           Composición: {item.composicionFertilizante || item.ingredienteActivo || 'N-P-K no especificado'}
                         </div>
                       </div>
                     ) : (
                       <div>
-                        <span className="text-[10px] text-stone-500 font-bold uppercase block">Ingrediente Activo:</span>
-                        <span className="font-bold text-emerald-950 text-[11px]">
+                        <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase block">Ingrediente Activo:</span>
+                        <span className="font-bold text-emerald-950 dark:text-emerald-100 text-[11px]">
                           {item.ingredienteActivo || 'No especificado'}
                         </span>
                       </div>
@@ -646,44 +646,44 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                   </div>
 
                   {/* Stock Actual y Mínimo */}
-                  <div className="flex items-baseline justify-between p-3 bg-stone-50 rounded-xl border border-stone-200 mt-2.5">
+                  <div className="flex items-baseline justify-between p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 mt-2.5">
                     <div>
                       <span className="text-[10px] text-stone-400 uppercase font-bold block">Stock Disponible</span>
-                      <div className={`text-2xl font-black ${isLow ? 'text-rose-700' : 'text-emerald-950'}`}>
-                        {item.stockActual} <span className="text-xs font-semibold text-stone-500">{item.unidad}</span>
+                      <div className={`text-2xl font-black ${isLow ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-950 dark:text-emerald-100'}`}>
+                        {item.stockActual} <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">{item.unidad}</span>
                       </div>
                     </div>
                     <div className="text-right">
                       <span className="text-[10px] text-stone-400 uppercase font-bold block">Stock Mínimo</span>
-                      <span className="font-mono text-xs font-bold text-stone-600">{item.stockMinimo} {item.unidad}</span>
+                      <span className="font-mono text-xs font-bold text-stone-600 dark:text-stone-400">{item.stockMinimo} {item.unidad}</span>
                     </div>
                   </div>
 
                   {/* Trazabilidad: Fechas Elaboración / Vencimiento & Destino */}
-                  <div className="grid grid-cols-2 gap-1.5 text-[11px] text-stone-600 mt-2.5">
-                    <div className="p-1.5 bg-stone-50 rounded-lg">
+                  <div className="grid grid-cols-2 gap-1.5 text-[11px] text-stone-600 dark:text-stone-400 mt-2.5">
+                    <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                       <span className="text-stone-400 block text-[10px] flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-stone-400" /> F. Fabricación:
                       </span>
-                      <strong className="font-mono text-stone-800">
+                      <strong className="font-mono text-stone-800 dark:text-stone-200">
                         {formatProductDateLabel(item.fechaElaboracion, 'No registrada')}
                       </strong>
                     </div>
-                    <div className="p-1.5 bg-stone-50 rounded-lg">
+                    <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                       <span className="text-stone-400 block text-[10px] flex items-center gap-1">
                         <Clock className="w-3 h-3 text-stone-400" /> F. Vencimiento:
                       </span>
                       {(() => {
                         if (isProductoSinVencimiento(item)) {
-                          return <strong className="font-mono text-stone-600">Sin vencimiento</strong>;
+                          return <strong className="font-mono text-stone-600 dark:text-stone-400">Sin vencimiento</strong>;
                         }
                         const dVenc = diasHastaVencimientoProducto(item);
                         const cls =
                           dVenc !== null && dVenc < 0
-                            ? 'text-rose-700'
+                            ? 'text-rose-700 dark:text-rose-400'
                             : dVenc !== null && dVenc <= 30
-                            ? 'text-amber-800'
-                            : 'text-emerald-900';
+                            ? 'text-amber-800 dark:text-amber-300'
+                            : 'text-emerald-900 dark:text-emerald-200';
                         return (
                           <strong className={`font-mono ${cls}`}>
                             {formatProductDateLabel(item.fechaVencimiento, 'Sin vencimiento')}
@@ -691,28 +691,28 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                         );
                       })()}
                     </div>
-                    <div className="p-1.5 bg-stone-50 rounded-lg">
+                    <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                       <span className="text-stone-400 block text-[10px]">Carencia SAG:</span>
                       {hasCarencia && (item.periodoCarenciaDias || 0) > 0 ? (
-                        <strong className="text-amber-900">{item.periodoCarenciaDias} días</strong>
+                        <strong className="text-amber-900 dark:text-amber-200">{item.periodoCarenciaDias} días</strong>
                       ) : (
-                        <strong className="text-emerald-700 font-bold">Exento (0d)</strong>
+                        <strong className="text-emerald-700 dark:text-emerald-400 font-bold">Exento (0d)</strong>
                       )}
                     </div>
-                    <div className="p-1.5 bg-stone-50 rounded-lg">
+                    <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                       <span className="text-stone-400 block text-[10px]">Reingreso REI:</span>
-                      <strong className="text-stone-800">{item.tiempoReingresoHoras || 0} horas</strong>
+                      <strong className="text-stone-800 dark:text-stone-200">{item.tiempoReingresoHoras || 0} horas</strong>
                     </div>
                   </div>
 
                   {/* Destinos Autorizados */}
-                <div className="mt-2.5 pt-2 border-t border-stone-100">
+                <div className="mt-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
                   <span className="text-[10px] font-bold text-stone-400 uppercase block mb-1">Destinado a:</span>
                   <div className="flex flex-wrap gap-1">
                     {destinos.map((d) => {
                       const cfg = DESTINOS_CONFIG.find((c) => c.id === d);
                       return (
-                        <span key={d} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-stone-100 text-stone-800 border border-stone-200 flex items-center gap-1">
+                        <span key={d} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800 flex items-center gap-1">
                           <span>{cfg?.icon}</span>
                           <span>{cfg?.label}</span>
                         </span>
@@ -722,7 +722,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                 </div>
 
                 {item.observaciones && (
-                  <p className="text-[11px] text-stone-500 italic mt-2 bg-stone-50 p-1.5 rounded-lg border border-stone-100">
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400 italic mt-2 bg-stone-50 dark:bg-stone-800/70 p-1.5 rounded-lg border border-stone-100 dark:border-stone-800">
                     "{item.observaciones}"
                   </p>
                 )}
@@ -730,13 +730,13 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
               {/* Botones de Acción */}
               {canEdit && (
-                <div className="flex items-center justify-between gap-2 pt-3 border-t border-stone-100 mt-3">
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-stone-100 dark:border-stone-800 mt-3">
                   <button
                     onClick={() => {
                       setReponiendoId(item.id);
                       setCantidadReponer(item.stockMinimo * 2 || 10);
                     }}
-                    className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 font-bold rounded-xl text-xs flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Reponer
@@ -745,7 +745,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleOpenEdit(item)}
-                      className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      className="px-2.5 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                       title="Editar producto fitosanitario"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
@@ -753,7 +753,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                     </button>
                     <button
                       onClick={() => setInsumoToDelete(item)}
-                      className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      className="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                       title="Eliminar insumo"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -769,25 +769,25 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
       {/* MODAL: Reposición Rápida */}
       {reponiendoId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 p-5 space-y-4 text-xs">
-            <h3 className="font-bold text-sm text-stone-900">Ingreso de Guía / Factura a Bodega Químicos</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 p-5 space-y-4 text-xs">
+            <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">Ingreso de Guía / Factura a Bodega Químicos</h3>
             <div>
-              <label className="block font-bold text-stone-700 mb-1">Cantidad a Ingresar en Stock:</label>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cantidad a Ingresar en Stock:</label>
               <NumericInput
                 step="0.5"
                 value={cantidadReponer}
                 onValueChange={setCantidadReponer}
-                className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-base text-emerald-900"
+                className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-base text-emerald-900 dark:text-emerald-200"
                 min="0.1"
                 required
               />
             </div>
-            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
               <button
                 type="button"
                 onClick={() => setReponiendoId(null)}
-                className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
               >
                 Cancelar
               </button>
@@ -806,8 +806,8 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
       {/* MODAL: Nuevo Producto Fitosanitario / Fertilizante */}
       {isNewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <FlaskConical className="w-4 h-4 text-emerald-400" />
@@ -818,7 +818,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
             <form onSubmit={handleGuardarNuevo} className="p-5 space-y-3.5 text-xs max-h-[85vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Categoría del Producto:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Categoría del Producto:</label>
                   <select
                     value={formFito.categoriaFito}
                     onChange={(e) => {
@@ -837,7 +837,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                         sinVencimiento: nextCat === 'enmienda' ? true : prev.sinVencimiento,
                       }));
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-emerald-900"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-emerald-900 dark:text-emerald-200"
                   >
                     <option value="herbicida">Herbicida</option>
                     <option value="fungicida">Fungicida</option>
@@ -855,12 +855,12 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Nombre Comercial:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre Comercial:</label>
                   <input
                     type="text"
                     value={formFito.nombreComercial}
                     onChange={(e) => setFormFito({ ...formFito, nombreComercial: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                     placeholder="ej. Switch 62.5 WG"
                     required
                   />
@@ -869,29 +869,29 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
               {/* Si es Fertilizante: Estado (Líquido/Granulado), Solubilidad (Soluble/No soluble) y Composición */}
               {formFito.categoriaFito === 'fertilizante' ? (
-                <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 space-y-2.5">
-                  <div className="font-bold text-emerald-950 flex items-center gap-1.5 text-xs">
-                    <Leaf className="w-3.5 h-3.5 text-emerald-700" />
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/80 space-y-2.5">
+                  <div className="font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-1.5 text-xs">
+                    <Leaf className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                     Especificaciones Exclusivas de Fertilizante
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">Estado Físico:</label>
+                      <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado Físico:</label>
                       <select
                         value={formFito.estadoFertilizante}
                         onChange={(e) => setFormFito({ ...formFito, estadoFertilizante: e.target.value as any })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                       >
                         <option value="liquido">Líquido</option>
                         <option value="granulado">Granulado</option>
                       </select>
                     </div>
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">Solubilidad:</label>
+                      <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Solubilidad:</label>
                       <select
                         value={formFito.solubilidadFertilizante}
                         onChange={(e) => setFormFito({ ...formFito, solubilidadFertilizante: e.target.value as any })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                       >
                         <option value="soluble">Soluble (Fertirriego / Foliar)</option>
                         <option value="no_soluble">No Soluble (Aplicación al suelo)</option>
@@ -899,12 +899,12 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                     </div>
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Composición del Fertilizante (N-P-K y elementos):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Composición del Fertilizante (N-P-K y elementos):</label>
                     <input
                       type="text"
                       value={formFito.composicionFertilizante}
                       onChange={(e) => setFormFito({ ...formFito, composicionFertilizante: e.target.value })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-medium"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-medium dark:text-stone-100"
                       placeholder="ej. N 15.5% + CaO 26.5% o 21-0-0 + 24S"
                       required
                     />
@@ -913,7 +913,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               ) : (
                 /* Para Fitosanitarios / Enmiendas: Ingrediente Activo o Composición */
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                     {formFito.categoriaFito === 'enmienda'
                       ? 'Ingrediente Activo / Composición Mineral:'
                       : 'Ingrediente Activo:'}
@@ -922,7 +922,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                     type="text"
                     value={formFito.ingredienteActivo}
                     onChange={(e) => setFormFito({ ...formFito, ingredienteActivo: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                     placeholder={
                       formFito.categoriaFito === 'enmienda'
                         ? 'ej. Sulfato de Calcio (Yeso Agrícola) 92%, Carbonato de Calcio'
@@ -934,9 +934,9 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               )}
 
               {/* Fechas de Fabricación y Vencimiento (Mes/Año por defecto + opción Sin vencimiento) */}
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 dark:text-stone-200 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formFito.sinVencimiento}
@@ -947,12 +947,12 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                           fechaVencimiento: e.target.checked ? '' : formFito.fechaVencimiento,
                         })
                       }
-                      className="rounded border-stone-300 text-emerald-800"
+                      className="rounded border-stone-300 dark:border-stone-700 text-emerald-800 dark:text-emerald-300 bg-white dark:bg-stone-800"
                     />
                     <span>Sin fecha de vencimiento (ej. enmiendas minerales / productos que no vencen)</span>
                   </label>
 
-                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={usarDiaExacto}
@@ -969,7 +969,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                             : toMonthValue(prev.fechaVencimiento),
                         }));
                       }}
-                      className="rounded border-stone-300 text-emerald-800"
+                      className="rounded border-stone-300 dark:border-stone-700 text-emerald-800 dark:text-emerald-300 bg-white dark:bg-stone-800"
                     />
                     <span>Incluir día exacto</span>
                   </label>
@@ -977,22 +977,22 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha de Fabricación / Elaboración {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     <input
                       type={usarDiaExacto ? 'date' : 'month'}
                       value={formFito.fechaElaboracion}
                       onChange={(e) => setFormFito({ ...formFito, fechaElaboracion: e.target.value })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha de Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     {formFito.sinVencimiento ? (
-                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                      <div className="w-full p-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg font-mono text-stone-500 dark:text-stone-400">
                         Sin vencimiento (No aplica)
                       </div>
                     ) : (
@@ -1000,7 +1000,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                         type={usarDiaExacto ? 'date' : 'month'}
                         value={formFito.fechaVencimiento}
                         onChange={(e) => setFormFito({ ...formFito, fechaVencimiento: e.target.value })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-amber-900 dark:text-amber-200"
                       />
                     )}
                   </div>
@@ -1009,7 +1009,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
               {/* Destino del Producto (Kiwi, Quinta Frutal, Vivero, Casa Patronal) */}
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Destinado a (selecciona los aplicables):</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Destinado a (selecciona los aplicables):</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {DESTINOS_CONFIG.map((d) => {
                     const isChecked = formFito.destinosUso.includes(d.id);
@@ -1020,8 +1020,8 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                         onClick={() => handleToggleDestino(d.id)}
                         className={`p-2 rounded-xl border text-center font-bold text-xs flex flex-col items-center gap-1 cursor-pointer transition-all ${
                           isChecked
-                            ? 'bg-emerald-100 border-emerald-400 text-emerald-950 ring-1 ring-emerald-300'
-                            : 'bg-white border-stone-200 text-stone-500 hover:bg-stone-50'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 border-emerald-400 dark:border-emerald-600 text-emerald-950 dark:text-emerald-100 ring-1 ring-emerald-300'
+                            : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800/70'
                         }`}
                       >
                         <span className="text-base">{d.icon}</span>
@@ -1035,33 +1035,33 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               {/* Registro SAG, Fabricante y Lote */}
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">N° Registro SAG:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">N° Registro SAG:</label>
                   <input
                     type="text"
                     value={formFito.numeroRegistroSAG}
                     onChange={(e) => setFormFito({ ...formFito, numeroRegistroSAG: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fabricante:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fabricante:</label>
                   <input
                     type="text"
                     value={formFito.fabricante}
                     onChange={(e) => setFormFito({ ...formFito, fabricante: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="ej. Syngenta, Bayer, Yara"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">N° de Lote:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">N° de Lote:</label>
                   <input
                     type="text"
                     value={formFito.lote}
                     onChange={(e) => setFormFito({ ...formFito, lote: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
@@ -1069,33 +1069,33 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               {/* Stock y Unidad */}
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Inicial:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Inicial:</label>
                   <NumericInput
                     step="0.1"
                     min="0"
                     value={formFito.stockActual}
                     onValueChange={(val) => setFormFito({ ...formFito, stockActual: val })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Mínimo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Mínimo:</label>
                   <NumericInput
                     step="0.1"
                     min="0"
                     value={formFito.stockMinimo}
                     onValueChange={(val) => setFormFito({ ...formFito, stockMinimo: val })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Unidad de Medida:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Unidad de Medida:</label>
                   <select
                     value={formFito.unidad}
                     onChange={(e) => setFormFito({ ...formFito, unidad: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-emerald-950"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-emerald-950 dark:text-emerald-100"
                   >
                     <option value="Kg">Kg</option>
                     <option value="Litros">Litros</option>
@@ -1107,8 +1107,8 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               </div>
 
               {/* Carencia SAG y Reingreso */}
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-stone-800">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2.5">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-stone-800 dark:text-stone-200">
                   <input
                     type="checkbox"
                     checked={formFito.tieneCarencia}
@@ -1117,7 +1117,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                       tieneCarencia: e.target.checked,
                       periodoCarenciaDias: e.target.checked ? (formFito.periodoCarenciaDias || 7) : 0
                     })}
-                    className="w-4 h-4 rounded text-emerald-700 cursor-pointer"
+                    className="w-4 h-4 rounded text-emerald-700 dark:text-emerald-400 cursor-pointer bg-white dark:bg-stone-800"
                   />
                   <span>¿Tiene período de carencia (LMR SAG)?</span>
                 </label>
@@ -1125,51 +1125,51 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                 {formFito.tieneCarencia ? (
                   <div className="grid grid-cols-2 gap-3 pt-1">
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">Carencia SAG (Días LMR):</label>
+                      <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Carencia SAG (Días LMR):</label>
                       <NumericInput
                         integer
                         min="1"
                         value={formFito.periodoCarenciaDias}
                         onValueChange={(val) => setFormFito({ ...formFito, periodoCarenciaDias: val })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-amber-900"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-amber-900 dark:text-amber-200"
                         placeholder="ej. 7, 14 días"
                         required={formFito.tieneCarencia}
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">Reingreso (Horas REI):</label>
+                      <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Reingreso (Horas REI):</label>
                       <NumericInput
                         integer
                         min="0"
                         value={formFito.tiempoReingresoHoras}
                         onValueChange={(val) => setFormFito({ ...formFito, tiempoReingresoHoras: val })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                       />
                     </div>
                   </div>
                 ) : (
-                  <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-200 text-[11px] text-emerald-800 font-medium">
+                  <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg border border-emerald-200 dark:border-emerald-800/80 text-[11px] text-emerald-800 dark:text-emerald-300 font-medium">
                     ✓ Producto <strong>Exento de Carencia SAG (0 días)</strong>. Válido para fertilizantes, enmiendas, bioestimulantes, coadyuvantes u orgánicos sin LMR.
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones / Ubicación en Bodega:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones / Ubicación en Bodega:</label>
                 <textarea
                   value={formFito.observaciones}
                   onChange={(e) => setFormFito({ ...formFito, observaciones: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   placeholder="Detalles sobre mezcla, advertencias toxicológicas, estantería..."
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsNewModalOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1187,8 +1187,8 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
       {/* MODAL: Editar Producto Fitosanitario (100% Editable) */}
       {isEditModalOpen && editingInsumo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-stone-900 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-emerald-400" />
@@ -1199,11 +1199,11 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
             <form onSubmit={handleGuardarEdicion} className="p-5 space-y-3.5 text-xs max-h-[85vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Categoría del Producto:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Categoría del Producto:</label>
                   <select
                     value={formFito.categoriaFito}
                     onChange={(e) => setFormFito({ ...formFito, categoriaFito: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-emerald-900"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-emerald-900 dark:text-emerald-200"
                   >
                     <option value="herbicida">Herbicida</option>
                     <option value="fungicida">Fungicida</option>
@@ -1221,12 +1221,12 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Nombre Comercial:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre Comercial:</label>
                   <input
                     type="text"
                     value={formFito.nombreComercial}
                     onChange={(e) => setFormFito({ ...formFito, nombreComercial: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                     required
                   />
                 </div>
@@ -1234,29 +1234,29 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
               {/* Si es Fertilizante */}
               {formFito.categoriaFito === 'fertilizante' ? (
-                <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 space-y-2.5">
-                  <div className="font-bold text-emerald-950 flex items-center gap-1.5 text-xs">
-                    <Leaf className="w-3.5 h-3.5 text-emerald-700" />
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/80 space-y-2.5">
+                  <div className="font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-1.5 text-xs">
+                    <Leaf className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                     Especificaciones Exclusivas de Fertilizante
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">Estado Físico:</label>
+                      <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado Físico:</label>
                       <select
                         value={formFito.estadoFertilizante}
                         onChange={(e) => setFormFito({ ...formFito, estadoFertilizante: e.target.value as any })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                       >
                         <option value="liquido">Líquido</option>
                         <option value="granulado">Granulado</option>
                       </select>
                     </div>
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">Solubilidad:</label>
+                      <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Solubilidad:</label>
                       <select
                         value={formFito.solubilidadFertilizante}
                         onChange={(e) => setFormFito({ ...formFito, solubilidadFertilizante: e.target.value as any })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                       >
                         <option value="soluble">Soluble (Fertirriego / Foliar)</option>
                         <option value="no_soluble">No Soluble (Aplicación al suelo)</option>
@@ -1264,12 +1264,12 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                     </div>
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Composición del Fertilizante:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Composición del Fertilizante:</label>
                     <input
                       type="text"
                       value={formFito.composicionFertilizante}
                       onChange={(e) => setFormFito({ ...formFito, composicionFertilizante: e.target.value })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-medium"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-medium dark:text-stone-100"
                       required
                     />
                   </div>
@@ -1277,7 +1277,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               ) : (
                 /* Ingrediente Activo / Composición */
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                     {formFito.categoriaFito === 'enmienda'
                       ? 'Ingrediente Activo / Composición Mineral:'
                       : 'Ingrediente Activo:'}
@@ -1286,16 +1286,16 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                     type="text"
                     value={formFito.ingredienteActivo}
                     onChange={(e) => setFormFito({ ...formFito, ingredienteActivo: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                     required
                   />
                 </div>
               )}
 
               {/* Fechas de Fabricación y Vencimiento */}
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 dark:text-stone-200 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formFito.sinVencimiento}
@@ -1306,12 +1306,12 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                           fechaVencimiento: e.target.checked ? '' : formFito.fechaVencimiento,
                         })
                       }
-                      className="rounded border-stone-300 text-emerald-800"
+                      className="rounded border-stone-300 dark:border-stone-700 text-emerald-800 dark:text-emerald-300 bg-white dark:bg-stone-800"
                     />
                     <span>Sin fecha de vencimiento (no vence)</span>
                   </label>
 
-                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={usarDiaExacto}
@@ -1328,7 +1328,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                             : toMonthValue(prev.fechaVencimiento),
                         }));
                       }}
-                      className="rounded border-stone-300 text-emerald-800"
+                      className="rounded border-stone-300 dark:border-stone-700 text-emerald-800 dark:text-emerald-300 bg-white dark:bg-stone-800"
                     />
                     <span>Incluir día exacto</span>
                   </label>
@@ -1336,22 +1336,22 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha de Fabricación / Elaboración {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     <input
                       type={usarDiaExacto ? 'date' : 'month'}
                       value={formFito.fechaElaboracion}
                       onChange={(e) => setFormFito({ ...formFito, fechaElaboracion: e.target.value })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha de Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     {formFito.sinVencimiento ? (
-                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                      <div className="w-full p-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg font-mono text-stone-500 dark:text-stone-400">
                         Sin vencimiento (No aplica)
                       </div>
                     ) : (
@@ -1359,7 +1359,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                         type={usarDiaExacto ? 'date' : 'month'}
                         value={formFito.fechaVencimiento}
                         onChange={(e) => setFormFito({ ...formFito, fechaVencimiento: e.target.value })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-amber-900 dark:text-amber-200"
                       />
                     )}
                   </div>
@@ -1368,7 +1368,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
               {/* Destinos */}
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Destinado a:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Destinado a:</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {DESTINOS_CONFIG.map((d) => {
                     const isChecked = formFito.destinosUso.includes(d.id);
@@ -1379,8 +1379,8 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                         onClick={() => handleToggleDestino(d.id)}
                         className={`p-2 rounded-xl border text-center font-bold text-xs flex flex-col items-center gap-1 cursor-pointer transition-all ${
                           isChecked
-                            ? 'bg-emerald-100 border-emerald-400 text-emerald-950 ring-1 ring-emerald-300'
-                            : 'bg-white border-stone-200 text-stone-500 hover:bg-stone-50'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 border-emerald-400 dark:border-emerald-600 text-emerald-950 dark:text-emerald-100 ring-1 ring-emerald-300'
+                            : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800/70'
                         }`}
                       >
                         <span className="text-base">{d.icon}</span>
@@ -1394,30 +1394,30 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               {/* Registro SAG, Fabricante y Lote */}
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">N° Registro SAG:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">N° Registro SAG:</label>
                   <input
                     type="text"
                     value={formFito.numeroRegistroSAG}
                     onChange={(e) => setFormFito({ ...formFito, numeroRegistroSAG: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fabricante:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fabricante:</label>
                   <input
                     type="text"
                     value={formFito.fabricante}
                     onChange={(e) => setFormFito({ ...formFito, fabricante: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">N° Lote:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">N° Lote:</label>
                   <input
                     type="text"
                     value={formFito.lote}
                     onChange={(e) => setFormFito({ ...formFito, lote: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
@@ -1425,33 +1425,33 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               {/* Stock y Unidad */}
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Actual:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Actual:</label>
                   <NumericInput
                     step="0.1"
                     min="0"
                     value={formFito.stockActual}
                     onValueChange={(val) => setFormFito({ ...formFito, stockActual: val })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-emerald-950"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-emerald-950 dark:text-emerald-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Mínimo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Mínimo:</label>
                   <NumericInput
                     step="0.1"
                     min="0"
                     value={formFito.stockMinimo}
                     onValueChange={(val) => setFormFito({ ...formFito, stockMinimo: val })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Unidad de Medida:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Unidad de Medida:</label>
                   <select
                     value={formFito.unidad}
                     onChange={(e) => setFormFito({ ...formFito, unidad: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-emerald-950"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-emerald-950 dark:text-emerald-100"
                   >
                     <option value="Kg">Kg</option>
                     <option value="Litros">Litros</option>
@@ -1463,8 +1463,8 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
               </div>
 
               {/* Carencia SAG y Reingreso */}
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-stone-800">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2.5">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-stone-800 dark:text-stone-200">
                   <input
                     type="checkbox"
                     checked={formFito.tieneCarencia}
@@ -1473,7 +1473,7 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                       tieneCarencia: e.target.checked,
                       periodoCarenciaDias: e.target.checked ? (formFito.periodoCarenciaDias || 7) : 0
                     })}
-                    className="w-4 h-4 rounded text-emerald-700 cursor-pointer"
+                    className="w-4 h-4 rounded text-emerald-700 dark:text-emerald-400 cursor-pointer bg-white dark:bg-stone-800"
                   />
                   <span>¿Tiene período de carencia (LMR SAG)?</span>
                 </label>
@@ -1481,50 +1481,50 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
                 {formFito.tieneCarencia ? (
                   <div className="grid grid-cols-2 gap-3 pt-1">
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">Carencia (Días LMR):</label>
+                      <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Carencia (Días LMR):</label>
                       <NumericInput
                         integer
                         min="1"
                         value={formFito.periodoCarenciaDias}
                         onValueChange={(val) => setFormFito({ ...formFito, periodoCarenciaDias: val })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-amber-900"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-amber-900 dark:text-amber-200"
                         placeholder="ej. 7, 14 días"
                         required={formFito.tieneCarencia}
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">Reingreso (Horas REI):</label>
+                      <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Reingreso (Horas REI):</label>
                       <NumericInput
                         integer
                         min="0"
                         value={formFito.tiempoReingresoHoras}
                         onValueChange={(val) => setFormFito({ ...formFito, tiempoReingresoHoras: val })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                       />
                     </div>
                   </div>
                 ) : (
-                  <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-200 text-[11px] text-emerald-800 font-medium">
+                  <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg border border-emerald-200 dark:border-emerald-800/80 text-[11px] text-emerald-800 dark:text-emerald-300 font-medium">
                     ✓ Producto <strong>Exento de Carencia SAG (0 días)</strong>.
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones:</label>
                 <textarea
                   value={formFito.observaciones}
                   onChange={(e) => setFormFito({ ...formFito, observaciones: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1542,25 +1542,25 @@ export const FitosanitariosView: React.FC<FitosanitariosViewProps> = ({
 
       {/* MODAL: Confirmación Eliminación Insumo Fitosanitario */}
       {insumoToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 overflow-hidden animate-in fade-in zoom-in-95">
             <div className="bg-rose-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Eliminar Producto Fitosanitario</h3>
               <button onClick={() => setInsumoToDelete(null)} className="text-rose-200 hover:text-white cursor-pointer">✕</button>
             </div>
             <div className="p-5 space-y-4 text-xs">
-              <p className="text-stone-700">
+              <p className="text-stone-700 dark:text-stone-300">
                 ¿Estás seguro de que deseas eliminar permanentemente <strong>{insumoToDelete.nombreComercial}</strong> de la bodega?
               </p>
-              <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200 text-stone-600 text-[11px] space-y-1">
+              <div className="p-2.5 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 text-[11px] space-y-1">
                 <div><strong>Categoría:</strong> {insumoToDelete.categoriaFito || insumoToDelete.tipo}</div>
                 <div><strong>Stock actual:</strong> {insumoToDelete.stockActual} {insumoToDelete.unidad}</div>
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setInsumoToDelete(null)}
-                  className="px-3.5 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer font-medium"
+                  className="px-3.5 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer font-medium"
                 >
                   Cancelar
                 </button>

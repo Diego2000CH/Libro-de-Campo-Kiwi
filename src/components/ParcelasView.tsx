@@ -122,12 +122,12 @@ const formatSectorLabel = (
 };
 
 const getEstadoBadgeClasses = (estado: string): string => {
-  if (estado === 'Listo para Cosecha') return 'bg-emerald-100 text-emerald-900 border-emerald-200';
-  if (estado === 'En Carencia SAG') return 'bg-rose-100 text-rose-900 border-rose-200';
-  if (estado === 'En Riego') return 'bg-cyan-100 text-cyan-900 border-cyan-200';
-  if (estado === 'En Floración') return 'bg-amber-100 text-amber-900 border-amber-200';
+  if (estado === 'Listo para Cosecha') return 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800/80';
+  if (estado === 'En Carencia SAG') return 'bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 border-rose-200 dark:border-rose-800/80';
+  if (estado === 'En Riego') return 'bg-cyan-100 dark:bg-cyan-950/60 text-cyan-900 dark:text-cyan-200 border-cyan-200 dark:border-cyan-800/80';
+  if (estado === 'En Floración') return 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border-amber-200 dark:border-amber-800/80';
   if (estado === 'Receso Invernal') return 'bg-slate-100 text-slate-800 border-slate-200';
-  return 'bg-stone-100 text-stone-800 border-stone-200';
+  return 'bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 border-stone-200 dark:border-stone-800';
 };
 
 // Cálculo de radio métrico en base al área en hectáreas: A = ha * 10.000 m² -> r = sqrt(A / pi)
@@ -280,7 +280,7 @@ const MapsApiStatusMonitor: React.FC<{
 
   if (status === APILoadingStatus.LOADING) {
     return (
-      <div className="absolute inset-0 z-20 bg-stone-900/75 backdrop-blur-xs flex flex-col items-center justify-center text-white p-6 text-center gap-2 pointer-events-none">
+      <div className="absolute inset-0 z-20 bg-stone-900/75 dark:bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center text-white p-6 text-center gap-2 pointer-events-none">
         <Compass className="w-8 h-8 text-emerald-400 animate-spin" />
         <p className="text-sm font-bold">Cargando mapa satelital del huerto...</p>
         <p className="text-[11px] text-stone-300">Conectando con Google Maps Platform</p>
@@ -1514,16 +1514,16 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold uppercase tracking-wider mb-1">
-            <Compass className="w-3 h-3 text-emerald-700" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 text-[10px] font-bold uppercase tracking-wider mb-1">
+            <Compass className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
             Catastro Predial & Mapa Satelital
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Mapa del Huerto &amp; Cuarteles de Kiwi
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Vista satelital Google Maps con trazado dinámico de polígonos irregulares por contorno real del terreno, marcadores e infraestructura.
           </p>
         </div>
@@ -1561,7 +1561,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
       </div>
 
       {/* CONTENEDOR DEL MAPA SATELITAL INTERACTIVO */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-2xs overflow-hidden">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs overflow-hidden">
         {/* Barra de Controles y Selector de Capas */}
         <div className="p-3 bg-stone-900 text-white flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 text-xs">
           {/* Selector de Capa de Mapa */}
@@ -1790,7 +1790,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
           {/* Panel Flotante de Dibujo / Edición Dinámica de Polígono */}
           {polygonEditorMode && (
-            <div className="absolute bottom-3 left-3 right-3 z-30 bg-stone-900/95 text-white p-3.5 rounded-2xl border border-emerald-500/50 shadow-2xl backdrop-blur-md space-y-2.5 text-xs">
+            <div className="absolute bottom-3 left-3 right-3 z-30 bg-stone-900/95 dark:bg-black/75 text-white p-3.5 rounded-2xl border border-emerald-500/50 shadow-2xl backdrop-blur-md space-y-2.5 text-xs">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
                 <div className="flex items-start gap-2.5">
                   <div
@@ -1889,7 +1889,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
           {/* Banner Flotante al Hacer Clic en el Mapa */}
           {clickedCoords && !polygonEditorMode && (
-            <div className="absolute bottom-4 left-4 right-4 z-20 bg-stone-900/95 text-white p-3.5 rounded-xl border border-stone-700 shadow-xl backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2">
+            <div className="absolute bottom-4 left-4 right-4 z-20 bg-stone-900/95 dark:bg-black/75 text-white p-3.5 rounded-xl border border-stone-700 shadow-xl backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2">
               <div className="flex items-center gap-2 text-xs">
                 <span className="p-1.5 bg-emerald-700 rounded-lg">📍</span>
                 <div>
@@ -1936,9 +1936,9 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
         </div>
 
         {/* Leyenda de Puntos & Marcadores */}
-        <div className="p-3 bg-stone-50 border-t border-stone-200 flex items-center justify-between gap-2 flex-wrap text-xs text-stone-600">
+        <div className="p-3 bg-stone-50 dark:bg-stone-800/70 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between gap-2 flex-wrap text-xs text-stone-600 dark:text-stone-400">
           <div className="flex items-center gap-3 flex-wrap text-[11px]">
-            <span className="font-bold text-stone-800">Leyenda:</span>
+            <span className="font-bold text-stone-800 dark:text-stone-200">Leyenda:</span>
             <span>🥝 Cuartel (Polígono real / círculo ha)</span>
             <span>🌾 Barbecho</span>
             <span>🧪 Bodega</span>
@@ -1955,10 +1955,10 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
       </div>
 
       {/* LISTA DE PUNTOS IMPORTANTES DEL PREDIO (Lugares) */}
-      <div className="p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+      <div className="p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3">
           <div>
-            <h2 className="font-extrabold text-sm text-stone-900 flex items-center gap-2">
+            <h2 className="font-extrabold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-amber-600" />
               Puntos Importantes del Predio ({lugares.length} puntos registrados)
             </h2>
@@ -1995,11 +1995,11 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               return (
                 <div 
                   key={lug.id} 
-                  className="p-3.5 bg-stone-50 hover:bg-white rounded-xl border border-stone-200 hover:border-amber-300 transition-all flex flex-col justify-between text-xs space-y-2 shadow-2xs"
+                  className="p-3.5 bg-stone-50 dark:bg-stone-800/70 hover:bg-white dark:hover:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-800 hover:border-amber-300 transition-all flex flex-col justify-between text-xs space-y-2 shadow-2xs"
                 >
                   <div className="space-y-1">
                     <div className="flex items-start justify-between gap-1">
-                      <div className="font-extrabold text-stone-900 flex items-center gap-1.5">
+                      <div className="font-extrabold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
                         <span className="text-base">{catInfo.emoji}</span>
                         <span>{lug.nombre}</span>
                       </div>
@@ -2011,12 +2011,12 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                       </span>
                     </div>
 
-                    <p className="text-[11px] text-stone-500 line-clamp-2">
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 line-clamp-2">
                       {lug.descripcion || 'Sin descripción'}
                     </p>
 
                     {lug.superficieHa ? (
-                      <div className="text-[11px] font-bold text-amber-800">
+                      <div className="text-[11px] font-bold text-amber-800 dark:text-amber-300">
                         Superficie: {lug.superficieHa} ha ({(lug.superficieHa * 10000).toLocaleString('es-CL')} m²)
                       </div>
                     ) : null}
@@ -2026,11 +2026,11 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-stone-200/60">
+                  <div className="flex items-center justify-between pt-2 border-t border-stone-200/60 dark:border-stone-800">
                     <button
                       type="button"
                       onClick={() => centrarMapa(lug.lat, lug.lng)}
-                      className="text-[11px] font-bold text-blue-700 hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-[11px] font-bold text-blue-700 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <span>Ver en Mapa</span>
                       <ExternalLink className="w-3 h-3" />
@@ -2041,7 +2041,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleOpenEditLugar(lug)}
-                          className="p-1.5 text-stone-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg cursor-pointer"
+                          className="p-1.5 text-stone-500 dark:text-stone-400 hover:text-amber-700 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/60 rounded-lg cursor-pointer"
                           title="Editar"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
@@ -2049,7 +2049,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                         <button
                           type="button"
                           onClick={() => setLugarToDelete(lug)}
-                          className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                          className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg cursor-pointer"
                           title="Eliminar"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -2068,11 +2068,11 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div>
-            <h2 className="font-extrabold text-sm text-stone-900 flex items-center gap-2">
-              <TreeDeciduous className="w-4 h-4 text-emerald-700" />
+            <h2 className="font-extrabold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+              <TreeDeciduous className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
               Cuarteles de Kiwi Registrados ({parcelas.length} cuarteles · {totalHa.toFixed(1)} ha totales)
             </h2>
-            <p className="text-[11px] text-stone-500">
+            <p className="text-[11px] text-stone-500 dark:text-stone-400">
               Selecciona un cuartel para destacarlo en el mapa o usa «Editar» para modificar nombre, sectores de riego, polígono y ficha agronómica completa.
             </p>
           </div>
@@ -2086,7 +2086,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   value={busquedaCuartel}
                   onChange={(e) => setBusquedaCuartel(e.target.value)}
                   placeholder="Buscar cuartel o variedad..."
-                  className="pl-8 pr-3 py-1.5 bg-white border border-stone-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600 w-48"
+                  className="pl-8 pr-3 py-1.5 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600 w-48 dark:text-stone-100"
                 />
               </div>
             )}
@@ -2104,15 +2104,15 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
         </div>
 
         {cuartelSavedBanner && (
-          <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-bold flex items-center justify-between gap-2 animate-in fade-in">
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-emerald-900 dark:text-emerald-200 rounded-xl text-xs font-bold flex items-center justify-between gap-2 animate-in fade-in">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
               <span>{cuartelSavedBanner}</span>
             </div>
             <button
               type="button"
               onClick={() => setCuartelSavedBanner(null)}
-              className="text-emerald-700 hover:text-emerald-950 cursor-pointer"
+              className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-950 dark:hover:text-emerald-100 cursor-pointer"
             >
               ✕
             </button>
@@ -2120,9 +2120,9 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
         )}
 
         {parcelas.length === 0 ? (
-          <div className="p-8 bg-white rounded-2xl border border-stone-200 text-center text-stone-400 space-y-2">
+          <div className="p-8 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 text-center text-stone-400 space-y-2">
             <TreeDeciduous className="w-10 h-10 mx-auto text-stone-300" />
-            <p className="font-bold text-sm text-stone-700">No hay cuarteles registrados en tu huerto</p>
+            <p className="font-bold text-sm text-stone-700 dark:text-stone-300">No hay cuarteles registrados en tu huerto</p>
             <p className="text-xs">Comienza agregando tu primer cuartel real con sus hectáreas, sectores de riego y coordenadas.</p>
             {canEdit && (
               <button
@@ -2170,10 +2170,10 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   <div
                     key={p.id}
                     onClick={() => setSelectedParcelaId(p.id)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer bg-white flex flex-col justify-between space-y-3 ${
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer bg-white dark:bg-stone-900 flex flex-col justify-between space-y-3 ${
                       isSelected
                         ? 'border-emerald-600 ring-2 ring-emerald-600/20 shadow-sm'
-                        : 'border-stone-200 hover:border-emerald-300 shadow-2xs'
+                        : 'border-stone-200 dark:border-stone-800 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-2xs'
                     }`}
                   >
                     <div className="space-y-3">
@@ -2189,15 +2189,15 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getEstadoBadgeClasses(p.estadoActual)}`}>
                             {p.estadoActual || 'Normal'}
                           </span>
-                          <span className="font-mono font-bold text-xs text-stone-900">
+                          <span className="font-mono font-bold text-xs text-stone-900 dark:text-stone-100">
                             {p.superficieHa} ha
                           </span>
                         </div>
                       </div>
 
                       <div>
-                        <h3 className="font-black text-stone-900 text-base leading-snug">{p.nombre}</h3>
-                        <p className="text-[11px] text-stone-500 mt-0.5">
+                        <h3 className="font-black text-stone-900 dark:text-stone-100 text-base leading-snug">{p.nombre}</h3>
+                        <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
                           {p.variedad} · {p.sistemaConduccion}
                         </p>
                         {(p.anioPlantacion || totalPlantas > 0 || p.rendimientoEstimadoTonHa > 0) && (
@@ -2210,30 +2210,30 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                         )}
                       </div>
 
-                      <div className="p-2.5 bg-stone-50 rounded-xl space-y-1.5 text-xs border border-stone-100">
-                        <div className="flex justify-between gap-2 text-stone-600">
+                      <div className="p-2.5 bg-stone-50 dark:bg-stone-800/70 rounded-xl space-y-1.5 text-xs border border-stone-100 dark:border-stone-800">
+                        <div className="flex justify-between gap-2 text-stone-600 dark:text-stone-400">
                           <span>Geometría:</span>
                           {hasPolygon ? (
-                            <strong className="text-emerald-800 font-mono text-right">
+                            <strong className="text-emerald-800 dark:text-emerald-300 font-mono text-right">
                               Polígono ({p.coordenadasPoligono.length} vért.)
                             </strong>
                           ) : (
-                            <strong className="text-stone-900 font-mono text-right">Círculo ({radioM.toFixed(0)} m)</strong>
+                            <strong className="text-stone-900 dark:text-stone-100 font-mono text-right">Círculo ({radioM.toFixed(0)} m)</strong>
                           )}
                         </div>
-                        <div className="flex justify-between gap-2 text-stone-600">
+                        <div className="flex justify-between gap-2 text-stone-600 dark:text-stone-400">
                           <span className="shrink-0">Sectores Riego:</span>
-                          <strong className="text-cyan-800 text-right truncate" title={sectoresText}>
+                          <strong className="text-cyan-800 dark:text-cyan-300 text-right truncate" title={sectoresText}>
                             {sectoresText}
                           </strong>
                         </div>
-                        <div className="pt-1 border-t border-stone-200/60">
+                        <div className="pt-1 border-t border-stone-200/60 dark:border-stone-800">
                           {quickFenParcelaId === p.id ? (
                             <div
                               onClick={(e) => e.stopPropagation()}
-                              className="space-y-1.5 bg-white p-2 rounded-lg border border-emerald-300"
+                              className="space-y-1.5 bg-white dark:bg-stone-900 p-2 rounded-lg border border-emerald-300 dark:border-emerald-700"
                             >
-                              <div className="text-[10px] font-bold text-emerald-900">
+                              <div className="text-[10px] font-bold text-emerald-900 dark:text-emerald-200">
                                 Editar Estado Fenológico & Fecha:
                               </div>
                               <select
@@ -2245,7 +2245,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                                 onChange={(e) => {
                                   if (e.target.value) setQuickFenEstado(e.target.value);
                                 }}
-                                className="w-full p-1 bg-stone-50 border border-stone-300 rounded text-[11px] text-stone-700"
+                                className="w-full p-1 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded text-[11px] text-stone-700 dark:text-stone-300"
                               >
                                 <option value="">Seleccionar de la lista o escribir...</option>
                                 {estadosFenologicosOpciones.map((ef) => (
@@ -2260,7 +2260,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                                 value={quickFenEstado}
                                 onChange={(e) => setQuickFenEstado(e.target.value)}
                                 placeholder="O escribe cualquier estado fenológico nuevo..."
-                                className="w-full p-1.5 bg-stone-50 border border-emerald-300 rounded text-[11px] font-medium"
+                                className="w-full p-1.5 bg-stone-50 dark:bg-stone-800 border border-emerald-300 dark:border-emerald-700 rounded text-[11px] font-medium dark:text-stone-100"
                               />
                               {onAddEstadoFenologicoCustom &&
                                 quickFenEstado.trim() &&
@@ -2270,7 +2270,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => guardarEstadoCatalogoSiNoExiste(quickFenEstado)}
-                                    className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+                                    className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
                                   >
                                     + Guardar &quot;{quickFenEstado.trim()}&quot; en catálogo
                                   </button>
@@ -2280,7 +2280,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                                   type="date"
                                   value={quickFenFecha}
                                   onChange={(e) => setQuickFenFecha(e.target.value)}
-                                  className="flex-1 p-1 bg-stone-50 border border-stone-300 rounded text-[11px] font-mono"
+                                  className="flex-1 p-1 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded text-[11px] font-mono dark:text-stone-100"
                                 />
                                 <button
                                   type="button"
@@ -2299,19 +2299,19 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => setQuickFenParcelaId(null)}
-                                  className="px-1.5 py-1 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded text-[10px] font-bold cursor-pointer"
+                                  className="px-1.5 py-1 bg-stone-200 dark:bg-stone-700 hover:bg-stone-300 text-stone-700 dark:text-stone-300 rounded text-[10px] font-bold cursor-pointer"
                                 >
                                   Cancelar
                                 </button>
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-start justify-between gap-2 text-stone-600">
+                            <div className="flex items-start justify-between gap-2 text-stone-600 dark:text-stone-400">
                               <span className="shrink-0">Fenología:</span>
                               <div className="text-right min-w-0 flex-1">
                                 <div className="flex items-center justify-end gap-1.5">
                                   <strong
-                                    className="text-stone-800 truncate max-w-[140px]"
+                                    className="text-stone-800 dark:text-stone-200 truncate max-w-[140px]"
                                     title={p.estadoFenologico || 'Sin definir'}
                                   >
                                     {p.estadoFenologico || 'Sin definir'}
@@ -2327,7 +2327,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                                           p.fechaEstadoFenologico || new Date().toISOString().split('T')[0]
                                         );
                                       }}
-                                      className="text-[10px] font-bold text-emerald-700 hover:text-emerald-900 hover:underline shrink-0 cursor-pointer"
+                                      className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-200 hover:underline shrink-0 cursor-pointer"
                                       title="Cambiar estado fenológico y fecha"
                                     >
                                       Editar
@@ -2335,7 +2335,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                                   )}
                                 </div>
                                 {p.fechaEstadoFenologico && (
-                                  <div className="text-[10px] font-mono tabular-nums text-emerald-800">
+                                  <div className="text-[10px] font-mono tabular-nums text-emerald-800 dark:text-emerald-300">
                                     Fecha: {p.fechaEstadoFenologico}
                                   </div>
                                 )}
@@ -2344,20 +2344,20 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                           )}
                         </div>
                         {p.estadoActual === 'En Carencia SAG' && (p.lmrActivo || p.diasCarenciaRestantes) && (
-                          <div className="flex justify-between gap-2 text-rose-700 font-bold text-[11px]">
+                          <div className="flex justify-between gap-2 text-rose-700 dark:text-rose-400 font-bold text-[11px]">
                             <span>Carencia LMR:</span>
                             <span className="truncate">{p.lmrActivo || 'Activa'} ({p.diasCarenciaRestantes || 0}d)</span>
                           </div>
                         )}
                         {p.notas && (
-                          <div className="text-[10px] text-stone-500 pt-1 border-t border-stone-200/70 line-clamp-1" title={p.notas}>
+                          <div className="text-[10px] text-stone-500 dark:text-stone-400 pt-1 border-t border-stone-200/70 dark:border-stone-800 line-clamp-1" title={p.notas}>
                             {p.notas}
                           </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-stone-100 gap-1">
+                    <div className="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-stone-800 gap-1">
                       <div className="flex items-center gap-2.5 flex-wrap">
                         <button
                           type="button"
@@ -2365,7 +2365,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                             e.stopPropagation();
                             if (displayCenter) centrarMapa(displayCenter.lat, displayCenter.lng);
                           }}
-                          className="text-[11px] font-bold text-blue-700 hover:underline cursor-pointer"
+                          className="text-[11px] font-bold text-blue-700 dark:text-blue-400 hover:underline cursor-pointer"
                         >
                           Centrar
                         </button>
@@ -2376,7 +2376,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                               e.stopPropagation();
                               handleStartEditPolygonForParcela(p);
                             }}
-                            className="text-[11px] font-bold text-emerald-700 hover:underline cursor-pointer flex items-center gap-0.5"
+                            className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer flex items-center gap-0.5"
                             title="Dibujar o ajustar el contorno irregular del cuartel"
                           >
                             <PenTool className="w-3 h-3" />
@@ -2390,7 +2390,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                               e.stopPropagation();
                               onRegisterLaborForParcela(p.id);
                             }}
-                            className="text-[11px] font-bold text-amber-700 hover:underline cursor-pointer flex items-center gap-0.5"
+                            className="text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:underline cursor-pointer flex items-center gap-0.5"
                             title="Registrar una labor en este cuartel"
                           >
                             <ClipboardList className="w-3 h-3" />
@@ -2407,7 +2407,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                               e.stopPropagation();
                               handleOpenEditParcela(p);
                             }}
-                            className="px-2 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg cursor-pointer flex items-center gap-1"
+                            className="px-2 py-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800/80 rounded-lg cursor-pointer flex items-center gap-1"
                             title="Editar todos los datos del cuartel"
                           >
                             <Edit3 className="w-3 h-3" />
@@ -2419,7 +2419,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                               e.stopPropagation();
                               setCuartelToDelete(p);
                             }}
-                            className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                            className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg cursor-pointer"
                             title="Eliminar cuartel"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -2436,8 +2436,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
       {/* MODAL AGREGAR / EDITAR LUGAR O PUNTO IMPORTANTE */}
       {(isAddLugarOpen || isEditLugarOpen) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-amber-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-amber-400" />
@@ -2453,19 +2453,19 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
             <form onSubmit={handleSaveLugar} className="p-5 space-y-3.5 text-xs max-h-[85vh] overflow-y-auto">
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Nombre del Lugar / Punto:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre del Lugar / Punto:</label>
                 <input
                   type="text"
                   placeholder="ej. Barbecho Sector Norte, Bodega Químicos SAG, Oficina Central..."
                   value={lugarForm.nombre}
                   onChange={(e) => setLugarForm({ ...lugarForm, nombre: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Categoría / Tipo de Instalación:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Categoría / Tipo de Instalación:</label>
                 <select
                   value={lugarForm.tipo}
                   onChange={(e) => {
@@ -2473,7 +2473,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     const cat = CATEGORIAS_LUGARES.find(c => c.tipo === t);
                     setLugarForm({ ...lugarForm, tipo: t, colorHex: cat?.color || lugarForm.colorHex });
                   }}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                   required
                 >
                   {CATEGORIAS_LUGARES.map((cat) => (
@@ -2485,9 +2485,9 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               </div>
 
               {/* Coordenadas GPS */}
-              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="font-bold text-stone-800">Coordenadas Geográficas (Lat / Lng):</label>
+                  <label className="font-bold text-stone-800 dark:text-stone-200">Coordenadas Geográficas (Lat / Lng):</label>
                   <button
                     type="button"
                     onClick={() => handleUsarGpsEnForm(true)}
@@ -2502,8 +2502,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   <div
                     className={`p-2 rounded-lg text-[11px] font-bold ${
                       gpsFeedback.type === 'ok'
-                        ? 'bg-emerald-100 text-emerald-900'
-                        : 'bg-rose-100 text-rose-800'
+                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200'
+                        : 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300'
                     }`}
                   >
                     {gpsFeedback.text}
@@ -2512,24 +2512,24 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[10px] text-stone-500 block mb-0.5">Latitud:</label>
+                    <label className="text-[10px] text-stone-500 dark:text-stone-400 block mb-0.5">Latitud:</label>
                     <input
                       type="number"
                       step="0.00001"
                       value={lugarForm.lat}
                       onChange={(e) => setLugarForm({ ...lugarForm, lat: parseFloat(e.target.value) || 0 })}
-                      className="w-full p-1.5 bg-white border border-stone-300 rounded font-mono font-bold"
+                      className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded font-mono font-bold dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-stone-500 block mb-0.5">Longitud:</label>
+                    <label className="text-[10px] text-stone-500 dark:text-stone-400 block mb-0.5">Longitud:</label>
                     <input
                       type="number"
                       step="0.00001"
                       value={lugarForm.lng}
                       onChange={(e) => setLugarForm({ ...lugarForm, lng: parseFloat(e.target.value) || 0 })}
-                      className="w-full p-1.5 bg-white border border-stone-300 rounded font-mono font-bold"
+                      className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded font-mono font-bold dark:text-stone-100"
                       required
                     />
                   </div>
@@ -2538,7 +2538,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
               {/* Superficie si aplica (especialmente Barbecho) */}
               <div>
-                <label className="block font-bold text-stone-700 mb-1">
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                   Superficie en Hectáreas (Opcional - Dibuja círculo en mapa):
                 </label>
                 <input
@@ -2548,7 +2548,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   placeholder="ej. 3.2 ha para Barbecho"
                   value={lugarForm.superficieHa || ''}
                   onChange={(e) => setLugarForm({ ...lugarForm, superficieHa: parseFloat(e.target.value) || 0 })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                 />
                 <span className="text-[10px] text-stone-400">
                   Si ingresas hectáreas, se dibujará el círculo exacto de superficie en el mapa.
@@ -2556,34 +2556,34 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Color del Marcador:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Color del Marcador:</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
                     value={lugarForm.colorHex || '#d97706'}
                     onChange={(e) => setLugarForm({ ...lugarForm, colorHex: e.target.value })}
-                    className="w-9 h-9 rounded cursor-pointer border border-stone-300"
+                    className="w-9 h-9 rounded cursor-pointer border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                   <span className="font-mono text-xs">{lugarForm.colorHex}</span>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Descripción / Notas:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Descripción / Notas:</label>
                 <textarea
                   rows={2}
                   placeholder="Detalles de la instalación, medidas de seguridad, faenas..."
                   value={lugarForm.descripcion || ''}
                   onChange={(e) => setLugarForm({ ...lugarForm, descripcion: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-100">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-100 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => { setIsAddLugarOpen(false); setIsEditLugarOpen(false); }}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -2601,8 +2601,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
       {/* MODAL AGREGAR / EDITAR CUARTEL COMPLETO */}
       {(isAddParcelaOpen || isEditParcelaOpen) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/65 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/65 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl w-full max-w-2xl border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-sm flex items-center gap-2">
@@ -2637,7 +2637,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               className="p-5 space-y-4 text-xs max-h-[84vh] overflow-y-auto"
             >
               {cuartelModalError && (
-                <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-bold flex items-center gap-2">
+                <div className="p-2.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 text-rose-800 dark:text-rose-300 rounded-xl font-bold flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
                   <span>{cuartelModalError}</span>
                 </div>
@@ -2646,7 +2646,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               {/* 1. Identificación y Estado */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block font-bold text-stone-700 mb-1">Nombre del Cuartel:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre del Cuartel:</label>
                   <input
                     type="text"
                     value={parcelaForm.nombre}
@@ -2655,13 +2655,13 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                       setCuartelModalError(null);
                       setParcelaForm((prev) => ({ ...prev, nombre: val }));
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600 dark:text-stone-100"
                     placeholder="Ej. Cuartel 1 - Parrón Norte"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Código Oficial:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Código Oficial:</label>
                   <input
                     type="text"
                     value={parcelaForm.codigoCuartel}
@@ -2669,16 +2669,16 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                       const val = e.target.value;
                       setParcelaForm((prev) => ({ ...prev, codigoCuartel: val }));
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600 dark:text-stone-100"
                     placeholder="Ej. C1 o C1-PN"
                   />
                 </div>
               </div>
 
               {/* 2. Ubicación, Polígono y Superficie */}
-              <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2.5">
+              <div className="p-3.5 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <span className="font-bold text-stone-800">Ubicación, Polígono y Superficie:</span>
+                  <span className="font-bold text-stone-800 dark:text-stone-200">Ubicación, Polígono y Superficie:</span>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {isEditParcelaOpen && (editingParcela || selectedParcela) && (
                       <button
@@ -2705,8 +2705,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   <div
                     className={`p-2 rounded-lg text-[11px] font-bold ${
                       gpsFeedback.type === 'ok'
-                        ? 'bg-emerald-100 text-emerald-900'
-                        : 'bg-rose-100 text-rose-800'
+                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200'
+                        : 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300'
                     }`}
                   >
                     {gpsFeedback.text}
@@ -2715,7 +2715,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div>
-                    <label className="text-[10px] text-stone-500 block mb-0.5">Latitud Centro:</label>
+                    <label className="text-[10px] text-stone-500 dark:text-stone-400 block mb-0.5">Latitud Centro:</label>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -2728,12 +2728,12 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                           lat: parseDecimalInput(raw, prev.lat),
                         }));
                       }}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-stone-500 block mb-0.5">Longitud Centro:</label>
+                    <label className="text-[10px] text-stone-500 dark:text-stone-400 block mb-0.5">Longitud Centro:</label>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -2746,12 +2746,12 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                           lng: parseDecimalInput(raw, prev.lng),
                         }));
                       }}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-stone-500 block mb-0.5">Superficie (ha):</label>
+                    <label className="text-[10px] text-stone-500 dark:text-stone-400 block mb-0.5">Superficie (ha):</label>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -2764,18 +2764,18 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                           superficieHa: parseDecimalInput(raw, prev.superficieHa),
                         }));
                       }}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="text-[10px] text-emerald-800 bg-emerald-50 p-2 rounded-lg flex justify-between items-center font-bold gap-2 flex-wrap">
+                <div className="text-[10px] text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg flex justify-between items-center font-bold gap-2 flex-wrap">
                   {parcelaForm.coordenadasPoligono && parcelaForm.coordenadasPoligono.length >= 3 ? (
                     <>
                       <span>
                         Polígono georreferenciado ({parcelaForm.coordenadasPoligono.length} vértices):{' '}
-                        <strong className="font-mono text-emerald-950">
+                        <strong className="font-mono text-emerald-950 dark:text-emerald-100">
                           {(calcularAreaPoligonoM2(parcelaForm.coordenadasPoligono) / 10000).toFixed(2)} ha
                         </strong>
                       </span>
@@ -2794,7 +2794,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                               }));
                             }
                           }}
-                          className="underline text-emerald-900 cursor-pointer"
+                          className="underline text-emerald-900 dark:text-emerald-200 cursor-pointer"
                         >
                           Usar ha medidas
                         </button>
@@ -2803,7 +2803,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                           onClick={() =>
                             setParcelaForm((prev) => ({ ...prev, coordenadasPoligono: [] }))
                           }
-                          className="underline text-rose-700 cursor-pointer"
+                          className="underline text-rose-700 dark:text-rose-400 cursor-pointer"
                         >
                           Quitar polígono
                         </button>
@@ -2812,7 +2812,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   ) : (
                     <>
                       <span>Sin polígono aún (usa círculo aprox.):</span>
-                      <span className="font-mono text-emerald-950 font-black">
+                      <span className="font-mono text-emerald-950 dark:text-emerald-100 font-black">
                         Radio {calcularRadioMetros(parseDecimalInput(parcelaForm.superficieHaStr, parcelaForm.superficieHa)).toFixed(1)} metros
                       </span>
                     </>
@@ -2821,14 +2821,14 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               </div>
 
               {/* 3. Sectores de Riego Destinados (Siempre funcional + creación rápida inline) */}
-              <div className="p-3.5 bg-cyan-50/60 border border-cyan-200 rounded-xl space-y-2.5">
+              <div className="p-3.5 bg-cyan-50/60 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/80 rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <label className="font-bold text-cyan-950 flex items-center gap-1.5">
-                    <Droplet className="w-3.5 h-3.5 text-cyan-700" />
+                  <label className="font-bold text-cyan-950 dark:text-cyan-100 flex items-center gap-1.5">
+                    <Droplet className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
                     <span>Sectores de Riego Destinados (puedes seleccionar uno o varios):</span>
                   </label>
                   {parcelaForm.sectoresRiego.length > 0 && (
-                    <span className="text-[10px] font-bold text-cyan-800">
+                    <span className="text-[10px] font-bold text-cyan-800 dark:text-cyan-300">
                       {parcelaForm.sectoresRiego.length} seleccionado(s)
                     </span>
                   )}
@@ -2846,7 +2846,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                           className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-colors ${
                             isChecked
                               ? 'bg-cyan-700 text-white border-cyan-700 font-bold'
-                              : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
+                              : 'bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-300 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/70'
                           }`}
                         >
                           <input
@@ -2863,8 +2863,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     })}
                   </div>
                 ) : (
-                  <div className="p-2.5 bg-white/90 border border-cyan-200 rounded-lg space-y-2">
-                    <p className="text-[11px] text-cyan-900 font-medium">
+                  <div className="p-2.5 bg-white/90 dark:bg-stone-900/90 border border-cyan-200 dark:border-cyan-800/80 rounded-lg space-y-2">
+                    <p className="text-[11px] text-cyan-900 dark:text-cyan-200 font-medium">
                       Aún no tienes sectores de riego creados en el predio. Crea uno con el nombre que quieras abajo o activa rápidamente un sector base:
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -2873,7 +2873,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                           key={num}
                           type="button"
                           onClick={() => handleCreateAndAssignSector(`Sector ${num}`)}
-                          className="px-2.5 py-1 bg-cyan-100 hover:bg-cyan-700 hover:text-white text-cyan-900 border border-cyan-300 rounded-lg text-[11px] font-bold cursor-pointer transition-colors"
+                          className="px-2.5 py-1 bg-cyan-100 dark:bg-cyan-950/60 hover:bg-cyan-700 hover:text-white text-cyan-900 dark:text-cyan-200 border border-cyan-300 dark:border-cyan-700 rounded-lg text-[11px] font-bold cursor-pointer transition-colors"
                         >
                           + Sector {num}
                         </button>
@@ -2887,7 +2887,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   (s) => !sectoresDisponibles.some((sec) => String(sec.id) === String(s))
                 ) && (
                   <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                    <span className="text-[10px] font-bold text-cyan-900">Asignados actuales:</span>
+                    <span className="text-[10px] font-bold text-cyan-900 dark:text-cyan-200">Asignados actuales:</span>
                     {parcelaForm.sectoresRiego
                       .filter((s) => !sectoresDisponibles.some((sec) => String(sec.id) === String(s)))
                       .map((s) => (
@@ -2906,7 +2906,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                 )}
 
                 {/* Crear nuevo sector personalizado directo desde aquí */}
-                <div className="flex flex-col sm:flex-row gap-2 pt-1 border-t border-cyan-200/70">
+                <div className="flex flex-col sm:flex-row gap-2 pt-1 border-t border-cyan-200/70 dark:border-cyan-800/80">
                   <input
                     type="text"
                     value={nuevoSectorNombre}
@@ -2918,7 +2918,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                       }
                     }}
                     placeholder="Nombre nuevo sector (ej. Sector Norte Bombeo)"
-                    className="flex-1 p-2 bg-white border border-cyan-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-cyan-600"
+                    className="flex-1 p-2 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:text-stone-100"
                   />
                   <input
                     type="text"
@@ -2926,7 +2926,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     value={nuevoSectorHa}
                     onChange={(e) => setNuevoSectorHa(e.target.value)}
                     placeholder="Ha (opc.)"
-                    className="w-full sm:w-24 p-2 bg-white border border-cyan-300 rounded-lg text-xs font-mono"
+                    className="w-full sm:w-24 p-2 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded-lg text-xs font-mono dark:text-stone-100"
                   />
                   <button
                     type="button"
@@ -2943,13 +2943,13 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               {/* 4. Material Vegetal y Conducción */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Variedad:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Variedad:</label>
                   <input
                     type="text"
                     list="variedades-kiwi-list"
                     value={parcelaForm.variedad}
                     onChange={(e) => setParcelaForm((prev) => ({ ...prev, variedad: e.target.value }))}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="Ej. Kiwi Hayward"
                     required
                   />
@@ -2963,26 +2963,26 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                   </datalist>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Portainjerto:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Portainjerto:</label>
                   <input
                     type="text"
                     value={parcelaForm.patronPortainjerto}
                     onChange={(e) =>
                       setParcelaForm((prev) => ({ ...prev, patronPortainjerto: e.target.value }))
                     }
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="Ej. Franco / Bounty 71"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Polinizador:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Polinizador:</label>
                   <input
                     type="text"
                     value={parcelaForm.polinizador}
                     onChange={(e) =>
                       setParcelaForm((prev) => ({ ...prev, polinizador: e.target.value }))
                     }
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="Ej. Tomuri / Chieftain (1:8)"
                   />
                 </div>
@@ -2991,7 +2991,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               {/* 5. Conducción, Marco, Plantas y Rendimiento */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 <div className="sm:col-span-2">
-                  <label className="block font-bold text-stone-700 mb-1">Sistema de Conducción:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Sistema de Conducción:</label>
                   <input
                     type="text"
                     list="sistemas-conduccion-list"
@@ -2999,7 +2999,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     onChange={(e) =>
                       setParcelaForm((prev) => ({ ...prev, sistemaConduccion: e.target.value }))
                     }
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                     placeholder="Ej. Parrón Español"
                   />
                   <datalist id="sistemas-conduccion-list">
@@ -3010,12 +3010,12 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1 flex items-center justify-between">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1 flex items-center justify-between">
                     <span>Marco Plantación:</span>
                     <button
                       type="button"
                       onClick={handleCalcularPlantasDesdeMarco}
-                      className="text-[10px] text-emerald-700 hover:underline font-bold cursor-pointer"
+                      className="text-[10px] text-emerald-700 dark:text-emerald-400 hover:underline font-bold cursor-pointer"
                       title="Calcular plantas/ha desde el marco (ej. 4.5 x 4.0)"
                     >
                       Calc. pl/ha
@@ -3027,13 +3027,13 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     onChange={(e) =>
                       setParcelaForm((prev) => ({ ...prev, marcoPlantacion: e.target.value }))
                     }
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     placeholder="4.5m x 4.0m"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Plantas / ha:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Plantas / ha:</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -3046,7 +3046,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                         plantasPorHa: Math.round(parseDecimalInput(raw, prev.plantasPorHa)),
                       }));
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                     placeholder="555"
                   />
                 </div>
@@ -3054,7 +3054,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Año de Plantación:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Año de Plantación:</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -3067,12 +3067,12 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                         anioPlantacion: Math.round(parseDecimalInput(raw, prev.anioPlantacion)),
                       }));
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Meta Rendimiento (Ton/ha):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Meta Rendimiento (Ton/ha):</label>
                   <input
                     type="text"
                     inputMode="decimal"
@@ -3085,13 +3085,13 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                         rendimientoEstimadoTonHa: parseDecimalInput(raw, prev.rendimientoEstimadoTonHa),
                       }));
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                   />
                 </div>
 
-                <div className="p-2 bg-stone-50 border border-stone-200 rounded-lg flex flex-col justify-center">
-                  <span className="text-[10px] text-stone-500">Totales calculados del cuartel</span>
-                  <span className="font-mono font-bold text-stone-900">
+                <div className="p-2 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-lg flex flex-col justify-center">
+                  <span className="text-[10px] text-stone-500 dark:text-stone-400">Totales calculados del cuartel</span>
+                  <span className="font-mono font-bold text-stone-900 dark:text-stone-100">
                     {Math.round(
                       parseDecimalInput(parcelaForm.superficieHaStr, parcelaForm.superficieHa) *
                         parseDecimalInput(parcelaForm.plantasPorHaStr, parcelaForm.plantasPorHa)
@@ -3109,7 +3109,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               {/* 6. Estado Operativo, Fenología y Carencia */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Estado Actual del Cuartel:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado Actual del Cuartel:</label>
                   <input
                     type="text"
                     list="estados-operativos-list"
@@ -3117,7 +3117,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     onChange={(e) =>
                       setParcelaForm((prev) => ({ ...prev, estadoActual: e.target.value }))
                     }
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                     placeholder="Ej. Normal"
                   />
                   <datalist id="estados-operativos-list">
@@ -3128,7 +3128,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Estado Fenológico:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado Fenológico:</label>
                   <div className="space-y-1">
                     <select
                       value={
@@ -3141,7 +3141,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                           setParcelaForm((prev) => ({ ...prev, estadoFenologico: e.target.value }));
                         }
                       }}
-                      className="w-full p-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-700"
+                      className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs text-stone-700 dark:text-stone-300"
                     >
                       <option value="">Elegir de lista o escribir abajo...</option>
                       {estadosFenologicosOpciones.map((ef) => (
@@ -3157,7 +3157,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                       onChange={(e) =>
                         setParcelaForm((prev) => ({ ...prev, estadoFenologico: e.target.value }))
                       }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                       placeholder="O escribe un estado personalizado..."
                     />
                     {onAddEstadoFenologicoCustom &&
@@ -3168,7 +3168,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                         <button
                           type="button"
                           onClick={() => guardarEstadoCatalogoSiNoExiste(parcelaForm.estadoFenologico)}
-                          className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+                          className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
                         >
                           + Guardar &quot;{parcelaForm.estadoFenologico.trim()}&quot; en catálogo
                         </button>
@@ -3177,8 +3177,8 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1 flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-emerald-700" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1 flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
                     <span>Fecha Estado Fenológico:</span>
                   </label>
                   <input
@@ -3187,27 +3187,27 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     onChange={(e) =>
                       setParcelaForm((prev) => ({ ...prev, fechaEstadoFenologico: e.target.value }))
                     }
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
 
               {parcelaForm.estadoActual === 'En Carencia SAG' && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block font-bold text-rose-900 mb-1">Producto / LMR en Carencia:</label>
+                    <label className="block font-bold text-rose-900 dark:text-rose-200 mb-1">Producto / LMR en Carencia:</label>
                     <input
                       type="text"
                       value={parcelaForm.lmrActivo}
                       onChange={(e) =>
                         setParcelaForm((prev) => ({ ...prev, lmrActivo: e.target.value }))
                       }
-                      className="w-full p-2 bg-white border border-rose-300 rounded-lg"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-rose-300 dark:border-rose-700 rounded-lg dark:text-stone-100"
                       placeholder="Nombre del producto aplicado"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-rose-900 mb-1">Días Restantes de Carencia:</label>
+                    <label className="block font-bold text-rose-900 dark:text-rose-200 mb-1">Días Restantes de Carencia:</label>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -3220,7 +3220,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                           diasCarenciaRestantes: Math.round(parseDecimalInput(raw, 0)),
                         }));
                       }}
-                      className="w-full p-2 bg-white border border-rose-300 rounded-lg font-mono font-bold"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-rose-300 dark:border-rose-700 rounded-lg font-mono font-bold dark:text-stone-100"
                     />
                   </div>
                 </div>
@@ -3229,7 +3229,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
               {/* 7. Color e Información Adicional */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1.5">Color Identificador en Mapa y Tarjeta:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1.5">Color Identificador en Mapa y Tarjeta:</label>
                   <div className="flex items-center gap-2 flex-wrap">
                     {COLORES_PRESET.map((hex) => (
                       <button
@@ -3251,25 +3251,25 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                       onChange={(e) =>
                         setParcelaForm((prev) => ({ ...prev, colorHex: e.target.value }))
                       }
-                      className="w-8 h-7 rounded cursor-pointer border border-stone-300"
+                      className="w-8 h-7 rounded cursor-pointer border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 dark:text-stone-100"
                     />
-                    <span className="font-mono text-[11px] text-stone-600">{parcelaForm.colorHex}</span>
+                    <span className="font-mono text-[11px] text-stone-600 dark:text-stone-400">{parcelaForm.colorHex}</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Notas / Observaciones del Cuartel (opcional):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Notas / Observaciones del Cuartel (opcional):</label>
                   <textarea
                     rows={2}
                     value={parcelaForm.notas}
                     onChange={(e) => setParcelaForm((prev) => ({ ...prev, notas: e.target.value }))}
                     placeholder="Tipo de suelo, pendiente, reemplazos, historial..."
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 flex justify-end gap-2 border-t border-stone-100">
+              <div className="pt-3 flex justify-end gap-2 border-t border-stone-100 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => {
@@ -3279,7 +3279,7 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
                     setCuartelModalError(null);
                     setGpsFeedback(null);
                   }}
-                  className="px-3.5 py-2 border border-stone-300 rounded-xl text-stone-700 hover:bg-stone-50 font-semibold cursor-pointer"
+                  className="px-3.5 py-2 border border-stone-300 dark:border-stone-700 rounded-xl text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 font-semibold cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -3297,20 +3297,20 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
       {/* MODAL CONFIRMAR ELIMINAR CUARTEL */}
       {cuartelToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 p-5 space-y-4">
             <div className="flex items-center gap-3 text-rose-600">
               <AlertTriangle className="w-6 h-6" />
-              <h3 className="font-bold text-sm text-stone-900">¿Eliminar Cuartel?</h3>
+              <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">¿Eliminar Cuartel?</h3>
             </div>
-            <p className="text-xs text-stone-600">
+            <p className="text-xs text-stone-600 dark:text-stone-400">
               ¿Estás seguro de eliminar el <strong>{cuartelToDelete.nombre}</strong> ({cuartelToDelete.superficieHa} ha)?
             </p>
-            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
               <button
                 type="button"
                 onClick={() => setCuartelToDelete(null)}
-                className="px-3 py-1.5 border border-stone-300 rounded-lg text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer"
+                className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
               >
                 Cancelar
               </button>
@@ -3331,20 +3331,20 @@ export const ParcelasView: React.FC<ParcelasViewProps> = ({
 
       {/* MODAL CONFIRMAR ELIMINAR LUGAR */}
       {lugarToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 p-5 space-y-4">
             <div className="flex items-center gap-3 text-rose-600">
               <AlertTriangle className="w-6 h-6" />
-              <h3 className="font-bold text-sm text-stone-900">¿Eliminar Punto del Mapa?</h3>
+              <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">¿Eliminar Punto del Mapa?</h3>
             </div>
-            <p className="text-xs text-stone-600">
+            <p className="text-xs text-stone-600 dark:text-stone-400">
               ¿Estás seguro de eliminar el marcador <strong>{lugarToDelete.nombre}</strong>?
             </p>
-            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
               <button
                 type="button"
                 onClick={() => setLugarToDelete(null)}
-                className="px-3 py-1.5 border border-stone-300 rounded-lg text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer"
+                className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
               >
                 Cancelar
               </button>

@@ -36,27 +36,27 @@ const TIPO_META: Record<
   suelo: {
     label: 'Análisis de Suelo',
     shortLabel: 'Suelo',
-    badgeClass: 'bg-amber-100 text-amber-900 border-amber-200',
+    badgeClass: 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border-amber-200 dark:border-amber-800/80',
   },
   agua: {
     label: 'Agua de Riego (GlobalGAP)',
     shortLabel: 'Agua',
-    badgeClass: 'bg-cyan-100 text-cyan-900 border-cyan-200',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-950/60 text-cyan-900 dark:text-cyan-200 border-cyan-200 dark:border-cyan-800/80',
   },
   foliar: {
     label: 'Análisis Foliar',
     shortLabel: 'Foliar',
-    badgeClass: 'bg-emerald-100 text-emerald-900 border-emerald-200',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800/80',
   },
   multirresiduos: {
     label: 'Multirresiduos (LMR)',
     shortLabel: 'LMR',
-    badgeClass: 'bg-indigo-100 text-indigo-900 border-indigo-200',
+    badgeClass: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800/80',
   },
   psa_patologia: {
     label: 'Patología / PCR Psa',
     shortLabel: 'Psa / Patología',
-    badgeClass: 'bg-rose-100 text-rose-900 border-rose-200',
+    badgeClass: 'bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 border-rose-200 dark:border-rose-800/80',
   },
 };
 
@@ -253,16 +253,16 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 text-[10px] font-bold uppercase tracking-wider mb-1">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200 text-[10px] font-bold uppercase tracking-wider mb-1">
             <FlaskConical className="w-3 h-3" />
             Respaldo Técnico & Inocuidad Exportadora
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Análisis de Laboratorio (Suelo, Agua, Foliar & LMR)
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Historial técnico por cuartel y pozo para fertilización de precisión, cumplimiento GlobalG.A.P., multirresiduos y Psa.
           </p>
         </div>
@@ -281,54 +281,54 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] font-bold uppercase text-stone-400">Informes Registrados</div>
-          <div className="text-2xl font-black text-stone-900 mt-1">{analisis.length}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Historial multi-temporada</div>
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-1">{analisis.length}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Historial multi-temporada</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] font-bold uppercase text-stone-400">Agua de Riego (BPA)</div>
           <div className="flex items-center gap-1.5 mt-1">
             {aguaVigente ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-700" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
             ) : (
               <AlertTriangle className="w-5 h-5 text-amber-600" />
             )}
-            <span className={`text-lg font-black ${aguaVigente ? 'text-emerald-900' : 'text-amber-800'}`}>
+            <span className={`text-lg font-black ${aguaVigente ? 'text-emerald-900 dark:text-emerald-200' : 'text-amber-800 dark:text-amber-300'}`}>
               {aguaVigente ? 'Vigente' : analisisAgua.length === 0 ? 'Sin registro' : 'Vencido (>1 año)'}
             </span>
           </div>
-          <div className="text-[11px] text-stone-500 mt-0.5">
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
             {ultimoAgua ? `Último: ${ultimoAgua.fechaMuestreo}` : 'Requerido 1 vez al año'}
           </div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] font-bold uppercase text-stone-400">Multirresiduos (LMR)</div>
-          <div className="text-2xl font-black text-indigo-900 mt-1">{multirresiduosOk} OK</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Informes aptos exportación</div>
+          <div className="text-2xl font-black text-indigo-900 dark:text-indigo-200 mt-1">{multirresiduosOk} OK</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Informes aptos exportación</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] font-bold uppercase text-stone-400">Alertas Sanitarias</div>
-          <div className={`text-2xl font-black mt-1 ${alertasLab > 0 ? 'text-rose-700' : 'text-emerald-800'}`}>
+          <div className={`text-2xl font-black mt-1 ${alertasLab > 0 ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-800 dark:text-emerald-300'}`}>
             {alertasLab}
           </div>
-          <div className="text-[11px] text-stone-500 mt-0.5">
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
             {alertasLab > 0 ? 'Requiere revisión agronómica' : 'Sin resultados críticos'}
           </div>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
             onClick={() => setFiltroTipo('todos')}
             className={`px-3 py-1.5 rounded-lg font-bold cursor-pointer ${
-              filtroTipo === 'todos' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              filtroTipo === 'todos' ? 'bg-stone-900 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
             }`}
           >
             Todos ({analisis.length})
@@ -339,7 +339,7 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
               type="button"
               onClick={() => setFiltroTipo(t)}
               className={`px-3 py-1.5 rounded-lg font-bold cursor-pointer ${
-                filtroTipo === t ? 'bg-emerald-800 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                filtroTipo === t ? 'bg-emerald-800 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
               }`}
             >
               {TIPO_META[t].shortLabel} ({analisis.filter((a) => a.tipo === t).length})
@@ -350,7 +350,7 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
         <select
           value={filtroParcela}
           onChange={(e) => setFiltroParcela(e.target.value)}
-          className="px-3 py-1.5 bg-stone-50 border border-stone-300 rounded-lg font-medium text-stone-700"
+          className="px-3 py-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium text-stone-700 dark:text-stone-300"
         >
           <option value="todas">Todos los cuarteles y pozo</option>
           <option value="predio-pozo">Pozo / Cabezal de Riego</option>
@@ -364,18 +364,18 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
 
       {/* Comparativa Histórica Suelo / Foliar */}
       {comparativaNutricional.length > 0 && (
-        <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-3">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-5 shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-700" />
+            <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
               Evolución Nutricional Comparativa (Suelo & Foliar)
             </h2>
-            <span className="text-[11px] text-stone-500">Últimos {comparativaNutricional.length} informes</span>
+            <span className="text-[11px] text-stone-500 dark:text-stone-400">Últimos {comparativaNutricional.length} informes</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 uppercase text-[10px] font-bold">
+              <thead className="bg-stone-50 dark:bg-stone-800/70 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 uppercase text-[10px] font-bold">
                 <tr>
                   <th className="px-3 py-2">Fecha</th>
                   <th className="px-3 py-2">Tipo</th>
@@ -387,12 +387,12 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
                   <th className="px-3 py-2">B / Zn (ppm)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100 font-mono text-[11px]">
+              <tbody className="divide-y divide-stone-100 dark:divide-stone-800 font-mono text-[11px]">
                 {comparativaNutricional.map((c) => (
-                  <tr key={c.id} className="hover:bg-stone-50">
-                    <td className="px-3 py-2 font-bold text-stone-800">{c.fechaMuestreo}</td>
+                  <tr key={c.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/70">
+                    <td className="px-3 py-2 font-bold text-stone-800 dark:text-stone-200">{c.fechaMuestreo}</td>
                     <td className="px-3 py-2 font-sans">{TIPO_META[c.tipo].shortLabel}</td>
-                    <td className="px-3 py-2 font-sans font-semibold text-stone-900">{c.parcelaNombre}</td>
+                    <td className="px-3 py-2 font-sans font-semibold text-stone-900 dark:text-stone-100">{c.parcelaNombre}</td>
                     <td className="px-3 py-2">{c.ph ?? '—'}</td>
                     <td className="px-3 py-2">{c.ceDsM ?? '—'}</td>
                     <td className="px-3 py-2">{c.materiaOrganicaPct !== undefined ? `${c.materiaOrganicaPct}%` : '—'}</td>
@@ -411,53 +411,53 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
       )}
 
       {/* Listado de Informes */}
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
-        <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
-          <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-            <FlaskConical className="w-4 h-4 text-indigo-700" />
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
+        <div className="px-5 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+          <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+            <FlaskConical className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
             Historial de Informes de Laboratorio
           </h2>
           <span className="text-xs text-stone-400">{analisisFiltrados.length} registros</span>
         </div>
 
         {analisisFiltrados.length === 0 ? (
-          <div className="p-8 text-center text-xs text-stone-500 space-y-2">
+          <div className="p-8 text-center text-xs text-stone-500 dark:text-stone-400 space-y-2">
             <FlaskConical className="w-8 h-8 text-stone-300 mx-auto" />
-            <p className="font-semibold text-stone-700">No hay análisis registrados con los filtros actuales.</p>
+            <p className="font-semibold text-stone-700 dark:text-stone-300">No hay análisis registrados con los filtros actuales.</p>
             <p>Registra análisis de suelo, agua de riego, foliares, multirresiduos o PCR de Psa para mantener tu historial al día.</p>
           </div>
         ) : (
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-stone-100 dark:divide-stone-800">
             {analisisFiltrados.map((item) => {
               const meta = TIPO_META[item.tipo];
               return (
-                <div key={item.id} className="p-4 hover:bg-stone-50/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                <div key={item.id} className="p-4 hover:bg-stone-50/70 dark:hover:bg-stone-800/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
                   <div className="space-y-1.5 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${meta.badgeClass}`}>
                         {meta.label}
                       </span>
-                      <span className="font-mono text-stone-500 font-semibold">{item.fechaMuestreo}</span>
-                      <span className="font-bold text-stone-900">{item.parcelaNombre}</span>
+                      <span className="font-mono text-stone-500 dark:text-stone-400 font-semibold">{item.fechaMuestreo}</span>
+                      <span className="font-bold text-stone-900 dark:text-stone-100">{item.parcelaNombre}</span>
                       {item.codigoInforme && (
-                        <span className="font-mono text-[11px] bg-stone-100 px-2 py-0.5 rounded text-stone-700">
+                        <span className="font-mono text-[11px] bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded text-stone-700 dark:text-stone-300">
                           Inf. {item.codigoInforme}
                         </span>
                       )}
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           item.resultadoGlobal === 'Óptimo' || item.resultadoGlobal === 'Negativo (Limpio)'
-                            ? 'bg-emerald-100 text-emerald-800'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                             : item.resultadoGlobal === 'Atención / Corregir'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-rose-100 text-rose-800'
+                            ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
+                            : 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300'
                         }`}
                       >
                         {item.resultadoGlobal}
                       </span>
                     </div>
 
-                    <div className="text-[11px] text-stone-600 flex flex-wrap gap-x-4 gap-y-1">
+                    <div className="text-[11px] text-stone-600 dark:text-stone-400 flex flex-wrap gap-x-4 gap-y-1">
                       <span>
                         <strong>Lab:</strong> {item.laboratorio || 'No indicado'}
                       </span>
@@ -486,7 +486,7 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
                       )}
                     </div>
 
-                    {item.observaciones && <p className="text-[11px] text-stone-500">{item.observaciones}</p>}
+                    {item.observaciones && <p className="text-[11px] text-stone-500 dark:text-stone-400">{item.observaciones}</p>}
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
@@ -494,7 +494,7 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setPreviewPhoto(item.fotoEvidenciaDataUrl!)}
-                        className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
                       >
                         <Camera className="w-3.5 h-3.5" />
                         Ver Foto
@@ -505,7 +505,7 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
                         href={item.urlDocumento}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 rounded-lg text-[11px] font-semibold flex items-center gap-1"
+                        className="px-2.5 py-1.5 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 rounded-lg text-[11px] font-semibold flex items-center gap-1"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         PDF
@@ -515,7 +515,7 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
                       <button
                         type="button"
                         onClick={() => onDeleteAnalisis(item.id)}
-                        className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                        className="p-1.5 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg cursor-pointer"
                         title="Eliminar informe"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -531,8 +531,8 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
 
       {/* Modal Nuevo Análisis */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-stone-200 overflow-hidden max-h-[92vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-2xl border border-stone-200 dark:border-stone-800 overflow-hidden max-h-[92vh] flex flex-col">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <FlaskConical className="w-4 h-4 text-emerald-400" />
@@ -546,7 +546,7 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
             <form onSubmit={handleSubmit} className="p-5 space-y-3.5 text-xs overflow-y-auto">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Tipo de Análisis:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Tipo de Análisis:</label>
                   <select
                     value={form.tipo}
                     onChange={(e) => {
@@ -558,7 +558,7 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
                         resultadoGlobal: nextTipo === 'psa_patologia' ? 'Negativo (Limpio)' : 'Óptimo',
                       });
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-semibold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-semibold dark:text-stone-100"
                   >
                     <option value="suelo">Análisis de Suelo</option>
                     <option value="agua">Agua de Riego (BPA/GlobalGAP)</option>
@@ -569,11 +569,11 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cuartel / Fuente:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cuartel / Fuente:</label>
                   <select
                     value={form.parcelaId}
                     onChange={(e) => setForm({ ...form, parcelaId: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   >
                     <option value="predio-pozo">Pozo / Cabezal de Riego</option>
                     {parcelas.map((p) => (
@@ -585,13 +585,13 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Temporada:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Temporada:</label>
                   <input
                     type="text"
                     value={form.temporada}
                     onChange={(e) => setForm({ ...form, temporada: e.target.value })}
                     placeholder="2025-2026"
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     required
                   />
                 </div>
@@ -599,44 +599,44 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Muestreo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha Muestreo:</label>
                   <input
                     type="date"
                     value={form.fechaMuestreo}
                     onChange={(e) => setForm({ ...form, fechaMuestreo: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Laboratorio:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Laboratorio:</label>
                   <input
                     type="text"
                     value={form.laboratorio}
                     onChange={(e) => setForm({ ...form, laboratorio: e.target.value })}
                     placeholder="Ej. Agrolab, Agroanálisis UC"
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">N° Informe / Código:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">N° Informe / Código:</label>
                   <input
                     type="text"
                     value={form.codigoInforme}
                     onChange={(e) => setForm({ ...form, codigoInforme: e.target.value })}
                     placeholder="Ej. INF-2026-041"
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Evaluación / Resultado Global:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Evaluación / Resultado Global:</label>
                 <select
                   value={form.resultadoGlobal}
                   onChange={(e) => setForm({ ...form, resultadoGlobal: e.target.value as AnalisisLaboratorio['resultadoGlobal'] })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                 >
                   <option value="Óptimo">Óptimo</option>
                   <option value="Atención / Corregir">Atención / Corregir</option>
@@ -647,134 +647,134 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
               </div>
 
               {(form.tipo === 'suelo' || form.tipo === 'foliar') && (
-                <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">pH</label>
-                    <input type="number" step="0.1" value={form.ph} onChange={(e) => setForm({ ...form, ph: e.target.value })} className="w-full p-1.5 bg-white border border-stone-300 rounded" />
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">pH</label>
+                    <input type="number" step="0.1" value={form.ph} onChange={(e) => setForm({ ...form, ph: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">CE (dS/m)</label>
-                    <input type="number" step="0.01" value={form.ceDsM} onChange={(e) => setForm({ ...form, ceDsM: e.target.value })} className="w-full p-1.5 bg-white border border-stone-300 rounded" />
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">CE (dS/m)</label>
+                    <input type="number" step="0.01" value={form.ceDsM} onChange={(e) => setForm({ ...form, ceDsM: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">M.O. (%)</label>
-                    <input type="number" step="0.1" value={form.materiaOrganicaPct} onChange={(e) => setForm({ ...form, materiaOrganicaPct: e.target.value })} className="w-full p-1.5 bg-white border border-stone-300 rounded" />
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">M.O. (%)</label>
+                    <input type="number" step="0.1" value={form.materiaOrganicaPct} onChange={(e) => setForm({ ...form, materiaOrganicaPct: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">N (ppm)</label>
-                    <input type="number" step="0.1" value={form.nitrogenoPpm} onChange={(e) => setForm({ ...form, nitrogenoPpm: e.target.value })} className="w-full p-1.5 bg-white border border-stone-300 rounded" />
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">N (ppm)</label>
+                    <input type="number" step="0.1" value={form.nitrogenoPpm} onChange={(e) => setForm({ ...form, nitrogenoPpm: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">P (ppm)</label>
-                    <input type="number" step="0.1" value={form.fosforoPpm} onChange={(e) => setForm({ ...form, fosforoPpm: e.target.value })} className="w-full p-1.5 bg-white border border-stone-300 rounded" />
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">P (ppm)</label>
+                    <input type="number" step="0.1" value={form.fosforoPpm} onChange={(e) => setForm({ ...form, fosforoPpm: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">K (ppm)</label>
-                    <input type="number" step="0.1" value={form.potasioPpm} onChange={(e) => setForm({ ...form, potasioPpm: e.target.value })} className="w-full p-1.5 bg-white border border-stone-300 rounded" />
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">K (ppm)</label>
+                    <input type="number" step="0.1" value={form.potasioPpm} onChange={(e) => setForm({ ...form, potasioPpm: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">Boro (ppm)</label>
-                    <input type="number" step="0.01" value={form.boroPpm} onChange={(e) => setForm({ ...form, boroPpm: e.target.value })} className="w-full p-1.5 bg-white border border-stone-300 rounded" />
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">Boro (ppm)</label>
+                    <input type="number" step="0.01" value={form.boroPpm} onChange={(e) => setForm({ ...form, boroPpm: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">Zinc (ppm)</label>
-                    <input type="number" step="0.01" value={form.zincPpm} onChange={(e) => setForm({ ...form, zincPpm: e.target.value })} className="w-full p-1.5 bg-white border border-stone-300 rounded" />
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">Zinc (ppm)</label>
+                    <input type="number" step="0.01" value={form.zincPpm} onChange={(e) => setForm({ ...form, zincPpm: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded dark:text-stone-100" />
                   </div>
                 </div>
               )}
 
               {form.tipo === 'agua' && (
-                <div className="p-3 bg-cyan-50/70 rounded-xl border border-cyan-200 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="p-3 bg-cyan-50/70 dark:bg-cyan-950/40 rounded-xl border border-cyan-200 dark:border-cyan-800/80 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   <div>
-                    <label className="block font-semibold text-cyan-950 mb-1">E. coli (NMP/100mL)</label>
-                    <input type="text" value={form.eColi} onChange={(e) => setForm({ ...form, eColi: e.target.value })} placeholder="Ej. < 1.8" className="w-full p-1.5 bg-white border border-cyan-300 rounded" />
+                    <label className="block font-semibold text-cyan-950 dark:text-cyan-100 mb-1">E. coli (NMP/100mL)</label>
+                    <input type="text" value={form.eColi} onChange={(e) => setForm({ ...form, eColi: e.target.value })} placeholder="Ej. < 1.8" className="w-full p-1.5 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-cyan-950 mb-1">Coliformes Fecales</label>
-                    <input type="text" value={form.coliformesFecales} onChange={(e) => setForm({ ...form, coliformesFecales: e.target.value })} placeholder="Ej. < 100" className="w-full p-1.5 bg-white border border-cyan-300 rounded" />
+                    <label className="block font-semibold text-cyan-950 dark:text-cyan-100 mb-1">Coliformes Fecales</label>
+                    <input type="text" value={form.coliformesFecales} onChange={(e) => setForm({ ...form, coliformesFecales: e.target.value })} placeholder="Ej. < 100" className="w-full p-1.5 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-cyan-950 mb-1">Nitratos (mg/L)</label>
-                    <input type="number" step="0.1" value={form.nitratosMgL} onChange={(e) => setForm({ ...form, nitratosMgL: e.target.value })} className="w-full p-1.5 bg-white border border-cyan-300 rounded" />
+                    <label className="block font-semibold text-cyan-950 dark:text-cyan-100 mb-1">Nitratos (mg/L)</label>
+                    <input type="number" step="0.1" value={form.nitratosMgL} onChange={(e) => setForm({ ...form, nitratosMgL: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-cyan-950 mb-1">pH Agua</label>
-                    <input type="number" step="0.1" value={form.ph} onChange={(e) => setForm({ ...form, ph: e.target.value })} className="w-full p-1.5 bg-white border border-cyan-300 rounded" />
+                    <label className="block font-semibold text-cyan-950 dark:text-cyan-100 mb-1">pH Agua</label>
+                    <input type="number" step="0.1" value={form.ph} onChange={(e) => setForm({ ...form, ph: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-cyan-950 mb-1">CE (dS/m)</label>
-                    <input type="number" step="0.01" value={form.ceDsM} onChange={(e) => setForm({ ...form, ceDsM: e.target.value })} className="w-full p-1.5 bg-white border border-cyan-300 rounded" />
+                    <label className="block font-semibold text-cyan-950 dark:text-cyan-100 mb-1">CE (dS/m)</label>
+                    <input type="number" step="0.01" value={form.ceDsM} onChange={(e) => setForm({ ...form, ceDsM: e.target.value })} className="w-full p-1.5 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded dark:text-stone-100" />
                   </div>
                 </div>
               )}
 
               {form.tipo === 'multirresiduos' && (
-                <div className="p-3 bg-indigo-50/70 rounded-xl border border-indigo-200 space-y-2.5">
+                <div className="p-3 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl border border-indigo-200 dark:border-indigo-800/80 space-y-2.5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                      <label className="block font-semibold text-indigo-950 mb-1">Mercado Objetivo (Norma LMR):</label>
-                      <input type="text" value={form.mercadoObjetivo} onChange={(e) => setForm({ ...form, mercadoObjetivo: e.target.value })} placeholder="UE / GlobalG.A.P., USA, China" className="w-full p-1.5 bg-white border border-indigo-300 rounded" />
+                      <label className="block font-semibold text-indigo-950 dark:text-indigo-100 mb-1">Mercado Objetivo (Norma LMR):</label>
+                      <input type="text" value={form.mercadoObjetivo} onChange={(e) => setForm({ ...form, mercadoObjetivo: e.target.value })} placeholder="UE / GlobalG.A.P., USA, China" className="w-full p-1.5 bg-white dark:bg-stone-800 border border-indigo-300 dark:border-indigo-700 rounded dark:text-stone-100" />
                     </div>
                     <div className="flex items-end pb-1">
-                      <label className="inline-flex items-center gap-2 font-bold text-indigo-950 cursor-pointer">
+                      <label className="inline-flex items-center gap-2 font-bold text-indigo-950 dark:text-indigo-100 cursor-pointer">
                         <input type="checkbox" checked={form.bajoNormaLmr} onChange={(e) => setForm({ ...form, bajoNormaLmr: e.target.checked })} className="rounded" />
                         Cumple Límites Máximos de Residuos (LMR)
                       </label>
                     </div>
                   </div>
                   <div>
-                    <label className="block font-semibold text-indigo-950 mb-1">Moléculas Detectadas (ppm o &lt; LOQ):</label>
-                    <input type="text" value={form.moleculasDetectadas} onChange={(e) => setForm({ ...form, moleculasDetectadas: e.target.value })} placeholder="Ej. Sin trazas detectadas (< 0.01 ppm)" className="w-full p-1.5 bg-white border border-indigo-300 rounded" />
+                    <label className="block font-semibold text-indigo-950 dark:text-indigo-100 mb-1">Moléculas Detectadas (ppm o &lt; LOQ):</label>
+                    <input type="text" value={form.moleculasDetectadas} onChange={(e) => setForm({ ...form, moleculasDetectadas: e.target.value })} placeholder="Ej. Sin trazas detectadas (< 0.01 ppm)" className="w-full p-1.5 bg-white dark:bg-stone-800 border border-indigo-300 dark:border-indigo-700 rounded dark:text-stone-100" />
                   </div>
                 </div>
               )}
 
               {form.tipo === 'psa_patologia' && (
-                <div className="p-3 bg-rose-50/70 rounded-xl border border-rose-200 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="p-3 bg-rose-50/70 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800/80 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block font-semibold text-rose-950 mb-1">Órgano / Tejido Muestreado:</label>
-                    <input type="text" value={form.organoMuestreado} onChange={(e) => setForm({ ...form, organoMuestreado: e.target.value })} placeholder="Ej. Yemas, hojas, exudado" className="w-full p-1.5 bg-white border border-rose-300 rounded" />
+                    <label className="block font-semibold text-rose-950 dark:text-rose-100 mb-1">Órgano / Tejido Muestreado:</label>
+                    <input type="text" value={form.organoMuestreado} onChange={(e) => setForm({ ...form, organoMuestreado: e.target.value })} placeholder="Ej. Yemas, hojas, exudado" className="w-full p-1.5 bg-white dark:bg-stone-800 border border-rose-300 dark:border-rose-700 rounded dark:text-stone-100" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-rose-950 mb-1">Agente / Resultado PCR:</label>
-                    <input type="text" value={form.agenteDetectado} onChange={(e) => setForm({ ...form, agenteDetectado: e.target.value })} placeholder="Ej. No detectado (Negativo Psa)" className="w-full p-1.5 bg-white border border-rose-300 rounded" />
+                    <label className="block font-semibold text-rose-950 dark:text-rose-100 mb-1">Agente / Resultado PCR:</label>
+                    <input type="text" value={form.agenteDetectado} onChange={(e) => setForm({ ...form, agenteDetectado: e.target.value })} placeholder="Ej. No detectado (Negativo Psa)" className="w-full p-1.5 bg-white dark:bg-stone-800 border border-rose-300 dark:border-rose-700 rounded dark:text-stone-100" />
                   </div>
                 </div>
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Enlace PDF / Drive del Informe (opcional):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Enlace PDF / Drive del Informe (opcional):</label>
                   <input
                     type="url"
                     value={form.urlDocumento}
                     onChange={(e) => setForm({ ...form, urlDocumento: e.target.value })}
                     placeholder="https://..."
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Foto del Informe / Muestra (comprimida):</label>
-                  <input type="file" accept="image/*" onChange={handlePhotoUpload} className="w-full text-[11px] text-stone-600" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Foto del Informe / Muestra (comprimida):</label>
+                  <input type="file" accept="image/*" onChange={handlePhotoUpload} className="w-full text-[11px] text-stone-600 dark:text-stone-400 bg-white dark:bg-stone-800" />
                   {photoError && <p className="text-rose-600 text-[10px] mt-1">{photoError}</p>}
                   {form.fotoEvidenciaDataUrl && (
-                    <img src={form.fotoEvidenciaDataUrl} alt="Vista previa" className="mt-1.5 h-16 rounded-lg border border-stone-200 object-cover" />
+                    <img src={form.fotoEvidenciaDataUrl} alt="Vista previa" className="mt-1.5 h-16 rounded-lg border border-stone-200 dark:border-stone-800 object-cover" />
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones Agronómicas / Plan de Enmienda:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones Agronómicas / Plan de Enmienda:</label>
                 <textarea
                   rows={2}
                   value={form.observaciones}
                   onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-stone-300 rounded-xl text-stone-700 hover:bg-stone-50 cursor-pointer">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-xl text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer">
                   Cancelar
                 </button>
                 <button type="submit" className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer shadow-xs">
@@ -789,10 +789,10 @@ export const LaboratorioView: React.FC<LaboratorioViewProps> = ({
       {/* Zoom Foto */}
       {previewPhoto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreviewPhoto(null)}>
-          <div className="max-w-2xl w-full bg-white rounded-2xl p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+          <div className="max-w-2xl w-full bg-white dark:bg-stone-900 rounded-2xl p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-stone-700">Evidencia Adjunta de Laboratorio</span>
-              <button type="button" onClick={() => setPreviewPhoto(null)} className="text-stone-500 hover:text-stone-900 cursor-pointer">
+              <span className="text-xs font-bold text-stone-700 dark:text-stone-300">Evidencia Adjunta de Laboratorio</span>
+              <button type="button" onClick={() => setPreviewPhoto(null)} className="text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>

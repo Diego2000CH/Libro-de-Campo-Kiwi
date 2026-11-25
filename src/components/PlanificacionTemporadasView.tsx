@@ -459,26 +459,26 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold uppercase tracking-wider mb-1">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 text-[10px] font-bold uppercase tracking-wider mb-1">
             <Calendar className="w-3 h-3" />
             Planificación Anual & Evolución Histórica
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Multi-Temporada, Calendario & Alertas Proactivas
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Compara campañas año a año, coordina el calendario agronómico del equipo y resuelve alertas tempranas del predio.
           </p>
         </div>
 
-        <div className="p-1 bg-stone-100 rounded-xl border border-stone-200 text-xs font-semibold flex flex-wrap">
+        <div className="p-1 bg-stone-100 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-800 text-xs font-semibold flex flex-wrap">
           <button
             type="button"
             onClick={() => setSubTab('temporadas')}
             className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-              subTab === 'temporadas' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600'
+              subTab === 'temporadas' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 dark:text-stone-400'
             }`}
           >
             Comparador Temporadas
@@ -487,7 +487,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
             type="button"
             onClick={() => setSubTab('calendario')}
             className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-              subTab === 'calendario' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600'
+              subTab === 'calendario' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 dark:text-stone-400'
             }`}
           >
             Calendario & Tareas ({tareasHuerto.filter((t) => t.estado !== 'Completada').length})
@@ -496,7 +496,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
             type="button"
             onClick={() => setSubTab('alertas')}
             className={`px-3 py-1.5 rounded-lg cursor-pointer flex items-center gap-1 ${
-              subTab === 'alertas' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600'
+              subTab === 'alertas' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 dark:text-stone-400'
             }`}
           >
             <span>Alertas</span>
@@ -513,8 +513,8 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
       {subTab === 'temporadas' && (
         <div className="space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-emerald-700" />
+            <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
               Comparativa de Campañas Agrícolas
             </h2>
             {canEdit && (
@@ -531,45 +531,45 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
 
           {/* Gráficos de Barras Comparativos */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-2xl border border-stone-200 p-4 space-y-3">
-              <div className="text-xs font-bold text-stone-800">Horas Frío (&lt;7.2°C)</div>
+            <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 space-y-3">
+              <div className="text-xs font-bold text-stone-800 dark:text-stone-200">Horas Frío (&lt;7.2°C)</div>
               {todasTemporadas.map((t) => (
                 <div key={`hf-${t.id}`} className="space-y-1 text-[11px]">
                   <div className="flex justify-between">
-                    <span className="font-semibold text-stone-700">{t.temporada}</span>
-                    <span className="font-mono font-bold text-sky-900">{t.horasFrioTotales} HF</span>
+                    <span className="font-semibold text-stone-700 dark:text-stone-300">{t.temporada}</span>
+                    <span className="font-mono font-bold text-sky-900 dark:text-sky-200">{t.horasFrioTotales} HF</span>
                   </div>
-                  <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+                  <div className="h-2 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
                     <div className="h-full bg-sky-600 rounded-full" style={{ width: `${(t.horasFrioTotales / maxHF) * 100}%` }} />
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="bg-white rounded-2xl border border-stone-200 p-4 space-y-3">
-              <div className="text-xs font-bold text-stone-800">Grados Día (°D)</div>
+            <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 space-y-3">
+              <div className="text-xs font-bold text-stone-800 dark:text-stone-200">Grados Día (°D)</div>
               {todasTemporadas.map((t) => (
                 <div key={`gd-${t.id}`} className="space-y-1 text-[11px]">
                   <div className="flex justify-between">
-                    <span className="font-semibold text-stone-700">{t.temporada}</span>
-                    <span className="font-mono font-bold text-amber-800">{t.gradosDiaTotales} °D</span>
+                    <span className="font-semibold text-stone-700 dark:text-stone-300">{t.temporada}</span>
+                    <span className="font-mono font-bold text-amber-800 dark:text-amber-300">{t.gradosDiaTotales} °D</span>
                   </div>
-                  <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+                  <div className="h-2 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
                     <div className="h-full bg-amber-500 rounded-full" style={{ width: `${(t.gradosDiaTotales / maxGD) * 100}%` }} />
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="bg-white rounded-2xl border border-stone-200 p-4 space-y-3">
-              <div className="text-xs font-bold text-stone-800">Rendimiento (Ton / Ha)</div>
+            <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 space-y-3">
+              <div className="text-xs font-bold text-stone-800 dark:text-stone-200">Rendimiento (Ton / Ha)</div>
               {todasTemporadas.map((t) => (
                 <div key={`ton-${t.id}`} className="space-y-1 text-[11px]">
                   <div className="flex justify-between">
-                    <span className="font-semibold text-stone-700">{t.temporada}</span>
-                    <span className="font-mono font-bold text-emerald-900">{t.cosechaTonHa} ton/ha</span>
+                    <span className="font-semibold text-stone-700 dark:text-stone-300">{t.temporada}</span>
+                    <span className="font-mono font-bold text-emerald-900 dark:text-emerald-200">{t.cosechaTonHa} ton/ha</span>
                   </div>
-                  <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+                  <div className="h-2 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
                     <div className="h-full bg-emerald-700 rounded-full" style={{ width: `${(t.cosechaTonHa / maxTon) * 100}%` }} />
                   </div>
                 </div>
@@ -578,10 +578,10 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
           </div>
 
           {/* Tabla Completa */}
-          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px]">
+                <thead className="bg-stone-50 dark:bg-stone-800/70 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 font-bold uppercase text-[10px]">
                   <tr>
                     <th className="px-4 py-3">Temporada</th>
                     <th className="px-4 py-3">Horas Frío</th>
@@ -592,27 +592,27 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                     {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100 font-mono">
+                <tbody className="divide-y divide-stone-100 dark:divide-stone-800 font-mono">
                   {todasTemporadas.map((t) => (
-                    <tr key={t.id} className={t.id === 'actual-vivo' ? 'bg-emerald-50/50' : 'hover:bg-stone-50'}>
-                      <td className="px-4 py-3 font-sans font-bold text-stone-900">{t.temporada}</td>
+                    <tr key={t.id} className={t.id === 'actual-vivo' ? 'bg-emerald-50/50 dark:bg-emerald-950/35' : 'hover:bg-stone-50 dark:hover:bg-stone-800/60'}>
+                      <td className="px-4 py-3 font-sans font-bold text-stone-900 dark:text-stone-100">{t.temporada}</td>
                       <td className="px-4 py-3">{t.horasFrioTotales} HF</td>
                       <td className="px-4 py-3">{t.gradosDiaTotales} °D</td>
                       <td className="px-4 py-3">{t.aguaConsumidaM3Ha.toLocaleString('es-CL')} m³/ha</td>
                       <td className="px-4 py-3">{t.porcentajeCuajaPromedio}%</td>
-                      <td className="px-4 py-3 font-bold text-emerald-900">{t.cosechaTonHa} t/ha</td>
+                      <td className="px-4 py-3 font-bold text-emerald-900 dark:text-emerald-200">{t.cosechaTonHa} t/ha</td>
                       {canEdit && (
                         <td className="px-4 py-3 text-right font-sans">
                           {t.id !== 'actual-vivo' ? (
                             <button
                               type="button"
                               onClick={() => onDeleteResumenTemporada(t.id)}
-                              className="p-1 text-stone-400 hover:text-rose-700 cursor-pointer"
+                              className="p-1 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           ) : (
-                            <span className="text-[10px] text-emerald-700 font-bold">Auto</span>
+                            <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">Auto</span>
                           )}
                         </td>
                       )}
@@ -629,14 +629,14 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
       {subTab === 'calendario' && (
         <div className="space-y-5">
           {/* Cronograma & Estados Fenológicos Editables con Fechas */}
-          <div className="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 shadow-2xs space-y-4">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 sm:p-5 shadow-2xs space-y-4">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
               <div>
-                <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                  <Sprout className="w-4 h-4 text-emerald-700" />
+                <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <Sprout className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                   <span>Estados Fenológicos de Temporada &amp; Fechas ({fenologiaOrdenada.length})</span>
                 </h2>
-                <p className="text-[11px] text-stone-500">
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
                   Edita fechas de inicio/término, estado y avance de cada etapa fenológica o carga la planilla estándar de Kiwi Hayward.
                 </p>
               </div>
@@ -644,7 +644,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                 <select
                   value={fenParcelaFiltro}
                   onChange={(e) => setFenParcelaFiltro(e.target.value)}
-                  className="p-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-semibold text-stone-800"
+                  className="p-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-semibold text-stone-800 dark:text-stone-200"
                 >
                   <option value="todos">Todos ({fenologia.length})</option>
                   <option value="general">Huerto General</option>
@@ -657,7 +657,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                     <button
                       type="button"
                       onClick={() => setConfirmFenResetMode(confirmFenResetMode === 'template' ? 'none' : 'template')}
-                      className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl font-bold flex items-center gap-1 cursor-pointer"
+                      className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800/80 rounded-xl font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <Calendar className="w-3.5 h-3.5" />
                       <span>Planilla Kiwi (10 etapas)</span>
@@ -666,7 +666,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                       <button
                         type="button"
                         onClick={() => setConfirmFenResetMode(confirmFenResetMode === 'clear' ? 'none' : 'clear')}
-                        className="px-2.5 py-1.5 bg-stone-100 hover:bg-rose-50 text-stone-700 hover:text-rose-800 border border-stone-200 rounded-xl font-bold flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1.5 bg-stone-100 dark:bg-stone-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-stone-700 dark:text-stone-300 hover:text-rose-800 dark:hover:text-rose-300 border border-stone-200 dark:border-stone-800 rounded-xl font-bold flex items-center gap-1 cursor-pointer"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>Reiniciar</span>
@@ -676,7 +676,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                       <button
                         type="button"
                         onClick={() => setIsCatalogoFormOpen((v) => !v)}
-                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl font-bold flex items-center gap-1 cursor-pointer"
+                        className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 rounded-xl font-bold flex items-center gap-1 cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>{isCatalogoFormOpen ? 'Cerrar Catálogo' : 'Nuevo Estado al Catálogo'}</span>
@@ -698,37 +698,37 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
             {isCatalogoFormOpen && canEdit && onAddEstadoFenologicoCustom && (
               <form
                 onSubmit={handleCreateCustomCatalogoItem}
-                className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs items-end"
+                className="p-3 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs items-end"
               >
                 <div className="sm:col-span-3">
-                  <label className="block font-bold text-stone-700 mb-1">Código / Sigla:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Código / Sigla:</label>
                   <input
                     type="text"
                     value={nuevoCatCode}
                     onChange={(e) => setNuevoCatCode(e.target.value)}
                     placeholder="Ej. BBCH 07 o Lloro"
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                   />
                 </div>
                 <div className="sm:col-span-4">
-                  <label className="block font-bold text-stone-700 mb-1">Nombre del Estado Fenológico:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre del Estado Fenológico:</label>
                   <input
                     type="text"
                     value={nuevoCatNombre}
                     onChange={(e) => setNuevoCatNombre(e.target.value)}
                     placeholder="Ej. Yema algodonosa / Cuaja inicial"
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-semibold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-semibold dark:text-stone-100"
                     required
                   />
                 </div>
                 <div className="sm:col-span-3">
-                  <label className="block font-bold text-stone-700 mb-1">Descripción (opcional):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Descripción (opcional):</label>
                   <input
                     type="text"
                     value={nuevoCatDesc}
                     onChange={(e) => setNuevoCatDesc(e.target.value)}
                     placeholder="Detalle técnico..."
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -744,14 +744,14 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
 
             {estadosFenologicosPersonalizados.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                <span className="font-bold text-stone-500 uppercase text-[10px] mr-1">Estados propios:</span>
+                <span className="font-bold text-stone-500 dark:text-stone-400 uppercase text-[10px] mr-1">Estados propios:</span>
                 {estadosFenologicosPersonalizados.map((item) => (
                   <div
                     key={item.id}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-lg"
                   >
-                    <span className="font-mono font-bold text-emerald-900">{item.code}</span>
-                    <span className="text-stone-800 font-semibold">{item.nombre}</span>
+                    <span className="font-mono font-bold text-emerald-900 dark:text-emerald-200">{item.code}</span>
+                    <span className="text-stone-800 dark:text-stone-200 font-semibold">{item.nombre}</span>
                     {canEdit && (
                       <button
                         type="button"
@@ -762,7 +762,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                             estadoDescripcion: item.descripcion || item.nombre,
                           })
                         }
-                        className="text-emerald-700 hover:text-emerald-950 font-bold underline text-[10px] cursor-pointer ml-1"
+                        className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-950 dark:hover:text-emerald-100 font-bold underline text-[10px] cursor-pointer ml-1"
                         title="Registrar etapa con fechas usando este estado"
                       >
                         + Fecha
@@ -772,7 +772,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                       <button
                         type="button"
                         onClick={() => onDeleteEstadoFenologicoCustom(item.id)}
-                        className="text-stone-400 hover:text-rose-700 cursor-pointer"
+                        className="text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer"
                         title="Quitar estado personalizado del catálogo"
                       >
                         <X className="w-3 h-3" />
@@ -786,8 +786,8 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
             {confirmFenResetMode !== 'none' && (
               <div className={`p-3 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
                 confirmFenResetMode === 'clear'
-                  ? 'bg-rose-50 border-rose-200 text-rose-950'
-                  : 'bg-amber-50 border-amber-200 text-amber-950'
+                  ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/80 text-rose-950 dark:text-rose-100'
+                  : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/80 text-amber-950 dark:text-amber-100'
               }`}>
                 <span>
                   {confirmFenResetMode === 'template'
@@ -807,7 +807,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                   <button
                     type="button"
                     onClick={() => setConfirmFenResetMode('none')}
-                    className="px-2.5 py-1 rounded-lg border border-stone-300 bg-white text-stone-700 font-semibold cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 font-semibold cursor-pointer"
                   >
                     Cancelar
                   </button>
@@ -817,8 +817,8 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
 
             {/* Estado actual por cuartel con fecha editable */}
             {parcelas.length > 0 && (
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-stone-600">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
                   Estado Fenológico Actual por Cuartel
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -831,9 +831,9 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                         c.nombre.toLowerCase() === cuartelEstadoDraft.trim().toLowerCase()
                     );
                     return (
-                      <div key={p.id} className="p-2.5 bg-white rounded-xl border border-stone-200 text-xs space-y-1.5">
+                      <div key={p.id} className="p-2.5 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-xs space-y-1.5">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-stone-900 truncate">{p.nombre}</span>
+                          <span className="font-bold text-stone-900 dark:text-stone-100 truncate">{p.nombre}</span>
                           {canEdit && onUpdateParcela && !isEditing && (
                             <button
                               type="button"
@@ -842,7 +842,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                                 setCuartelEstadoDraft(p.estadoFenologico || '');
                                 setCuartelFechaDraft(p.fechaEstadoFenologico || todayISO());
                               }}
-                              className="px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-md text-[10px] font-bold flex items-center gap-1 cursor-pointer shrink-0"
+                              className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800/80 rounded-md text-[10px] font-bold flex items-center gap-1 cursor-pointer shrink-0"
                             >
                               <Pencil className="w-2.5 h-2.5" />
                               <span>Editar</span>
@@ -862,7 +862,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                               onChange={(e) => {
                                 if (e.target.value) setCuartelEstadoDraft(e.target.value);
                               }}
-                              className="w-full p-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-700"
+                              className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs text-stone-700 dark:text-stone-300"
                             >
                               <option value="">Seleccionar de la lista o escribir abajo...</option>
                               {catalogoEstados.map((s) => {
@@ -880,7 +880,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                               value={cuartelEstadoDraft}
                               onChange={(e) => setCuartelEstadoDraft(e.target.value)}
                               placeholder="O escribe cualquier estado fenológico nuevo..."
-                              className="w-full p-1.5 border border-emerald-400 rounded-lg text-xs font-semibold"
+                              className="w-full p-1.5 border border-emerald-400 dark:border-emerald-600 rounded-lg text-xs font-semibold bg-white dark:bg-stone-800 dark:text-stone-100"
                             />
                             {onAddEstadoFenologicoCustom && cuartelEstadoDraft.trim() && !draftEnCatalogo && (
                               <button
@@ -889,7 +889,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                                   const parsed = parseEstadoFenologicoTexto(cuartelEstadoDraft);
                                   guardarEstadoCatalogoSiNoExiste(parsed.code, parsed.nombre);
                                 }}
-                                className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+                                className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
                               >
                                 + Guardar &quot;{cuartelEstadoDraft.trim()}&quot; en el catálogo
                               </button>
@@ -899,7 +899,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                                 type="date"
                                 value={cuartelFechaDraft}
                                 onChange={(e) => setCuartelFechaDraft(e.target.value)}
-                                className="flex-1 p-1 border border-stone-300 rounded-lg text-[11px] font-mono"
+                                className="flex-1 p-1 border border-stone-300 dark:border-stone-700 rounded-lg text-[11px] font-mono bg-white dark:bg-stone-800 dark:text-stone-100"
                               />
                               <button
                                 type="button"
@@ -912,17 +912,17 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                               <button
                                 type="button"
                                 onClick={() => setEditingCuartelId(null)}
-                                className="px-1.5 py-1 border border-stone-300 rounded-lg text-[10px] text-stone-600 cursor-pointer"
+                                className="px-1.5 py-1 border border-stone-300 dark:border-stone-700 rounded-lg text-[10px] text-stone-600 dark:text-stone-400 cursor-pointer"
                               >
                                 ✕
                               </button>
                             </div>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-between gap-2 text-[11px] text-emerald-900 font-semibold">
+                          <div className="flex items-center justify-between gap-2 text-[11px] text-emerald-900 dark:text-emerald-200 font-semibold">
                             <span className="truncate">{p.estadoFenologico || 'Sin estado definido'}</span>
                             {p.fechaEstadoFenologico && (
-                              <span className="font-mono tabular-nums text-[10px] text-stone-500 shrink-0">
+                              <span className="font-mono tabular-nums text-[10px] text-stone-500 dark:text-stone-400 shrink-0">
                                 {p.fechaEstadoFenologico}
                               </span>
                             )}
@@ -941,14 +941,14 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
             )}
 
             {fenologiaOrdenada.length === 0 ? (
-              <div className="p-6 text-center bg-stone-50 rounded-xl border border-dashed border-stone-300 text-xs text-stone-500 space-y-2.5">
+              <div className="p-6 text-center bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-dashed border-stone-300 dark:border-stone-700 text-xs text-stone-500 dark:text-stone-400 space-y-2.5">
                 <p>No hay etapas fenológicas registradas aún.</p>
                 {canEdit && (
                   <div className="flex flex-wrap justify-center gap-2">
                     <button
                       type="button"
                       onClick={handleLoadPreformedFen}
-                      className="px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-950 rounded-xl font-bold inline-flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-1.5 bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200 dark:hover:bg-amber-900/60 text-amber-950 dark:text-amber-100 rounded-xl font-bold inline-flex items-center gap-1.5 cursor-pointer"
                     >
                       <Calendar className="w-3.5 h-3.5" />
                       <span>Cargar Planilla Kiwi (10 etapas)</span>
@@ -971,15 +971,15 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                   const estadoLabel = est === 'completado' ? 'Completado' : est === 'en_curso' ? 'En curso' : 'Programado';
                   const estadoBadge =
                     est === 'completado'
-                      ? 'bg-emerald-100 text-emerald-900 border-emerald-200'
+                      ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800/80'
                       : est === 'en_curso'
-                      ? 'bg-amber-100 text-amber-900 border-amber-200'
-                      : 'bg-stone-100 text-stone-700 border-stone-200';
+                      ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border-amber-200 dark:border-amber-800/80'
+                      : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800';
                   return (
-                    <div key={f.id} className="p-3.5 bg-stone-50/70 rounded-2xl border border-stone-200 flex flex-col justify-between gap-2.5 text-xs">
+                    <div key={f.id} className="p-3.5 bg-stone-50/70 dark:bg-stone-800/70 rounded-2xl border border-stone-200 dark:border-stone-800 flex flex-col justify-between gap-2.5 text-xs">
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between gap-1">
-                          <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 font-mono font-bold text-[10px]">
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 font-mono font-bold text-[10px]">
                             {f.escalaBBCH}
                           </span>
                           <button
@@ -992,25 +992,25 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                             {estadoLabel}
                           </button>
                         </div>
-                        <div className="font-bold text-stone-900 leading-snug">
+                        <div className="font-bold text-stone-900 dark:text-stone-100 leading-snug">
                           {f.nombreEtapa || f.estadoDescripcion}
                         </div>
-                        <div className="text-[10px] font-mono tabular-nums text-emerald-800 font-bold">
+                        <div className="text-[10px] font-mono tabular-nums text-emerald-800 dark:text-emerald-300 font-bold">
                           {f.fecha}
                           {f.fechaFin && f.fechaFin !== f.fecha ? ` → ${f.fechaFin}` : ''}
                         </div>
-                        <div className="text-[10px] text-stone-500 font-semibold">{f.parcelaNombre}</div>
-                        <p className="text-[11px] text-stone-500 leading-snug line-clamp-2">
+                        <div className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold">{f.parcelaNombre}</div>
+                        <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-snug line-clamp-2">
                           {f.estadoDescripcion}
                         </p>
                       </div>
 
-                      <div className="space-y-1.5 pt-2 border-t border-stone-200/80">
-                        <div className="flex justify-between text-[10px] text-stone-500 font-mono">
+                      <div className="space-y-1.5 pt-2 border-t border-stone-200/80 dark:border-stone-800">
+                        <div className="flex justify-between text-[10px] text-stone-500 dark:text-stone-400 font-mono">
                           <span>Avance</span>
-                          <span className="font-bold text-emerald-800">{f.porcentajeAvance}%</span>
+                          <span className="font-bold text-emerald-800 dark:text-emerald-300">{f.porcentajeAvance}%</span>
                         </div>
-                        <div className="w-full bg-stone-200 rounded-full h-1.5">
+                        <div className="w-full bg-stone-200 dark:bg-stone-700 rounded-full h-1.5">
                           <div
                             className={`h-1.5 rounded-full ${est === 'completado' ? 'bg-emerald-600' : est === 'en_curso' ? 'bg-amber-500' : 'bg-stone-400'}`}
                             style={{ width: `${Math.min(100, Math.max(0, f.porcentajeAvance))}%` }}
@@ -1021,7 +1021,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                             <button
                               type="button"
                               onClick={() => handleOpenEditFen(f)}
-                              className="px-2 py-1 bg-white hover:bg-emerald-50 border border-stone-300 text-emerald-900 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                              className="px-2 py-1 bg-white dark:bg-stone-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-stone-300 dark:border-stone-700 text-emerald-900 dark:text-emerald-200 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                             >
                               <Pencil className="w-2.5 h-2.5" />
                               <span>Editar</span>
@@ -1041,7 +1041,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                                 <button
                                   type="button"
                                   onClick={() => setConfirmDeleteFenId(null)}
-                                  className="px-1.5 py-0.5 text-stone-600 text-[10px] cursor-pointer"
+                                  className="px-1.5 py-0.5 text-stone-600 dark:text-stone-400 text-[10px] cursor-pointer"
                                 >
                                   No
                                 </button>
@@ -1050,7 +1050,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                               <button
                                 type="button"
                                 onClick={() => setConfirmDeleteFenId(f.id)}
-                                className="p-1 text-stone-400 hover:text-rose-700 cursor-pointer"
+                                className="p-1 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer"
                                 title="Eliminar etapa"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -1067,8 +1067,8 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
           </div>
 
           {/* Tareas del Huerto */}
-          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
-            <div className="px-5 py-4 border-b border-stone-200 flex flex-wrap items-center justify-between gap-2">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
+            <div className="px-5 py-4 border-b border-stone-200 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-1.5 text-xs">
                 {(['todas', 'Pendiente', 'En curso', 'Completada'] as const).map((est) => (
                   <button
@@ -1076,7 +1076,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                     type="button"
                     onClick={() => setFiltroEstado(est)}
                     className={`px-3 py-1 rounded-lg font-bold cursor-pointer ${
-                      filtroEstado === est ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600'
+                      filtroEstado === est ? 'bg-stone-900 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400'
                     }`}
                   >
                     {est === 'todas' ? `Todas (${tareasHuerto.length})` : est}
@@ -1096,11 +1096,11 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
             </div>
 
             {tareasFiltradas.length === 0 ? (
-              <div className="p-8 text-center text-xs text-stone-500">
+              <div className="p-8 text-center text-xs text-stone-500 dark:text-stone-400">
                 No hay tareas programadas en esta vista. Planifica podas, aplicaciones, calibraciones o muestreos para tu equipo.
               </div>
             ) : (
-              <div className="divide-y divide-stone-100">
+              <div className="divide-y divide-stone-100 dark:divide-stone-800">
                 {tareasFiltradas.map((t) => {
                   const siguienteEstado: Record<TareaAgronomica['estado'], TareaAgronomica['estado']> = {
                     Pendiente: 'En curso',
@@ -1108,29 +1108,29 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                     Completada: 'Pendiente',
                   };
                   return (
-                    <div key={t.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:bg-stone-50">
+                    <div key={t.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:bg-stone-50 dark:hover:bg-stone-800/70">
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono font-bold text-stone-500">{t.fechaLimite}</span>
-                          <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 font-bold text-[10px]">
+                          <span className="font-mono font-bold text-stone-500 dark:text-stone-400">{t.fechaLimite}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold text-[10px]">
                             {t.categoria}
                           </span>
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                               t.prioridad === 'Alta'
-                                ? 'bg-rose-100 text-rose-800'
+                                ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300'
                                 : t.prioridad === 'Media'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-emerald-100 text-emerald-800'
+                                ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
+                                : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                             }`}
                           >
                             Prioridad {t.prioridad}
                           </span>
                         </div>
-                        <div className={`font-bold text-sm ${t.estado === 'Completada' ? 'line-through text-stone-400' : 'text-stone-900'}`}>
+                        <div className={`font-bold text-sm ${t.estado === 'Completada' ? 'line-through text-stone-400' : 'text-stone-900 dark:text-stone-100'}`}>
                           {t.titulo}
                         </div>
-                        <div className="text-[11px] text-stone-500">
+                        <div className="text-[11px] text-stone-500 dark:text-stone-400">
                           {t.parcelaNombre || 'Todo el Predio'} · Responsable: <strong>{t.responsable}</strong>
                           {t.observaciones ? ` · ${t.observaciones}` : ''}
                         </div>
@@ -1143,10 +1143,10 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                           onClick={() => onUpdateTarea({ ...t, estado: siguienteEstado[t.estado] })}
                           className={`px-3 py-1.5 rounded-lg font-bold text-[11px] flex items-center gap-1 cursor-pointer ${
                             t.estado === 'Completada'
-                              ? 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                               : t.estado === 'En curso'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-amber-100 text-amber-800'
+                              ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300'
+                              : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
                           }`}
                           title="Clic para avanzar estado"
                         >
@@ -1157,7 +1157,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                           <button
                             type="button"
                             onClick={() => onDeleteTarea(t.id)}
-                            className="p-1.5 text-stone-400 hover:text-rose-700 cursor-pointer"
+                            className="p-1.5 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1174,25 +1174,25 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
 
       {/* Subtab 3: Centro Unificado de Alertas Proactivas */}
       {subTab === 'alertas' && (
-        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
-          <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
-            <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-              <BellRing className="w-4 h-4 text-rose-700" />
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
+          <div className="px-5 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+            <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+              <BellRing className="w-4 h-4 text-rose-700 dark:text-rose-400" />
               Centro de Alertas Proactivas del Huerto
             </h2>
-            <span className="text-xs text-stone-500">{alertasProactivas.length} alertas activas</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400">{alertasProactivas.length} alertas activas</span>
           </div>
 
           {alertasProactivas.length === 0 ? (
-            <div className="p-8 text-center text-xs text-emerald-800 space-y-2">
+            <div className="p-8 text-center text-xs text-emerald-800 dark:text-emerald-300 space-y-2">
               <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
               <p className="font-bold">Todo al día en tu huerto</p>
-              <p className="text-stone-500">Sin vencimientos de bodega, carnets SAG, calibraciones ni tareas atrasadas.</p>
+              <p className="text-stone-500 dark:text-stone-400">Sin vencimientos de bodega, carnets SAG, calibraciones ni tareas atrasadas.</p>
             </div>
           ) : (
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-stone-100 dark:divide-stone-800">
               {alertasProactivas.map((a) => (
-                <div key={a.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:bg-stone-50">
+                <div key={a.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:bg-stone-50 dark:hover:bg-stone-800/70">
                   <div className="flex items-start gap-3">
                     <AlertTriangle
                       className={`w-4 h-4 shrink-0 mt-0.5 ${
@@ -1205,12 +1205,12 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                     />
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 text-stone-700">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
                           {a.categoria}
                         </span>
-                        <span className="font-bold text-stone-900">{a.titulo}</span>
+                        <span className="font-bold text-stone-900 dark:text-stone-100">{a.titulo}</span>
                       </div>
-                      <p className="text-[11px] text-stone-600 mt-0.5">{a.detalle}</p>
+                      <p className="text-[11px] text-stone-600 dark:text-stone-400 mt-0.5">{a.detalle}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
@@ -1218,7 +1218,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                       <button
                         type="button"
                         onClick={() => onDismissLowStockAlert(a.insumoId!)}
-                        className="px-2.5 py-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1.5 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-700 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer"
                         title="Eliminar esta notificación de stock bajo (mantiene el producto en bodega)"
                       >
                         <BellOff className="w-3 h-3" />
@@ -1243,21 +1243,21 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
 
       {/* Modal Nueva Tarea */}
       {isTareaModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Programar Nueva Tarea Agronómica</h3>
               <button type="button" onClick={() => setIsTareaModalOpen(false)} className="text-emerald-200 hover:text-white cursor-pointer"><X className="w-4 h-4" /></button>
             </div>
             <form onSubmit={handleSaveTarea} className="p-5 space-y-3.5 text-xs">
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Título de la Tarea:</label>
-                <input type="text" value={tareaForm.titulo} onChange={(e) => setTareaForm({ ...tareaForm, titulo: e.target.value })} placeholder="Ej. Revisar boquillas nebulizador antes de floración" className="w-full p-2 border border-stone-300 rounded-lg" required />
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Título de la Tarea:</label>
+                <input type="text" value={tareaForm.titulo} onChange={(e) => setTareaForm({ ...tareaForm, titulo: e.target.value })} placeholder="Ej. Revisar boquillas nebulizador antes de floración" className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" required />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Categoría:</label>
-                  <select value={tareaForm.categoria} onChange={(e) => setTareaForm({ ...tareaForm, categoria: e.target.value as CategoriaTareaHuerto })} className="w-full p-2 border border-stone-300 rounded-lg">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Categoría:</label>
+                  <select value={tareaForm.categoria} onChange={(e) => setTareaForm({ ...tareaForm, categoria: e.target.value as CategoriaTareaHuerto })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100">
                     <option value="Poda & Amarre">Poda & Amarre</option>
                     <option value="Riego & Pozo">Riego & Pozo</option>
                     <option value="Fitosanitario">Fitosanitario</option>
@@ -1269,14 +1269,14 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Límite:</label>
-                  <input type="date" value={tareaForm.fechaLimite} onChange={(e) => setTareaForm({ ...tareaForm, fechaLimite: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg" required />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha Límite:</label>
+                  <input type="date" value={tareaForm.fechaLimite} onChange={(e) => setTareaForm({ ...tareaForm, fechaLimite: e.target.value })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" required />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cuartel:</label>
-                  <select value={tareaForm.parcelaId} onChange={(e) => setTareaForm({ ...tareaForm, parcelaId: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cuartel:</label>
+                  <select value={tareaForm.parcelaId} onChange={(e) => setTareaForm({ ...tareaForm, parcelaId: e.target.value })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100">
                     <option value="">Todo el Predio</option>
                     {parcelas.map((p) => (
                       <option key={p.id} value={p.id}>{p.nombre}</option>
@@ -1284,12 +1284,12 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Responsable:</label>
-                  <input type="text" value={tareaForm.responsable} onChange={(e) => setTareaForm({ ...tareaForm, responsable: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Responsable:</label>
+                  <input type="text" value={tareaForm.responsable} onChange={(e) => setTareaForm({ ...tareaForm, responsable: e.target.value })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Prioridad:</label>
-                  <select value={tareaForm.prioridad} onChange={(e) => setTareaForm({ ...tareaForm, prioridad: e.target.value as TareaAgronomica['prioridad'] })} className="w-full p-2 border border-stone-300 rounded-lg">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Prioridad:</label>
+                  <select value={tareaForm.prioridad} onChange={(e) => setTareaForm({ ...tareaForm, prioridad: e.target.value as TareaAgronomica['prioridad'] })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100">
                     <option value="Alta">Alta</option>
                     <option value="Media">Media</option>
                     <option value="Baja">Baja</option>
@@ -1297,11 +1297,11 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                 </div>
               </div>
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones:</label>
-                <textarea rows={2} value={tareaForm.observaciones} onChange={(e) => setTareaForm({ ...tareaForm, observaciones: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg" />
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones:</label>
+                <textarea rows={2} value={tareaForm.observaciones} onChange={(e) => setTareaForm({ ...tareaForm, observaciones: e.target.value })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" />
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
-                <button type="button" onClick={() => setIsTareaModalOpen(false)} className="px-4 py-2 border border-stone-300 rounded-xl cursor-pointer">Cancelar</button>
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
+                <button type="button" onClick={() => setIsTareaModalOpen(false)} className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-xl cursor-pointer">Cancelar</button>
                 <button type="submit" className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer">Crear Tarea</button>
               </div>
             </form>
@@ -1311,45 +1311,45 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
 
       {/* Modal Temporada Histórica */}
       {isTemporadaModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Registrar Resumen de Temporada Histórica</h3>
               <button type="button" onClick={() => setIsTemporadaModalOpen(false)} className="text-emerald-200 hover:text-white cursor-pointer"><X className="w-4 h-4" /></button>
             </div>
             <form onSubmit={handleSaveTemporada} className="p-5 space-y-3.5 text-xs">
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Temporada (ej. 2024-2025):</label>
-                <input type="text" value={tempForm.temporada} onChange={(e) => setTempForm({ ...tempForm, temporada: e.target.value })} className="w-full p-2 border border-stone-300 rounded-lg font-mono font-bold" required />
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Temporada (ej. 2024-2025):</label>
+                <input type="text" value={tempForm.temporada} onChange={(e) => setTempForm({ ...tempForm, temporada: e.target.value })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold bg-white dark:bg-stone-800 dark:text-stone-100" required />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Horas Frío (HF):</label>
-                  <input type="number" value={tempForm.horasFrioTotales} onChange={(e) => setTempForm({ ...tempForm, horasFrioTotales: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Horas Frío (HF):</label>
+                  <input type="number" value={tempForm.horasFrioTotales} onChange={(e) => setTempForm({ ...tempForm, horasFrioTotales: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Grados Día (°D):</label>
-                  <input type="number" value={tempForm.gradosDiaTotales} onChange={(e) => setTempForm({ ...tempForm, gradosDiaTotales: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Grados Día (°D):</label>
+                  <input type="number" value={tempForm.gradosDiaTotales} onChange={(e) => setTempForm({ ...tempForm, gradosDiaTotales: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Agua (m³/ha):</label>
-                  <input type="number" value={tempForm.aguaConsumidaM3Ha} onChange={(e) => setTempForm({ ...tempForm, aguaConsumidaM3Ha: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Agua (m³/ha):</label>
+                  <input type="number" value={tempForm.aguaConsumidaM3Ha} onChange={(e) => setTempForm({ ...tempForm, aguaConsumidaM3Ha: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">% Cuaja Prom.:</label>
-                  <input type="number" step="0.1" value={tempForm.porcentajeCuajaPromedio} onChange={(e) => setTempForm({ ...tempForm, porcentajeCuajaPromedio: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">% Cuaja Prom.:</label>
+                  <input type="number" step="0.1" value={tempForm.porcentajeCuajaPromedio} onChange={(e) => setTempForm({ ...tempForm, porcentajeCuajaPromedio: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cosecha (Ton/ha):</label>
-                  <input type="number" step="0.1" value={tempForm.cosechaTonHa} onChange={(e) => setTempForm({ ...tempForm, cosechaTonHa: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cosecha (Ton/ha):</label>
+                  <input type="number" step="0.1" value={tempForm.cosechaTonHa} onChange={(e) => setTempForm({ ...tempForm, cosechaTonHa: parseFloat(e.target.value) || 0 })} className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Notas Campaña:</label>
-                  <input type="text" value={tempForm.observaciones} onChange={(e) => setTempForm({ ...tempForm, observaciones: e.target.value })} placeholder="Opcional" className="w-full p-2 border border-stone-300 rounded-lg" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Notas Campaña:</label>
+                  <input type="text" value={tempForm.observaciones} onChange={(e) => setTempForm({ ...tempForm, observaciones: e.target.value })} placeholder="Opcional" className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100" />
                 </div>
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
-                <button type="button" onClick={() => setIsTemporadaModalOpen(false)} className="px-4 py-2 border border-stone-300 rounded-xl cursor-pointer">Cancelar</button>
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
+                <button type="button" onClick={() => setIsTemporadaModalOpen(false)} className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-xl cursor-pointer">Cancelar</button>
                 <button type="submit" className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer">Guardar Temporada</button>
               </div>
             </form>
@@ -1358,8 +1358,8 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
       )}
       {/* Modal Crear / Editar Etapa Fenológica con Fechas */}
       {isFenModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden max-h-[90vh] flex flex-col">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">
                 {editingFenId ? 'Editar Estado Fenológico & Fechas' : 'Registrar Estado Fenológico & Fechas'}
@@ -1371,30 +1371,30 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
             <form onSubmit={handleSaveFen} className="p-5 space-y-3.5 text-xs overflow-y-auto flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Inicio:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha Inicio:</label>
                   <input
                     type="date"
                     value={fenForm.fecha}
                     onChange={(e) => setFenForm({ ...fenForm, fecha: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Término:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha Término:</label>
                   <input
                     type="date"
                     value={fenForm.fechaFin}
                     onChange={(e) => setFenForm({ ...fenForm, fechaFin: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cuartel:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cuartel:</label>
                   <select
                     value={fenForm.parcelaId}
                     onChange={(e) => setFenForm({ ...fenForm, parcelaId: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg font-semibold"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-semibold bg-white dark:bg-stone-800 dark:text-stone-100"
                   >
                     <option value="general">Huerto General</option>
                     {parcelas.map((p) => (
@@ -1406,7 +1406,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Código / Escala BBCH o Personalizado:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Código / Escala BBCH o Personalizado:</label>
                   <input
                     type="text"
                     list="plan-modal-bbch"
@@ -1422,7 +1422,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                       }));
                     }}
                     placeholder="Ej. BBCH 65 o Etapa personalizada"
-                    className="w-full p-2 border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                   <datalist id="plan-modal-bbch">
@@ -1432,13 +1432,13 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                   </datalist>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Nombre de Etapa:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre de Etapa:</label>
                   <input
                     type="text"
                     value={fenForm.nombreEtapa}
                     onChange={(e) => setFenForm({ ...fenForm, nombreEtapa: e.target.value })}
                     placeholder="Ej. Plena floración, Lloro de savia..."
-                    className="w-full p-2 border border-stone-300 rounded-lg font-semibold"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-semibold bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
@@ -1446,7 +1446,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Estado:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado:</label>
                   <select
                     value={fenForm.estadoEtapa}
                     onChange={(e) => {
@@ -1457,7 +1457,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                         porcentajeAvance: next === 'completado' ? 100 : next === 'programado' ? 0 : (prev.porcentajeAvance || 50),
                       }));
                     }}
-                    className="w-full p-2 border border-stone-300 rounded-lg font-semibold"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-semibold bg-white dark:bg-stone-800 dark:text-stone-100"
                   >
                     <option value="programado">Programado</option>
                     <option value="en_curso">En curso</option>
@@ -1465,55 +1465,55 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">% Avance:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">% Avance:</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={fenForm.porcentajeAvance}
                     onChange={(e) => setFenForm({ ...fenForm, porcentajeAvance: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Descripción Técnica:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Descripción Técnica:</label>
                 <textarea
                   rows={2}
                   value={fenForm.estadoDescripcion}
                   onChange={(e) => setFenForm({ ...fenForm, estadoDescripcion: e.target.value })}
-                  className="w-full p-2 border border-stone-300 rounded-lg"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   required
                 />
               </div>
 
               {onAddEstadoFenologicoCustom && (
-                <label className="flex items-center gap-2 p-2.5 bg-stone-50 border border-stone-200 rounded-xl text-[11px] font-semibold text-stone-800 cursor-pointer">
+                <label className="flex items-center gap-2 p-2.5 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-xl text-[11px] font-semibold text-stone-800 dark:text-stone-200 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={fenForm.guardarEnCatalogo}
                     onChange={(e) => setFenForm({ ...fenForm, guardarEnCatalogo: e.target.checked })}
-                    className="w-4 h-4 text-emerald-700 rounded cursor-pointer"
+                    className="w-4 h-4 text-emerald-700 dark:text-emerald-400 rounded cursor-pointer bg-white dark:bg-stone-800"
                   />
                   <span>Guardar este estado en el catálogo para reutilizarlo en otros cuarteles</span>
                 </label>
               )}
 
               {fenForm.parcelaId !== 'general' && onUpdateParcela && (
-                <label className="flex items-center gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] font-semibold text-emerald-950 cursor-pointer">
+                <label className="flex items-center gap-2 p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl text-[11px] font-semibold text-emerald-950 dark:text-emerald-100 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={fenForm.sincronizarCuartel}
                     onChange={(e) => setFenForm({ ...fenForm, sincronizarCuartel: e.target.checked })}
-                    className="w-4 h-4 text-emerald-700 rounded cursor-pointer"
+                    className="w-4 h-4 text-emerald-700 dark:text-emerald-400 rounded cursor-pointer bg-white dark:bg-stone-800"
                   />
                   <span>Actualizar también el estado fenológico actual del cuartel seleccionado</span>
                 </label>
               )}
 
-              <div className="flex flex-wrap justify-end gap-2 pt-2 border-t border-stone-200">
-                <button type="button" onClick={() => setIsFenModalOpen(false)} className="px-4 py-2 border border-stone-300 rounded-xl cursor-pointer">Cancelar</button>
+              <div className="flex flex-wrap justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
+                <button type="button" onClick={() => setIsFenModalOpen(false)} className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-xl cursor-pointer">Cancelar</button>
                 {!editingFenId && (
                   <button
                     type="button"
@@ -1521,7 +1521,7 @@ export const PlanificacionTemporadasView: React.FC<PlanificacionTemporadasViewPr
                       if (!fenForm.nombreEtapa.trim() && !fenForm.escalaBBCH.trim()) return;
                       persistirFenologia(true);
                     }}
-                    className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold rounded-xl cursor-pointer"
+                    className="px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 font-bold rounded-xl cursor-pointer"
                   >
                     Guardar y Agregar Otro
                   </button>

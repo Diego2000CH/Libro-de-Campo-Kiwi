@@ -9,7 +9,35 @@ export type TipoLabor =
   | 'mantenimiento' 
   | 'desmalezado';
 
-export type NivelAcceso = 'admin' | 'editor_campo' | 'solo_lectura';
+export type ModuloPestanaId =
+  | 'dashboard'
+  | 'parcelas'
+  | 'cosecha'
+  | 'ordenes'
+  | 'fitosanitarios'
+  | 'materiales'
+  | 'inventario'
+  | 'pozo'
+  | 'riego'
+  | 'maquinarias'
+  | 'fenologia'
+  | 'brotacion'
+  | 'botones'
+  | 'polinizacion'
+  | 'carga_raleo'
+  | 'cuaja_semillas'
+  | 'labores'
+  | 'clima'
+  | 'heladas'
+  | 'monitoreo'
+  | 'calculadora'
+  | 'laboratorio'
+  | 'auditoria'
+  | 'planificacion'
+  | 'informe'
+  | 'usuarios';
+
+export type NivelAcceso = 'admin' | 'editor_campo' | 'editor_selectivo' | 'solo_lectura';
 
 export type RolUsuario = 
   | 'administrador' 
@@ -545,7 +573,8 @@ export interface UsuarioPredio {
   email: string;
   password: string; // Clave personal de acceso a la app
   rol: RolUsuario;
-  nivelAcceso?: NivelAcceso; // Control de permisos: admin | editor_campo | solo_lectura
+  nivelAcceso?: NivelAcceso; // Control de permisos: admin | editor_campo | editor_selectivo | solo_lectura
+  pestanasEditables?: ModuloPestanaId[]; // Pestañas específicas donde puede editar (el resto queda en Solo Lectura)
   carnetSAGVigente: boolean;
   numeroCarnetSAG?: string;
   fechaVencimientoCarnetSAG?: string;

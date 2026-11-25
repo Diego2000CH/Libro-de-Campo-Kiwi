@@ -333,16 +333,16 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 text-[10px] font-bold uppercase tracking-wider mb-1">
-            <FileCheck2 className="w-3 h-3 text-purple-700" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-900 dark:text-purple-200 text-[10px] font-bold uppercase tracking-wider mb-1">
+            <FileCheck2 className="w-3 h-3 text-purple-700 dark:text-purple-400" />
             Recetas Agronómicas Oficiales SAG / BPA
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Órdenes de Trabajo Fitosanitarias
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Prescripción fitopatológica para <strong>Kiwi Hayward (multi-cuartel)</strong>, Quinta Frutal, Vivero o Casa Patronal, con mezcla de <strong>múltiples productos</strong> y descuento automático de bodega.
           </p>
         </div>
@@ -351,9 +351,9 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
           <button
             type="button"
             onClick={() => exportOrdenesTrabajoPDF(ordenes, explotacion)}
-            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            className="px-3.5 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
           >
-            <Download className="w-4 h-4 text-purple-800" />
+            <Download className="w-4 h-4 text-purple-800 dark:text-purple-300" />
             <span>Exportar PDF ({ordenes.length})</span>
           </button>
 
@@ -370,17 +370,17 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
       </div>
 
       {/* Tarjeta Informativa de Descuento Automático de Bodega */}
-      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3 text-xs text-emerald-950">
+      <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl flex items-center justify-between gap-3 text-xs text-emerald-950 dark:text-emerald-100">
         <div className="flex items-center gap-2.5">
-          <Package className="w-5 h-5 text-emerald-700 shrink-0" />
+          <Package className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0" />
           <div>
             <strong className="font-bold">Descuento Multiproducto de Bodega Automatizado:</strong>
-            <p className="text-[11px] text-emerald-800 mt-0.5">
+            <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-0.5">
               Al emitir cada orden, todos los insumos de la mezcla se descuentan automáticamente del stock de bodega según la superficie tratada y la dosis prescrita.
             </p>
           </div>
         </div>
-        <span className="px-2.5 py-1 rounded-full bg-emerald-200 text-emerald-900 font-bold text-[10px] uppercase shrink-0">
+        <span className="px-2.5 py-1 rounded-full bg-emerald-200 dark:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 font-bold text-[10px] uppercase shrink-0">
           Trazabilidad SAG Activa
         </span>
       </div>
@@ -411,37 +411,37 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
           return (
             <div
               key={orden.id}
-              className={`bg-white rounded-2xl border p-5 shadow-2xs transition-all space-y-4 ${
-                isCompletada ? 'border-emerald-200' : 'border-amber-300 ring-1 ring-amber-200'
+              className={`bg-white dark:bg-stone-900 rounded-2xl border p-5 shadow-2xs transition-all space-y-4 ${
+                isCompletada ? 'border-emerald-200 dark:border-emerald-800/80' : 'border-amber-300 dark:border-amber-700 ring-1 ring-amber-200 dark:ring-amber-800/60'
               }`}
             >
               {/* Header de la tarjeta */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 dark:border-stone-800 pb-3">
                 <div className="flex items-center gap-2.5">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-mono font-bold text-xs ${
-                    isCompletada ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    isCompletada ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
                   }`}>
                     {isCompletada ? <CheckCircle2 className="w-5 h-5" /> : <Clock className="w-5 h-5 animate-pulse" />}
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono font-bold text-sm text-stone-900">{orden.codigoReceta}</span>
+                      <span className="font-mono font-bold text-sm text-stone-900 dark:text-stone-100">{orden.codigoReceta}</span>
                       
                       {/* Destino Tag */}
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 flex items-center gap-1 border border-emerald-200">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/80">
                         <span>{cfgDestino?.icon}</span>
                         <span>{cfgDestino?.label}</span>
                       </span>
 
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                        isCompletada ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        isCompletada ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
                       }`}>
                         {orden.estado === 'completada' ? 'Aplicado en Terreno' : 'Pendiente / En Proceso'}
                       </span>
 
                       {orden.descontadoInventario && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-900 border border-blue-200 flex items-center gap-1">
-                          <Package className="w-3 h-3 text-blue-700" />
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 border border-blue-200 dark:border-blue-800/80 flex items-center gap-1">
+                          <Package className="w-3 h-3 text-blue-700 dark:text-blue-400" />
                           Stock Descontado en Bodega
                         </span>
                       )}
@@ -450,10 +450,10 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 border ${
                             orden.ventanaPulverizacionEstado === 'No Apta'
-                              ? 'bg-rose-50 text-rose-800 border-rose-300'
+                              ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-700'
                               : orden.ventanaPulverizacionEstado === 'Precaucion'
-                              ? 'bg-amber-50 text-amber-900 border-amber-300'
-                              : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700'
+                              : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/80'
                           }`}
                         >
                           <Wind className="w-3 h-3" />
@@ -462,14 +462,14 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                       )}
 
                       {orden.alertaCarenciaSuperaCosecha && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-900 border border-rose-300 flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3 text-rose-700" />
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 border border-rose-300 dark:border-rose-700 flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3 text-rose-700 dark:text-rose-400" />
                           Carencia LMR Supera Cosecha ({orden.fechaCosechaEstimadaRef})
                         </span>
                       )}
                     </div>
 
-                    <div className="text-xs text-stone-500 mt-0.5">
+                    <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                       Emitida el {orden.fechaEmision} por <strong>{orden.ingenieroAgronomoNombre}</strong>
                     </div>
                   </div>
@@ -480,8 +480,8 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                   {!isCompletada ? (
                     <div className="flex items-center gap-2 flex-wrap">
                       {orden.aplicadorNombre && (
-                        <span className="text-[11px] text-stone-600">
-                          Aplicador: <strong className="text-stone-900">{orden.aplicadorNombre}</strong>
+                        <span className="text-[11px] text-stone-600 dark:text-stone-400">
+                          Aplicador: <strong className="text-stone-900 dark:text-stone-100">{orden.aplicadorNombre}</strong>
                         </span>
                       )}
                       {canEdit && (
@@ -498,8 +498,8 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                       )}
                     </div>
                   ) : (
-                    <div className="text-right text-[11px] text-stone-500">
-                      <div>Aplicador: <strong className="text-emerald-950">{orden.aplicadorNombre}</strong></div>
+                    <div className="text-right text-[11px] text-stone-500 dark:text-stone-400">
+                      <div>Aplicador: <strong className="text-emerald-950 dark:text-emerald-100">{orden.aplicadorNombre}</strong></div>
                       <div className="text-[10px] text-stone-400">{orden.fechaEjecucion}</div>
                     </div>
                   )}
@@ -508,7 +508,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                     <>
                       <button
                         onClick={() => handleOpenEdit(orden)}
-                        className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        className="px-2.5 py-1.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                         title="Editar receta fitosanitaria"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -517,7 +517,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
                       <button
                         onClick={() => setOrdenToDelete(orden)}
-                        className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        className="px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                         title="Eliminar receta"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -530,45 +530,45 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
               {/* Información de Destino y Cuarteles */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80">
+                <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200/80 dark:border-stone-800">
                   <div className="text-[10px] text-stone-400 font-bold uppercase">
                     {destino === 'kiwi' ? 'Cuarteles de Kiwi Tratados' : 'Sector / Zona Tratada'}
                   </div>
-                  <div className="font-bold text-stone-900 mt-0.5">
+                  <div className="font-bold text-stone-900 dark:text-stone-100 mt-0.5">
                     {(orden.parcelasNombres || []).join(', ') || 'Cuarteles de Kiwi'}
                   </div>
-                  <div className="text-[11px] text-emerald-800 font-bold mt-0.5 font-mono tabular-nums">
+                  <div className="text-[11px] text-emerald-800 dark:text-emerald-300 font-bold mt-0.5 font-mono tabular-nums">
                     Superficie Total: {orden.superficieTotalHa} ha
                   </div>
                 </div>
 
-                <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80">
+                <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200/80 dark:border-stone-800">
                   <div className="text-[10px] text-stone-400 font-bold uppercase">Objetivo & Agua Aplicada</div>
-                  <div className="font-bold text-stone-900 mt-0.5">{orden.objetivoFitosanitario}</div>
-                  <div className="text-[11px] text-cyan-950 font-bold font-mono tabular-nums mt-0.5">
+                  <div className="font-bold text-stone-900 dark:text-stone-100 mt-0.5">{orden.objetivoFitosanitario}</div>
+                  <div className="text-[11px] text-cyan-950 dark:text-cyan-100 font-bold font-mono tabular-nums mt-0.5">
                     Total Agua:{' '}
                     {(
                       orden.totalAguaAplicadaL ??
                       Number((orden.superficieTotalHa * (orden.volumenCaldoLHa || 1000)).toFixed(0))
                     ).toLocaleString('es-CL')}{' '}
                     L{' '}
-                    <span className="font-normal text-stone-500">
+                    <span className="font-normal text-stone-500 dark:text-stone-400">
                       ({orden.volumenCaldoLHa || 1000} L/ha)
                     </span>
                   </div>
                   {orden.ingredienteActivo && (
-                    <div className="text-[11px] text-purple-900 font-semibold mt-0.5 truncate" title={orden.ingredienteActivo}>
+                    <div className="text-[11px] text-purple-900 dark:text-purple-200 font-semibold mt-0.5 truncate" title={orden.ingredienteActivo}>
                       Ing. Activo: {orden.ingredienteActivo}
                     </div>
                   )}
                 </div>
 
-                <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80">
+                <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200/80 dark:border-stone-800">
                   <div className="text-[10px] text-stone-400 font-bold uppercase">Carencia, Reingreso & Aplicador</div>
-                  <div className="font-bold text-amber-900 mt-0.5 font-mono tabular-nums">
+                  <div className="font-bold text-amber-900 dark:text-amber-200 mt-0.5 font-mono tabular-nums">
                     Carencia LMR: {orden.carenciaDias} días · REI: {orden.tiempoReingresoHoras}h
                   </div>
-                  <div className="text-[11px] text-stone-700 mt-0.5">
+                  <div className="text-[11px] text-stone-700 dark:text-stone-300 mt-0.5">
                     Aplicador: <strong>{orden.aplicadorNombre || 'Por confirmar al ejecutar'}</strong>
                   </div>
                 </div>
@@ -577,8 +577,8 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
               {/* TABLA DE PRODUCTOS EN LA MEZCLA */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] font-bold text-stone-700 flex items-center gap-1.5 uppercase">
-                    <FlaskConical className="w-3.5 h-3.5 text-emerald-700" />
+                  <span className="text-[11px] font-bold text-stone-700 dark:text-stone-300 flex items-center gap-1.5 uppercase">
+                    <FlaskConical className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                     Mezcla de Productos en Tanque ({listaProductos.length} insumos):
                   </span>
                   <span className="text-[10px] text-stone-400 font-mono">
@@ -586,46 +586,46 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                   </span>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-stone-200">
+                <div className="overflow-x-auto rounded-xl border border-stone-200 dark:border-stone-800">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-stone-50 text-[10px] text-stone-500 uppercase font-bold border-b border-stone-200">
+                    <thead className="bg-stone-50 dark:bg-stone-800/70 text-[10px] text-stone-500 dark:text-stone-400 uppercase font-bold border-b border-stone-200 dark:border-stone-800">
                       <tr>
                         <th className="p-2.5">Producto Prescrito</th>
                         <th className="p-2.5">Ingrediente Activo / Composición</th>
                         <th className="p-2.5">Reg. SAG</th>
                         <th className="p-2.5 text-right">Dosis / Ha</th>
-                        <th className="p-2.5 text-right font-black text-emerald-950">Total Descontado</th>
+                        <th className="p-2.5 text-right font-black text-emerald-950 dark:text-emerald-100">Total Descontado</th>
                         <th className="p-2.5 text-center">Carencia</th>
                         <th className="p-2.5 text-center">REI</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-stone-100 bg-white">
+                    <tbody className="divide-y divide-stone-100 dark:divide-stone-800 bg-white dark:bg-stone-900">
                       {listaProductos.map((prod, idx) => (
-                        <tr key={idx} className="hover:bg-stone-50/70">
-                          <td className="p-2.5 font-bold text-stone-900">
+                        <tr key={idx} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/70">
+                          <td className="p-2.5 font-bold text-stone-900 dark:text-stone-100">
                             {prod.nombreInsumo}
                             {prod.categoria && (
-                              <span className="ml-1.5 px-1.5 py-0.2 rounded text-[9px] font-semibold bg-stone-100 text-stone-600 uppercase">
+                              <span className="ml-1.5 px-1.5 py-0.2 rounded text-[9px] font-semibold bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 uppercase">
                                 {prod.categoria.replace('_', ' ')}
                               </span>
                             )}
                           </td>
-                          <td className="p-2.5 text-stone-600 font-mono text-[11px]">
+                          <td className="p-2.5 text-stone-600 dark:text-stone-400 font-mono text-[11px]">
                             {prod.ingredienteActivoOComposicion || 'N/A'}
                           </td>
-                          <td className="p-2.5 font-mono text-[11px] text-stone-500">
+                          <td className="p-2.5 font-mono text-[11px] text-stone-500 dark:text-stone-400">
                             {prod.numeroRegistroSAG || 'SAG'}
                           </td>
-                          <td className="p-2.5 text-right font-bold text-stone-800">
+                          <td className="p-2.5 text-right font-bold text-stone-800 dark:text-stone-200">
                             {prod.dosisPorHa} {prod.unidad}/ha
                           </td>
-                          <td className="p-2.5 text-right font-black text-emerald-900 bg-emerald-50/50">
+                          <td className="p-2.5 text-right font-black text-emerald-900 dark:text-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/40">
                             {prod.totalProductoRequerido} {prod.unidad}
                           </td>
-                          <td className="p-2.5 text-center font-bold text-amber-900">
+                          <td className="p-2.5 text-center font-bold text-amber-900 dark:text-amber-200">
                             {prod.carenciaDias}d
                           </td>
-                          <td className="p-2.5 text-center text-stone-600">
+                          <td className="p-2.5 text-center text-stone-600 dark:text-stone-400">
                             {prod.tiempoReingresoHoras}h
                           </td>
                         </tr>
@@ -636,21 +636,21 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
               </div>
 
               {/* EPP Requerido y Observaciones */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs pt-2 border-t border-stone-100 text-stone-600">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs pt-2 border-t border-stone-100 dark:border-stone-800 text-stone-600 dark:text-stone-400">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="font-bold text-stone-700 flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                  <span className="font-bold text-stone-700 dark:text-stone-300 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                     EPP Obligatorio:
                   </span>
                   {orden.eppRequerido.map((epp, idx) => (
-                    <span key={idx} className="px-2 py-0.5 bg-stone-100 text-stone-700 rounded-md text-[10px]">
+                    <span key={idx} className="px-2 py-0.5 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 rounded-md text-[10px]">
                       {epp}
                     </span>
                   ))}
                 </div>
 
                 {orden.observacionesTecnicas && (
-                  <div className="text-[11px] text-stone-500 italic">
+                  <div className="text-[11px] text-stone-500 dark:text-stone-400 italic">
                     "{orden.observacionesTecnicas}"
                   </div>
                 )}
@@ -662,8 +662,8 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
       {/* MODAL: Emitir Nueva Receta Fitosanitaria Multiproducto */}
       {isNewOrdenOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-2xl border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-purple-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <FileCheck2 className="w-4 h-4 text-purple-400" />
@@ -674,15 +674,15 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
             <form onSubmit={handleCrearOrden} className="p-5 space-y-4 text-xs max-h-[85vh] overflow-y-auto">
               {formError && (
-                <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 font-semibold flex items-center gap-2">
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-700 rounded-xl text-rose-900 dark:text-rose-200 font-semibold flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
                   <span>{formError}</span>
                 </div>
               )}
 
               {/* Alerta de Descuento Inmediato */}
-              <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl text-purple-950 text-[11px] flex items-center gap-2">
-                <Package className="w-4 h-4 text-purple-700 shrink-0" />
+              <div className="p-3 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 rounded-xl text-purple-950 dark:text-purple-100 text-[11px] flex items-center gap-2">
+                <Package className="w-4 h-4 text-purple-700 dark:text-purple-400 shrink-0" />
                 <span>
                   Al emitir esta receta, se rebajarán de forma automática todas las cantidades prescritas del stock de la bodega de fitosanitarios.
                 </span>
@@ -702,12 +702,12 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                         {evalVentana.estado}
                       </span>
                     </div>
-                    <p className="text-[11px] text-stone-700">{evalVentana.resumen} — {evalVentana.recomendacion}</p>
+                    <p className="text-[11px] text-stone-700 dark:text-stone-300">{evalVentana.resumen} — {evalVentana.recomendacion}</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                       {evalVentana.factores.map((f) => (
-                        <div key={f.parametro} className="bg-white/85 px-2 py-1 rounded-lg border border-stone-200 text-[10px]">
-                          <div className="text-stone-500 font-bold uppercase">{f.parametro}</div>
-                          <div className="font-mono font-black text-stone-900">{f.valorTexto}</div>
+                        <div key={f.parametro} className="bg-white/85 dark:bg-stone-900/90 px-2 py-1 rounded-lg border border-stone-200 dark:border-stone-800 text-[10px]">
+                          <div className="text-stone-500 dark:text-stone-400 font-bold uppercase">{f.parametro}</div>
+                          <div className="font-mono font-black text-stone-900 dark:text-stone-100">{f.valorTexto}</div>
                         </div>
                       ))}
                     </div>
@@ -716,35 +716,35 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
               })()}
 
               {/* Fechas de Programación y Cosecha Estimada (Validación Carencia LMR) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-amber-50/50 border border-amber-200 rounded-xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-xl">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1 flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-amber-700" />
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                     <span>Fecha Programada Aplicación:</span>
                   </label>
                   <input
                     type="date"
                     value={fechaProgramada}
                     onChange={(e) => setFechaProgramada(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                     Fecha Estimada de Cosecha (Validar Carencia LMR):
                   </label>
                   <input
                     type="date"
                     value={fechaCosechaEstimadaRef}
                     onChange={(e) => setFechaCosechaEstimadaRef(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
 
               {/* 1. SELECCIÓN DE DESTINO DEL PRODUCTO */}
               <div>
-                <label className="block font-bold text-stone-800 mb-1.5 uppercase tracking-wider text-[11px]">
+                <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1.5 uppercase tracking-wider text-[11px]">
                   1. Destino de la Aplicación:
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -757,8 +757,8 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                         onClick={() => setDestinoSeleccionado(d.id)}
                         className={`p-2.5 rounded-xl border text-center font-bold text-xs flex flex-col items-center gap-1 cursor-pointer transition-all ${
                           isSelected
-                            ? 'bg-purple-100 border-purple-400 text-purple-950 ring-1 ring-purple-300 shadow-xs'
-                            : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100'
+                            ? 'bg-purple-100 dark:bg-purple-950/60 border-purple-400 dark:border-purple-600 text-purple-950 dark:text-purple-100 ring-1 ring-purple-300 shadow-xs'
+                            : 'bg-stone-50 dark:bg-stone-800/70 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
                         }`}
                       >
                         <span className="text-xl">{d.icon}</span>
@@ -771,13 +771,13 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
               {/* 2. CUARTELES (SOLO SI DESTINO ES KIWI) O SECTOR ALTERNATIVO */}
               {destinoSeleccionado === 'kiwi' ? (
-                <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2.5">
+                <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl space-y-2.5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-bold text-emerald-950 text-xs">
+                      <span className="font-bold text-emerald-950 dark:text-emerald-100 text-xs">
                         Seleccionar Cuarteles de Kiwi Destino (Puede seleccionar más de 1):
                       </span>
-                      <p className="text-[11px] text-emerald-800">
+                      <p className="text-[11px] text-emerald-800 dark:text-emerald-300">
                         Marque todos los cuarteles que recibirán esta aplicación fitosanitaria.
                       </p>
                     </div>
@@ -786,7 +786,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setSelectedCuartelIds(parcelas.map((p) => p.id))}
-                        className="text-[10px] font-bold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
+                        className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-emerald-100 underline cursor-pointer"
                       >
                         Todos
                       </button>
@@ -794,7 +794,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setSelectedCuartelIds(parcelas[0]?.id ? [parcelas[0].id] : [])}
-                        className="text-[10px] font-bold text-stone-500 hover:text-stone-800 underline cursor-pointer"
+                        className="text-[10px] font-bold text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-100 underline cursor-pointer"
                       >
                         Solo uno
                       </button>
@@ -803,7 +803,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {parcelas.length === 0 ? (
-                      <div className="col-span-full p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs">
+                      <div className="col-span-full p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-xl text-amber-900 dark:text-amber-200 text-xs">
                         ⚠️ No tienes cuarteles registrados. Ve a la pestaña <strong>Cuarteles & Mapa</strong> para crear tus cuarteles reales o selecciona otro destino (Quinta Frutal, Vivero, o Casa Patronal) arriba.
                       </div>
                     ) : (
@@ -814,19 +814,19 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                             key={p.id}
                             className={`flex items-start gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all ${
                               isChecked
-                                ? 'bg-white border-emerald-500 shadow-2xs ring-1 ring-emerald-300'
-                                : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-white'
+                                ? 'bg-white dark:bg-stone-900 border-emerald-500 shadow-2xs ring-1 ring-emerald-300'
+                                : 'bg-stone-50 dark:bg-stone-800/70 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-white dark:hover:bg-stone-800'
                             }`}
                           >
                             <input
                               type="checkbox"
                               checked={isChecked}
                               onChange={() => handleToggleCuartel(p.id)}
-                              className="mt-0.5 rounded text-emerald-700 focus:ring-emerald-500 cursor-pointer"
+                              className="mt-0.5 rounded text-emerald-700 dark:text-emerald-400 focus:ring-emerald-500 cursor-pointer bg-white dark:bg-stone-800"
                             />
                             <div className="text-xs">
-                              <strong className="text-stone-900 block">{p.nombre}</strong>
-                              <div className="text-[11px] text-stone-500">
+                              <strong className="text-stone-900 dark:text-stone-100 block">{p.nombre}</strong>
+                              <div className="text-[11px] text-stone-500 dark:text-stone-400">
                                 {p.superficieHa} ha · {p.sistemaConduccion} · Sector Riego {p.sectorRiegoNumero}
                               </div>
                             </div>
@@ -836,39 +836,39 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                     )}
                   </div>
 
-                  <div className="pt-1 flex items-center justify-between text-xs font-bold text-emerald-950 border-t border-emerald-200/60">
+                  <div className="pt-1 flex items-center justify-between text-xs font-bold text-emerald-950 dark:text-emerald-100 border-t border-emerald-200/60 dark:border-emerald-800/80">
                     <span>Cuarteles seleccionados: {selectedCuartelIds.length}</span>
                     <span className="text-sm">Superficie Total a Tratar: {superficieTotalCalculada} ha</span>
                   </div>
                 </div>
               ) : (
                 /* Si destino NO es Kiwi: Quinta Frutal, Vivero o Casa Patronal */
-                <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2.5">
-                  <div className="font-bold text-stone-900 text-xs flex items-center gap-1.5">
-                    <Info className="w-4 h-4 text-purple-700" />
+                <div className="p-3.5 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2.5">
+                  <div className="font-bold text-stone-900 dark:text-stone-100 text-xs flex items-center gap-1.5">
+                    <Info className="w-4 h-4 text-purple-700 dark:text-purple-400" />
                     Destino no-kiwi: Ingrese sector específico y superficie
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <div className="sm:col-span-2">
-                      <label className="block font-bold text-stone-700 mb-1">Nombre del Sector o Plantación:</label>
+                      <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre del Sector o Plantación:</label>
                       <input
                         type="text"
                         value={nombreSectorNoKiwi}
                         onChange={(e) => setNombreSectorNoKiwi(e.target.value)}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                         placeholder="ej. Quinta Frutal - Manzanos y Nogales"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">Superficie a Tratar (ha):</label>
+                      <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Superficie a Tratar (ha):</label>
                       <NumericInput
                         step="0.05"
                         min="0.05"
                         value={superficieNoKiwiHa}
                         emptyFallback={0}
                         onChangeNumber={(val) => setSuperficieNoKiwiHa(val)}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-emerald-900"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-emerald-900 dark:text-emerald-200"
                         required
                       />
                     </div>
@@ -877,13 +877,13 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
               )}
 
               {/* 3. PRODUCTOS EN LA MEZCLA (Múltiples productos para la misma aplicación) */}
-              <div className="space-y-3 p-3.5 bg-stone-50 border border-stone-200 rounded-xl">
+              <div className="space-y-3 p-3.5 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-xl">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label className="font-bold text-stone-900 text-xs uppercase tracking-wider block">
+                    <label className="font-bold text-stone-900 dark:text-stone-100 text-xs uppercase tracking-wider block">
                       3. Mezcla de Productos Fitosanitarios / Fertilizantes:
                     </label>
-                    <p className="text-[11px] text-stone-500">
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400">
                       Puede agregar múltiples productos a la misma aplicación (ej. Bactericida + Fungicida + Coadyuvante).
                     </p>
                   </div>
@@ -907,22 +907,22 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                     return (
                       <div
                         key={index}
-                        className="p-3 bg-white rounded-xl border border-stone-200 shadow-2xs space-y-2 relative"
+                        className="p-3 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs space-y-2 relative"
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-900 font-bold text-xs flex items-center justify-center shrink-0">
+                          <span className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-900 dark:text-purple-200 font-bold text-xs flex items-center justify-center shrink-0">
                             {index + 1}
                           </span>
 
                           <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <div className="sm:col-span-2">
-                              <label className="block text-[10px] font-bold text-stone-500 uppercase mb-0.5">
+                              <label className="block text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase mb-0.5">
                                 Producto Fitosanitario / Fertilizante:
                               </label>
                               <select
                                 value={item.insumoId}
                                 onChange={(e) => handleUpdateProductoMezcla(index, 'insumoId', e.target.value)}
-                                className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-xs"
+                                className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-xs dark:text-stone-100"
                               >
                                 {productosFitoDisponibles.map((f) => (
                                   <option key={f.id} value={f.id}>
@@ -933,7 +933,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-[10px] font-bold text-stone-500 uppercase mb-0.5">
+                              <label className="block text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase mb-0.5">
                                 Dosis / Ha ({insumoSeleccionado?.unidad}/ha):
                               </label>
                               <NumericInput
@@ -941,7 +941,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                                 min="0.01"
                                 value={item.dosisPorHa}
                                 onChangeNumber={(val) => handleUpdateProductoMezcla(index, 'dosisPorHa', val)}
-                                className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-xs"
+                                className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-xs dark:text-stone-100"
                                 required
                               />
                             </div>
@@ -951,7 +951,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                             <button
                               type="button"
                               onClick={() => handleRemoveProductoMezcla(index)}
-                              className="p-1.5 text-stone-400 hover:text-rose-700 rounded-lg hover:bg-rose-50 cursor-pointer"
+                              className="p-1.5 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer"
                               title="Quitar producto de la mezcla"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -961,17 +961,17 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
                         {/* Detalles de Trazabilidad del Producto Seleccionado */}
                         {insumoSeleccionado && (
-                          <div className="p-2 bg-stone-50 rounded-lg text-[11px] grid grid-cols-2 sm:grid-cols-4 gap-2 text-stone-600 border border-stone-100">
+                          <div className="p-2 bg-stone-50 dark:bg-stone-800/70 rounded-lg text-[11px] grid grid-cols-2 sm:grid-cols-4 gap-2 text-stone-600 dark:text-stone-400 border border-stone-100 dark:border-stone-800">
                             <div>
                               <span className="text-stone-400 text-[10px] uppercase block font-bold">Activo / Comp:</span>
-                              <strong className="text-stone-800 truncate block">
+                              <strong className="text-stone-800 dark:text-stone-200 truncate block">
                                 {insumoSeleccionado.composicionFertilizante || insumoSeleccionado.ingredienteActivo || 'N/A'}
                               </strong>
                             </div>
 
                             <div>
                               <span className="text-stone-400 text-[10px] uppercase block font-bold">Stock Bodega:</span>
-                              <span className={`font-bold ${insumoSeleccionado.stockActual <= insumoSeleccionado.stockMinimo ? 'text-rose-700' : 'text-emerald-950'}`}>
+                              <span className={`font-bold ${insumoSeleccionado.stockActual <= insumoSeleccionado.stockMinimo ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-950 dark:text-emerald-100'}`}>
                                 {insumoSeleccionado.stockActual} {insumoSeleccionado.unidad}
                               </span>
                             </div>
@@ -983,7 +983,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
                             <div className="text-right">
                               <span className="text-stone-400 text-[10px] uppercase block font-bold">Total a Descontar:</span>
-                              <strong className="text-emerald-900 font-black text-xs">
+                              <strong className="text-emerald-900 dark:text-emerald-200 font-black text-xs">
                                 {totalReq} {insumoSeleccionado.unidad}
                               </strong>
                             </div>
@@ -991,7 +991,7 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                         )}
 
                         {!stockSuficiente && insumoSeleccionado && (
-                          <div className="text-[10px] text-rose-700 font-bold flex items-center gap-1">
+                          <div className="text-[10px] text-rose-700 dark:text-rose-400 font-bold flex items-center gap-1">
                             <AlertTriangle className="w-3.5 h-3.5" />
                             Atención: La cantidad requerida ({totalReq} {insumoSeleccionado.unidad}) supera el stock actual disponible ({insumoSeleccionado.stockActual} {insumoSeleccionado.unidad}).
                           </div>
@@ -1007,12 +1007,12 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                             <div
                               className={`text-[10px] px-2.5 py-1.5 rounded-lg border font-semibold flex items-center gap-1.5 ${
                                 evalLmr.nivel === 'critico'
-                                  ? 'bg-rose-50 border-rose-300 text-rose-900 font-bold'
+                                  ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-700 text-rose-900 dark:text-rose-200 font-bold'
                                   : evalLmr.nivel === 'estrecho'
-                                  ? 'bg-amber-50 border-amber-300 text-amber-900'
+                                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200'
                                   : evalLmr.nivel === 'seguro'
-                                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                                  : 'bg-stone-50 border-stone-200 text-stone-600'
+                                  ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/80 text-emerald-900 dark:text-emerald-200'
+                                  : 'bg-stone-50 dark:bg-stone-800/70 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400'
                               }`}
                             >
                               {evalLmr.nivel === 'critico' || evalLmr.nivel === 'estrecho' ? (
@@ -1033,23 +1033,23 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
               {/* 4. OBJETIVO, MOJAMIENTO, TOTAL AGUA Y APLICADOR */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Objetivo Fitosanitario:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Objetivo Fitosanitario:</label>
                   <input
                     type="text"
                     value={objetivoFitosanitario}
                     onChange={(e) => setObjetivoFitosanitario(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                     placeholder="ej. Control preventivo Psa y Botrytis"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Aplicador Asignado (Opcional):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Aplicador Asignado (Opcional):</label>
                   <select
                     value={aplicadorOrdenNuevo}
                     onChange={(e) => setAplicadorOrdenNuevo(e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-semibold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-semibold dark:text-stone-100"
                   >
                     <option value="">Asignar al finalizar en terreno</option>
                     {usuarios.map((u) => (
@@ -1063,41 +1063,41 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Volumen Mojamiento (L/ha):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Volumen Mojamiento (L/ha):</label>
                   <NumericInput
                     integer
                     step="50"
                     min="0"
                     value={volumenCaldoLHa}
                     onChangeNumber={(val) => setVolumenCaldoLHa(val)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold font-mono tabular-nums"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold font-mono tabular-nums dark:text-stone-100"
                     required
                   />
                 </div>
 
-                <div className="p-2.5 bg-cyan-50/60 border border-cyan-200 rounded-lg flex flex-col justify-center">
-                  <span className="text-[10px] font-bold uppercase text-cyan-800">Total Agua a Aplicar ({superficieTotalCalculada} ha)</span>
-                  <strong className="text-sm font-black font-mono text-cyan-950 tabular-nums">
+                <div className="p-2.5 bg-cyan-50/60 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/80 rounded-lg flex flex-col justify-center">
+                  <span className="text-[10px] font-bold uppercase text-cyan-800 dark:text-cyan-300">Total Agua a Aplicar ({superficieTotalCalculada} ha)</span>
+                  <strong className="text-sm font-black font-mono text-cyan-950 dark:text-cyan-100 tabular-nums">
                     {Number((superficieTotalCalculada * (Number(volumenCaldoLHa) || 0)).toFixed(0)).toLocaleString('es-CL')} Litros totales
                   </strong>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones Técnicas / Maquinaria:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones Técnicas / Maquinaria:</label>
                 <textarea
                   value={observacionesTecnicas}
                   onChange={(e) => setObservacionesTecnicas(e.target.value)}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsNewOrdenOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1116,13 +1116,13 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
       {/* MODAL: Ejecutar y Firmar Orden en Terreno */}
       {executingOrdenId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 p-5 space-y-4 text-xs">
-            <h3 className="font-bold text-sm text-stone-900 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 p-5 space-y-4 text-xs">
+            <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
               Finalizar y Firmar Aplicación SAG
             </h3>
-            <p className="text-stone-500 text-[11px]">
+            <p className="text-stone-500 dark:text-stone-400 text-[11px]">
               El aplicador autorizado debe validar la ejecución según la receta agronómica oficial y normas SAG.
             </p>
 
@@ -1139,17 +1139,17 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                       {evalPulv.estado}
                     </span>
                   </div>
-                  <p className="text-stone-700 leading-snug">{evalPulv.resumen}</p>
+                  <p className="text-stone-700 dark:text-stone-300 leading-snug">{evalPulv.resumen}</p>
                 </div>
               );
             })()}
 
             <div>
-              <label className="block font-bold text-stone-700 mb-1">Aplicador Responsable con Carnet SAG:</label>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Aplicador Responsable con Carnet SAG:</label>
               <select
                 value={aplicadorSeleccionado}
                 onChange={(e) => setAplicadorSeleccionado(e.target.value)}
-                className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
               >
                 {usuarios.map((u) => (
                   <option key={u.id} value={u.nombre}>
@@ -1160,21 +1160,21 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 mb-1">Firma Digital / Declaración:</label>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Firma Digital / Declaración:</label>
               <input
                 type="text"
                 value={firmaDigital}
                 onChange={(e) => setFirmaDigital(e.target.value)}
-                className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono text-[11px]"
+                className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono text-[11px] dark:text-stone-100"
                 required
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
               <button
                 type="button"
                 onClick={() => setExecutingOrdenId(null)}
-                className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
               >
                 Cancelar
               </button>
@@ -1192,8 +1192,8 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
       {/* MODAL: Editar Orden Existente */}
       {isEditOrdenOpen && editingOrden && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-stone-900 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-emerald-400" />
@@ -1204,30 +1204,30 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
             <form onSubmit={handleGuardarEdicion} className="p-5 space-y-3 text-xs max-h-[85vh] overflow-y-auto">
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Objetivo Fitosanitario:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Objetivo Fitosanitario:</label>
                 <input
                   type="text"
                   value={editingOrden.objetivoFitosanitario}
                   onChange={(e) => setEditingOrden({ ...editingOrden, objetivoFitosanitario: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Ingrediente Activo:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Ingrediente Activo:</label>
                 <input
                   type="text"
                   value={editingOrden.ingredienteActivo || ''}
                   onChange={(e) => setEditingOrden({ ...editingOrden, ingredienteActivo: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   placeholder="Ingrediente activo principal o mezcla"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Superficie Total (ha):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Superficie Total (ha):</label>
                   <NumericInput
                     step="0.1"
                     min="0"
@@ -1239,12 +1239,12 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                         totalAguaAplicadaL: Number((sup * (editingOrden.volumenCaldoLHa || 0)).toFixed(0))
                       });
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold font-mono tabular-nums"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold font-mono tabular-nums dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Mojamiento (L/ha):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Mojamiento (L/ha):</label>
                   <NumericInput
                     integer
                     min="0"
@@ -1256,12 +1256,12 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                         totalAguaAplicadaL: Number(((editingOrden.superficieTotalHa || 0) * caldo).toFixed(0))
                       });
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono tabular-nums dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Total Agua (L):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Total Agua (L):</label>
                   <NumericInput
                     min="0"
                     value={
@@ -1274,31 +1274,31 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
                         totalAguaAplicadaL: val
                       })
                     }
-                    className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-bold font-mono tabular-nums text-cyan-950"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded-lg font-bold font-mono tabular-nums text-cyan-950 dark:text-cyan-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Carencia (Días LMR):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Carencia (Días LMR):</label>
                   <NumericInput
                     integer
                     min="0"
                     value={editingOrden.carenciaDias}
                     onChangeNumber={(val) => setEditingOrden({ ...editingOrden, carenciaDias: val })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-amber-900"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-amber-900 dark:text-amber-200"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Reingreso REI (Horas):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Reingreso REI (Horas):</label>
                   <NumericInput
                     integer
                     min="0"
                     value={editingOrden.tiempoReingresoHoras}
                     onChangeNumber={(val) => setEditingOrden({ ...editingOrden, tiempoReingresoHoras: val })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     required
                   />
                 </div>
@@ -1306,21 +1306,21 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Aplicador Responsable:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Aplicador Responsable:</label>
                   <input
                     type="text"
                     value={editingOrden.aplicadorNombre || ''}
                     onChange={(e) => setEditingOrden({ ...editingOrden, aplicadorNombre: e.target.value })}
                     placeholder="Nombre del aplicador"
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Estado de la Aplicación:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado de la Aplicación:</label>
                   <select
                     value={editingOrden.estado}
                     onChange={(e) => setEditingOrden({ ...editingOrden, estado: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                   >
                     <option value="pendiente">Pendiente</option>
                     <option value="en_proceso">En Proceso / Emitida</option>
@@ -1331,20 +1331,20 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones Técnicas:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones Técnicas:</label>
                 <textarea
                   value={editingOrden.observacionesTecnicas || ''}
                   onChange={(e) => setEditingOrden({ ...editingOrden, observacionesTecnicas: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsEditOrdenOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1362,24 +1362,24 @@ export const OrdenesTrabajoView: React.FC<OrdenesTrabajoViewProps> = ({
 
       {/* MODAL: Confirmación de Eliminación In-App */}
       {ordenToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 overflow-hidden animate-in fade-in zoom-in-95">
             <div className="bg-rose-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Eliminar Orden Fitosanitaria</h3>
               <button onClick={() => setOrdenToDelete(null)} className="text-rose-200 hover:text-white cursor-pointer">✕</button>
             </div>
             <div className="p-5 space-y-4 text-xs">
-              <p className="text-stone-700">
+              <p className="text-stone-700 dark:text-stone-300">
                 ¿Estás seguro de que deseas eliminar permanentemente la receta <strong>{ordenToDelete.codigoReceta}</strong>?
               </p>
-              <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200 text-stone-600 text-[11px]">
+              <div className="p-2.5 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 text-[11px]">
                 <strong>Objetivo:</strong> {ordenToDelete.objetivoFitosanitario}
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setOrdenToDelete(null)}
-                  className="px-3.5 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer font-medium"
+                  className="px-3.5 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer font-medium"
                 >
                   Cancelar
                 </button>

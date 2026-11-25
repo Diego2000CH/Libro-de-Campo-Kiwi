@@ -54,9 +54,9 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
               onAction?.();
               void install();
             }}
-            className="w-full text-left flex items-center gap-2 text-emerald-900 font-bold text-[11px] hover:bg-emerald-50 p-2 rounded-lg cursor-pointer transition-colors"
+            className="w-full text-left flex items-center gap-2 text-emerald-900 dark:text-emerald-300 font-bold text-[11px] hover:bg-emerald-50 dark:hover:bg-emerald-950/50 p-2 rounded-lg cursor-pointer transition-colors"
           >
-            <Download className="w-3.5 h-3.5 text-emerald-700" />
+            <Download className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
             <span>Instalar App en Celular / PC</span>
           </button>
         );
@@ -91,9 +91,9 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
         <button
           type="button"
           onClick={handleOpenGuide}
-          className="w-full text-left flex items-center gap-2 text-stone-800 font-semibold text-[11px] hover:bg-emerald-50 hover:text-emerald-900 p-2 rounded-lg cursor-pointer transition-colors"
+          className="w-full text-left flex items-center gap-2 text-stone-800 dark:text-stone-200 font-semibold text-[11px] hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-900 dark:hover:text-emerald-300 p-2 rounded-lg cursor-pointer transition-colors"
         >
-          <Smartphone className="w-3.5 h-3.5 text-emerald-700" />
+          <Smartphone className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
           <span>{isIOS ? 'Descargar en iPhone (iOS)' : 'Instalar en iPhone / Celular'}</span>
         </button>
       );
@@ -132,18 +132,18 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
       {renderTrigger()}
 
       {showGuideModal && (
-        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/65 backdrop-blur-xs p-0 sm:p-4 text-stone-900">
-          <div className="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white p-5 pb-safe shadow-2xl border border-stone-200 space-y-4 max-h-[90dvh] overflow-y-auto">
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/65 backdrop-blur-xs p-0 sm:p-4 text-stone-900 dark:text-stone-100">
+          <div className="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-stone-900 p-5 pb-safe shadow-2xl border border-stone-200 dark:border-stone-800 space-y-4 max-h-[90dvh] overflow-y-auto">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl bg-emerald-900 text-white flex items-center justify-center text-lg shadow-xs shrink-0">
                   🥝
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-black text-stone-900 leading-tight">
+                  <h3 className="text-sm sm:text-base font-black text-stone-900 dark:text-stone-100 leading-tight">
                     Descargar en iPhone (iOS 17 / 18 / 26)
                   </h3>
-                  <p className="text-[11px] text-stone-500">
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400">
                     Compatible con iPhone 14, 15, 16, 16e, 17 y pantalla Dynamic Island
                   </p>
                 </div>
@@ -151,7 +151,7 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
               <button
                 type="button"
                 onClick={() => setShowGuideModal(false)}
-                className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 cursor-pointer shrink-0"
+                className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer shrink-0"
                 aria-label="Cerrar"
               >
                 <X className="w-4 h-4" />
@@ -159,32 +159,32 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
             </div>
 
             {isIOS && iosBrowser === 'in_app' && (
-              <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs space-y-1">
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-950 dark:text-amber-100 text-xs space-y-1">
                 <div className="font-bold flex items-center gap-1.5">
-                  <ExternalLink className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                  <ExternalLink className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 shrink-0" />
                   <span>Estás dentro de WhatsApp, Correo o una app interna</span>
                 </div>
-                <p className="text-[11px] text-amber-900 leading-relaxed">
+                <p className="text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
                   Toca primero el botón de brújula o menú <strong>Abrir en Safari</strong> (abajo o arriba a la derecha) para poder instalar la app en tu pantalla de inicio.
                 </p>
               </div>
             )}
 
             <div className="space-y-3 text-xs">
-              <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-2">
-                <div className="font-bold text-emerald-950 flex items-center gap-1.5">
-                  <Share className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+              <div className="p-3.5 rounded-xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 space-y-2">
+                <div className="font-bold text-emerald-950 dark:text-emerald-300 flex items-center gap-1.5">
+                  <Share className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
                   <span>En Safari (iPhone 15 / 16 / 17 — iOS 17, 18 y 26):</span>
                 </div>
-                <ol className="text-stone-700 space-y-1.5 list-decimal pl-4 leading-relaxed">
+                <ol className="text-stone-700 dark:text-stone-300 space-y-1.5 list-decimal pl-4 leading-relaxed">
                   <li>
                     Toca el ícono <strong>Compartir</strong> (cuadrado con flecha hacia arriba) en la barra inferior de Safari.
-                    <span className="block text-[11px] text-stone-500">
+                    <span className="block text-[11px] text-stone-500 dark:text-stone-400">
                       Si usas barra compacta en iOS 26, toca primero <strong>•••</strong> y luego <strong>Compartir</strong>.
                     </span>
                   </li>
                   <li>
-                    Desliza hacia abajo y toca <strong className="inline-flex items-center gap-1">Agregar a inicio <SquarePlus className="w-3 h-3 inline text-emerald-700" /></strong>.
+                    Desliza hacia abajo y toca <strong className="inline-flex items-center gap-1">Agregar a inicio <SquarePlus className="w-3 h-3 inline text-emerald-700 dark:text-emerald-400" /></strong>.
                   </li>
                   <li>
                     Verifica que esté activada la opción <strong>Abrir como app web</strong> y pulsa <strong>Agregar</strong> arriba a la derecha.
@@ -192,17 +192,17 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
                 </ol>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-1.5">
-                <div className="font-bold text-stone-900">
+              <div className="p-3.5 rounded-xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 space-y-1.5">
+                <div className="font-bold text-stone-900 dark:text-stone-100">
                   En Chrome, Edge o Brave (iPhone con iOS 16.4+):
                 </div>
-                <p className="text-stone-600 leading-relaxed">
+                <p className="text-stone-600 dark:text-stone-300 leading-relaxed">
                   Toca el botón <strong>Compartir</strong> arriba a la derecha (junto a la barra de dirección), desliza y elige <strong>Agregar a la pantalla de inicio</strong> → <strong>Agregar</strong>.
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-start gap-2">
-                <WifiOff className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-100 flex items-start gap-2">
+                <WifiOff className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                 <p className="text-[11px] leading-relaxed">
                   Al abrirla desde el ícono <strong>Huerto Kiwi</strong> en tu iPhone, funcionará a pantalla completa respetando Dynamic Island, sin barra del navegador, con guardado offline en terreno y alertas Push activas.
                 </p>
@@ -214,16 +214,16 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
                 <button
                   type="button"
                   onClick={() => void handleCopyUrl()}
-                  className="w-full py-2 px-3 rounded-xl border border-stone-300 bg-stone-50 hover:bg-stone-100 text-stone-800 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                  className="w-full py-2 px-3 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                 >
                   {copiedUrl ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-700" />
+                      <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                       <span>Enlace copiado para abrir en iPhone</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5 text-stone-600" />
+                      <Copy className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400" />
                       <span>Copiar enlace para enviar a tu iPhone</span>
                     </>
                   )}

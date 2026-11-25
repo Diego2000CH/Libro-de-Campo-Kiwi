@@ -53,16 +53,16 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider mb-1">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-1">
             <Sprout className="w-3 h-3" />
             Cuaderno Oficial SAG Chile
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Registro Histórico de Labores de Campo
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Fitosanitarios, fertirriego, podas, monitoreo y cosechas con trazabilidad para fiscalización SAG y GlobalGAP.
           </p>
         </div>
@@ -80,9 +80,9 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
               if (searchTerm) parts.push(`"${searchTerm}"`);
               exportLaboresPDF(laboresFiltradas, explotacion, parts.length ? parts.join(' · ') : undefined);
             }}
-            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            className="px-3.5 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
           >
-            <Download className="w-4 h-4 text-emerald-800" />
+            <Download className="w-4 h-4 text-emerald-800 dark:text-emerald-300" />
             <span>Exportar PDF ({laboresFiltradas.length})</span>
           </button>
 
@@ -112,7 +112,7 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
       </div>
 
       {/* Barra de Filtros */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
         <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
           <input
@@ -120,18 +120,18 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por insumo, cuartel, aplicador o plaga..."
-            className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-700"
+            className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:text-stone-100"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1.5">
             <Filter className="w-3.5 h-3.5 text-stone-400" />
-            <span className="text-[11px] font-bold text-stone-500">Tipo:</span>
+            <span className="text-[11px] font-bold text-stone-500 dark:text-stone-400">Tipo:</span>
             <select
               value={selectedTipo}
               onChange={(e) => setSelectedTipo(e.target.value)}
-              className="px-2.5 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-medium"
+              className="px-2.5 py-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium dark:text-stone-100"
             >
               <option value="todos">Todos los tipos ({labores.length})</option>
               <option value="fitosanitario">Fitosanitarios</option>
@@ -144,11 +144,11 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-bold text-stone-500">Cuartel:</span>
+            <span className="text-[11px] font-bold text-stone-500 dark:text-stone-400">Cuartel:</span>
             <select
               value={selectedParcelaId}
               onChange={(e) => setSelectedParcelaId(e.target.value)}
-              className="px-2.5 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-medium"
+              className="px-2.5 py-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium dark:text-stone-100"
             >
               <option value="todas">Todos los cuarteles</option>
               {parcelas.map((p) => (
@@ -162,9 +162,9 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
       {/* Lista de Registros */}
       <div className="space-y-3">
         {laboresFiltradas.length === 0 ? (
-          <div className="p-10 bg-white rounded-2xl border border-stone-200 text-center text-stone-500 text-xs space-y-3">
+          <div className="p-10 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 text-center text-stone-500 dark:text-stone-400 text-xs space-y-3">
             <Sprout className="w-8 h-8 text-stone-300 mx-auto" />
-            <p className="font-bold text-stone-700">
+            <p className="font-bold text-stone-700 dark:text-stone-300">
               {labores.length === 0
                 ? 'Aún no hay labores registradas en tu Cuaderno de Campo.'
                 : 'No se encontraron labores que coincidan con los filtros aplicados.'}
@@ -196,22 +196,22 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
             return (
               <div
                 key={labor.id}
-                className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs hover:border-emerald-300 transition-colors space-y-3"
+                className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs hover:border-emerald-300 transition-colors space-y-3"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 dark:border-stone-800 pb-2.5">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="font-mono font-bold text-xs text-stone-500 bg-stone-100 px-2.5 py-1 rounded-lg">
+                    <span className="font-mono font-bold text-xs text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 rounded-lg">
                       {labor.fecha} {labor.hora && <span className="text-stone-400">· {labor.hora}</span>}
                     </span>
-                    <span className="font-bold text-sm text-stone-900">{labor.parcelaNombre}</span>
+                    <span className="font-bold text-sm text-stone-900 dark:text-stone-100">{labor.parcelaNombre}</span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                       isFito 
-                        ? 'bg-purple-100 text-purple-900' 
+                        ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-900 dark:text-purple-200' 
                         : isFert
-                        ? 'bg-amber-100 text-amber-900'
+                        ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200'
                         : isRiego 
-                        ? 'bg-blue-100 text-blue-900' 
-                        : 'bg-emerald-100 text-emerald-900'
+                        ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200' 
+                        : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200'
                     }`}>
                       {isFert ? `Fertilización${labor.metodoAplicacion ? ` · ${labor.metodoAplicacion}` : ''}` : labor.tipoLabor}
                     </span>
@@ -221,7 +221,7 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
                     <div className="flex items-center gap-1.5 self-start sm:self-center">
                       <button
                         onClick={() => onEditLabor(labor)}
-                        className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        className="px-2.5 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                         title="Editar registro"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -229,7 +229,7 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
                       </button>
                       <button
                         onClick={() => setLaborToDelete(labor)}
-                        className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        className="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                         title="Eliminar registro"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -239,121 +239,121 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
                   )}
                 </div>
 
-                <p className="text-xs text-stone-700 leading-relaxed">
+                <p className="text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
                   {labor.descripcion}
                 </p>
 
                 {/* Detalles técnicos específicos: FITOSANITARIO */}
                 {isFito && (labor.nombreInsumo || labor.ingredienteActivo || totalAguaMostrar) && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px] p-2.5 bg-purple-50/50 rounded-xl border border-purple-200/80">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px] p-2.5 bg-purple-50/50 dark:bg-purple-950/40 rounded-xl border border-purple-200/80 dark:border-purple-800/80">
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Producto Comercial</span>
-                      <strong className="text-stone-950 font-semibold">{labor.nombreInsumo || '—'}</strong>
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Producto Comercial</span>
+                      <strong className="text-stone-950 dark:text-stone-50 font-semibold">{labor.nombreInsumo || '—'}</strong>
                     </div>
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Ingrediente Activo</span>
-                      <span className="font-semibold text-purple-950">{labor.ingredienteActivo || 'No especificado'}</span>
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Ingrediente Activo</span>
+                      <span className="font-semibold text-purple-950 dark:text-purple-100">{labor.ingredienteActivo || 'No especificado'}</span>
                     </div>
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Dosis / Total</span>
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Dosis / Total</span>
                       <span className="font-mono tabular-nums">
                         {labor.dosisPorHa ?? 0} {labor.unidadMedida}/ha
                         {labor.totalInsumoUtilizado ? ` (${labor.totalInsumoUtilizado} ${labor.unidadMedida})` : ''}
                       </span>
                     </div>
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Total Agua Aplicada</span>
-                      <strong className="font-mono text-cyan-950 tabular-nums">
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Total Agua Aplicada</span>
+                      <strong className="font-mono text-cyan-950 dark:text-cyan-100 tabular-nums">
                         {totalAguaMostrar !== undefined ? `${totalAguaMostrar.toLocaleString('es-CL')} L` : '—'}
                       </strong>
                       {labor.volumenCaldoLHa && (
-                        <span className="block text-[10px] text-stone-500 font-mono tabular-nums">
+                        <span className="block text-[10px] text-stone-500 dark:text-stone-400 font-mono tabular-nums">
                           ({labor.volumenCaldoLHa} L/ha)
                         </span>
                       )}
                     </div>
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Carencia SAG</span>
-                      <span className="font-bold text-amber-800">{labor.periodoCarenciaDias || 0} días LMR</span>
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Carencia SAG</span>
+                      <span className="font-bold text-amber-800 dark:text-amber-300">{labor.periodoCarenciaDias || 0} días LMR</span>
                     </div>
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Aplicador</span>
-                      <strong className="text-stone-900">{labor.aplicadorNombre || labor.registradoPor}</strong>
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Aplicador</span>
+                      <strong className="text-stone-900 dark:text-stone-100">{labor.aplicadorNombre || labor.registradoPor}</strong>
                     </div>
                   </div>
                 )}
 
                 {/* Detalles técnicos específicos: FERTILIZACIÓN (AL VOLEO / SUELO / FOLIAR) */}
                 {isFert && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px] p-2.5 bg-amber-50/50 rounded-xl border border-amber-200/80">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px] p-2.5 bg-amber-50/50 dark:bg-amber-950/40 rounded-xl border border-amber-200/80 dark:border-amber-800/80">
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Producto Comercial</span>
-                      <strong className="text-stone-950 font-semibold">{labor.nombreInsumo || '—'}</strong>
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Producto Comercial</span>
+                      <strong className="text-stone-950 dark:text-stone-50 font-semibold">{labor.nombreInsumo || '—'}</strong>
                     </div>
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Composición Química</span>
-                      <span className="font-mono font-semibold text-emerald-950">
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Composición Química</span>
+                      <span className="font-mono font-semibold text-emerald-950 dark:text-emerald-100">
                         {labor.composicionQuimica || 'No especificada'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Método</span>
-                      <strong className="text-amber-950">{labor.metodoAplicacion || 'Al Voleo Manual'}</strong>
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Método</span>
+                      <strong className="text-amber-950 dark:text-amber-100">{labor.metodoAplicacion || 'Al Voleo Manual'}</strong>
                     </div>
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Dosis / Hectárea</span>
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Dosis / Hectárea</span>
                       <span className="font-mono font-bold tabular-nums">
                         {labor.dosisPorHa ?? 0} {labor.unidadMedida || 'Kg'}/ha
                       </span>
                     </div>
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Dosis / Planta</span>
-                      <span className="font-mono font-bold text-emerald-900 tabular-nums">
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Dosis / Planta</span>
+                      <span className="font-mono font-bold text-emerald-900 dark:text-emerald-200 tabular-nums">
                         {labor.dosisPorPlanta !== undefined
                           ? `${labor.dosisPorPlanta} ${labor.unidadDosisPlanta || 'g/planta'}`
                           : '—'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-stone-500 block text-[10px] uppercase font-bold">Total & Aplicador</span>
+                      <span className="text-stone-500 dark:text-stone-400 block text-[10px] uppercase font-bold">Total & Aplicador</span>
                       <span className="font-mono font-bold tabular-nums block">
                         {labor.totalInsumoUtilizado ? `${labor.totalInsumoUtilizado} ${labor.unidadMedida || 'Kg'}` : '—'}
                       </span>
-                      <span className="text-[10px] text-stone-600">{labor.aplicadorNombre || labor.registradoPor}</span>
+                      <span className="text-[10px] text-stone-600 dark:text-stone-400">{labor.aplicadorNombre || labor.registradoPor}</span>
                     </div>
                   </div>
                 )}
 
                 {isRiego && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] p-2.5 bg-blue-50/60 rounded-xl border border-blue-200">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] p-2.5 bg-blue-50/60 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800/80">
                     <div>
                       <span className="text-blue-500 block text-[10px] uppercase font-bold">Volumen Extraído</span>
-                      <strong className="text-blue-950 font-mono font-bold">{labor.volumenM3} m³ ({(labor.litrosAgua || (labor.volumenM3 || 0) * 1000).toLocaleString('es-CL')} L)</strong>
+                      <strong className="text-blue-950 dark:text-blue-100 font-mono font-bold">{labor.volumenM3} m³ ({(labor.litrosAgua || (labor.volumenM3 || 0) * 1000).toLocaleString('es-CL')} L)</strong>
                     </div>
                     <div>
                       <span className="text-blue-500 block text-[10px] uppercase font-bold">Duración Bombeo</span>
-                      <span className="font-mono text-blue-900 font-medium">{labor.duracionRiegoHoras} horas</span>
+                      <span className="font-mono text-blue-900 dark:text-blue-200 font-medium">{labor.duracionRiegoHoras} horas</span>
                     </div>
                     <div>
                       <span className="text-blue-500 block text-[10px] uppercase font-bold">Sector</span>
-                      <span className="text-blue-900 font-medium">{labor.sectorRiego || labor.parcelaNombre}</span>
+                      <span className="text-blue-900 dark:text-blue-200 font-medium">{labor.sectorRiego || labor.parcelaNombre}</span>
                     </div>
                   </div>
                 )}
 
                 {/* Footer del registro */}
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-400 pt-1 border-t border-stone-100">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-400 pt-1 border-t border-stone-100 dark:border-stone-800">
                   <div className="flex items-center gap-3 flex-wrap">
                     {labor.aplicadorNombre && (
-                      <span>Aplicador: <strong className="text-stone-700">{labor.aplicadorNombre}</strong></span>
+                      <span>Aplicador: <strong className="text-stone-700 dark:text-stone-300">{labor.aplicadorNombre}</strong></span>
                     )}
-                    <span>Registrado por: <strong className="text-stone-600">{labor.registradoPor}</strong></span>
+                    <span>Registrado por: <strong className="text-stone-600 dark:text-stone-400">{labor.registradoPor}</strong></span>
                     {labor.numeroCarnetSAG && (
-                      <span className="text-emerald-700 font-mono font-semibold">Carnet: {labor.numeroCarnetSAG}</span>
+                      <span className="text-emerald-700 dark:text-emerald-400 font-mono font-semibold">Carnet: {labor.numeroCarnetSAG}</span>
                     )}
                   </div>
                   {labor.condicionesClimaticas && (
-                    <div className="text-stone-500">
+                    <div className="text-stone-500 dark:text-stone-400">
                       Clima: {labor.condicionesClimaticas.temperaturaC}°C · {labor.condicionesClimaticas.velocidadVientoKmH} km/h viento
                     </div>
                   )}
@@ -366,24 +366,24 @@ export const LaboresView: React.FC<LaboresViewProps> = ({
 
       {/* MODAL: Confirmación Eliminación Labor */}
       {laborToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 overflow-hidden animate-in fade-in zoom-in-95">
             <div className="bg-rose-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Eliminar Registro de Labor</h3>
               <button onClick={() => setLaborToDelete(null)} className="text-rose-200 hover:text-white cursor-pointer">✕</button>
             </div>
             <div className="p-5 space-y-4 text-xs">
-              <p className="text-stone-700">
+              <p className="text-stone-700 dark:text-stone-300">
                 ¿Estás seguro de que deseas eliminar esta labor de <strong>{laborToDelete.tipoLabor}</strong> registrada el <strong>{laborToDelete.fecha}</strong> en <strong>{laborToDelete.parcelaNombre}</strong>?
               </p>
-              <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200 text-stone-600 text-[11px]">
+              <div className="p-2.5 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 text-[11px]">
                 {laborToDelete.descripcion}
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setLaborToDelete(null)}
-                  className="px-3.5 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer font-medium"
+                  className="px-3.5 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer font-medium"
                 >
                   Cancelar
                 </button>

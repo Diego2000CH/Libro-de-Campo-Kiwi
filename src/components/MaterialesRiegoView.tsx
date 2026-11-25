@@ -311,16 +311,16 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-bold uppercase tracking-wider mb-1">
-            <Wrench className="w-3 h-3 text-blue-700" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200 text-[10px] font-bold uppercase tracking-wider mb-1">
+            <Wrench className="w-3 h-3 text-blue-700 dark:text-blue-400" />
             Bodega de Infraestructura, Riego & Herramientas
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Bodega Materiales, Riego & Herramientas
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Control de insumos de riego por goteo, alambres de parrón, polines impregnados, mallas sombreadoras y herramientas de campo (separado de productos fitosanitarios).
           </p>
         </div>
@@ -333,9 +333,9 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               const filtro = selectedCategoria !== 'todos' || searchTerm ? `${catName || 'Todos'}${searchTerm ? ` · "${searchTerm}"` : ''}` : undefined;
               exportBodegaRiegoMaterialesPDF(materialesFiltrados, explotacion, filtro);
             }}
-            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            className="px-3.5 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
           >
-            <Download className="w-4 h-4 text-blue-900" />
+            <Download className="w-4 h-4 text-blue-900 dark:text-blue-200" />
             <span>Exportar PDF ({materialesFiltrados.length})</span>
           </button>
 
@@ -353,12 +353,12 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
       {/* Alerta de Stock Crítico */}
       {lowStockCount > 0 && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-950 text-xs flex flex-wrap items-center justify-between gap-3">
+        <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl text-amber-950 dark:text-amber-100 text-xs flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
             <div>
               <strong className="font-bold">Alerta de Pañol: {lowStockCount} materiales con stock bajo el umbral mínimo.</strong>
-              <div className="text-[11px] text-amber-800 mt-0.5">
+              <div className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
                 Revise repuestos de goteros, mangueras y tensores antes de faenas de poda y amarraje.
               </div>
             </div>
@@ -368,12 +368,12 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               <button
                 type="button"
                 onClick={onOpenAlertsModal}
-                className="px-2.5 py-1 rounded-lg bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 font-bold text-[11px] cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-white dark:bg-stone-900 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-950 dark:text-amber-100 border border-amber-300 dark:border-amber-700 font-bold text-[11px] cursor-pointer"
               >
                 Gestionar / Eliminar avisos
               </button>
             )}
-            <span className="px-2.5 py-1 rounded-full bg-amber-200 text-amber-900 font-bold text-[10px] uppercase">
+            <span className="px-2.5 py-1 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-900 dark:text-amber-200 font-bold text-[10px] uppercase">
               Comprar Repuestos
             </span>
           </div>
@@ -382,35 +382,35 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
       {/* Tarjetas de Métricas de Materiales */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Total Artículos Registrados</div>
-          <div className="text-2xl font-black text-stone-900 mt-1">{materiales.length}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Equipos, riego y ferretería</div>
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-1">{materiales.length}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Equipos, riego y ferretería</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Stock en Nivel Óptimo</div>
-          <div className="text-2xl font-black text-blue-950 mt-1 font-mono tabular-nums">{stockOptimoCount}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Artículos sobre umbral mínimo</div>
+          <div className="text-2xl font-black text-blue-950 dark:text-blue-100 mt-1 font-mono tabular-nums">{stockOptimoCount}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Artículos sobre umbral mínimo</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Bajo Stock Mínimo</div>
-          <div className={`text-2xl font-black mt-1 ${lowStockCount > 0 ? 'text-amber-800' : 'text-emerald-800'}`}>
+          <div className={`text-2xl font-black mt-1 ${lowStockCount > 0 ? 'text-amber-800 dark:text-amber-300' : 'text-emerald-800 dark:text-emerald-300'}`}>
             {lowStockCount}
           </div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Alertas de reposición</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Alertas de reposición</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Artículos Visibles</div>
-          <div className="text-2xl font-black text-stone-900 mt-1">{materialesFiltrados.length}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">En filtros actuales</div>
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-1">{materialesFiltrados.length}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">En filtros actuales</div>
         </div>
       </div>
 
       {/* Pestañas de Categorías de Materiales */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-2 shadow-2xs overflow-x-auto">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-2 shadow-2xs overflow-x-auto">
         <div className="flex items-center gap-1.5 min-w-max">
           {CATEGORIAS_MATERIALES.map((cat) => {
             const isSelected = selectedCategoria === cat.id;
@@ -421,7 +421,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
                   isSelected
                     ? 'bg-blue-950 text-white shadow-xs'
-                    : 'bg-stone-50 text-stone-700 hover:bg-stone-100 hover:text-stone-900'
+                    : 'bg-stone-50 dark:bg-stone-800/70 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100'
                 }`}
               >
                 <span>{cat.icon}</span>
@@ -433,7 +433,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
       </div>
 
       {/* Filtros por Destino y Búsqueda */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
         <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
           <input
@@ -441,7 +441,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nombre, medida, fabricante o ubicación en pañol..."
-            className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-700"
+            className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-700 dark:text-stone-100"
           />
         </div>
 
@@ -451,7 +451,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
           <button
             onClick={() => setSelectedDestino('todos')}
             className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-              selectedDestino === 'todos' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              selectedDestino === 'todos' ? 'bg-stone-900 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
             }`}
           >
             Todos
@@ -461,7 +461,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               key={d.id}
               onClick={() => setSelectedDestino(d.id)}
               className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors flex items-center gap-1 ${
-                selectedDestino === d.id ? 'bg-blue-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                selectedDestino === d.id ? 'bg-blue-900 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
               }`}
             >
               <span>{d.icon}</span>
@@ -481,35 +481,35 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
           return (
             <div
               key={item.id}
-              className={`bg-white rounded-2xl border p-5 shadow-2xs flex flex-col justify-between transition-all ${
-                isLow ? 'border-amber-300 ring-1 ring-amber-200' : 'border-stone-200 hover:border-blue-300'
+              className={`bg-white dark:bg-stone-900 rounded-2xl border p-5 shadow-2xs flex flex-col justify-between transition-all ${
+                isLow ? 'border-amber-300 dark:border-amber-700 ring-1 ring-amber-200 dark:ring-amber-800/60' : 'border-stone-200 dark:border-stone-800 hover:border-blue-300 dark:hover:border-blue-700'
               }`}
             >
               <div>
                 {/* Header */}
-                <div className="flex items-start justify-between gap-2 border-b border-stone-100 pb-2.5">
+                <div className="flex items-start justify-between gap-2 border-b border-stone-100 dark:border-stone-800 pb-2.5">
                   <div>
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 uppercase">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200 uppercase">
                         {(item.categoriaMaterial || item.categoria || item.tipo).replace('_', ' ')}
                       </span>
                       {item.ubicacionBodega && (
-                        <span className="text-[10px] text-stone-500 font-medium">
+                        <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium">
                           {item.ubicacionBodega}
                         </span>
                       )}
                     </div>
-                    <h3 className="font-black text-stone-900 text-sm mt-1">{item.nombreComercial}</h3>
-                    <div className="text-[11px] text-stone-500">{item.fabricante}</div>
+                    <h3 className="font-black text-stone-900 dark:text-stone-100 text-sm mt-1">{item.nombreComercial}</h3>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400">{item.fabricante}</div>
                   </div>
 
                   <div className="flex items-center gap-1 shrink-0">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                       isLow
-                        ? 'bg-amber-100 text-amber-900'
+                        ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200'
                         : isStockBajo
-                        ? 'bg-stone-100 text-stone-600'
-                        : 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400'
+                        : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                     }`}>
                       {isLow ? 'STOCK BAJO' : isStockBajo ? 'AVISO OCULTO' : 'OK'}
                     </span>
@@ -517,7 +517,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                       <button
                         type="button"
                         onClick={() => onUpdateInsumo({ ...item, alertaStockOculta: true })}
-                        className="p-1 rounded-lg text-stone-400 hover:text-stone-800 hover:bg-stone-100 cursor-pointer"
+                        className="p-1 rounded-lg text-stone-400 hover:text-stone-800 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
                         title="Eliminar notificación de stock bajo"
                       >
                         <BellOff className="w-3.5 h-3.5" />
@@ -527,7 +527,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                       <button
                         type="button"
                         onClick={() => onUpdateInsumo({ ...item, alertaStockOculta: false })}
-                        className="p-1 rounded-lg text-stone-400 hover:text-emerald-800 hover:bg-emerald-50 cursor-pointer"
+                        className="p-1 rounded-lg text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
                         title="Reactivar notificación de stock bajo"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
@@ -538,49 +538,49 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
                 {/* Especificación Técnica */}
                 {item.especificacionTecnica && (
-                  <div className="mt-2.5 p-2 bg-stone-50 rounded-xl border border-stone-100 text-xs text-stone-700">
+                  <div className="mt-2.5 p-2 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-100 dark:border-stone-800 text-xs text-stone-700 dark:text-stone-300">
                     <span className="text-[10px] text-stone-400 font-bold uppercase block">Ficha Técnica:</span>
                     <span className="font-medium text-[11px]">{item.especificacionTecnica}</span>
                   </div>
                 )}
 
                 {/* Stock Actual y Mínimo */}
-                <div className="flex items-baseline justify-between p-3 bg-stone-50 rounded-xl border border-stone-200 mt-2.5">
+                <div className="flex items-baseline justify-between p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 mt-2.5">
                   <div>
                     <span className="text-[10px] text-stone-400 uppercase font-bold block">Stock Disponible</span>
-                    <div className={`text-2xl font-black ${isLow ? 'text-amber-800' : 'text-blue-950'}`}>
-                      {item.stockActual} <span className="text-xs font-semibold text-stone-500">{item.unidad}</span>
+                    <div className={`text-2xl font-black ${isLow ? 'text-amber-800 dark:text-amber-300' : 'text-blue-950 dark:text-blue-100'}`}>
+                      {item.stockActual} <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">{item.unidad}</span>
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] text-stone-400 uppercase font-bold block">Stock Mínimo</span>
-                    <span className="font-mono text-xs font-bold text-stone-600">{item.stockMinimo} {item.unidad}</span>
+                    <span className="font-mono text-xs font-bold text-stone-600 dark:text-stone-400">{item.stockMinimo} {item.unidad}</span>
                   </div>
                 </div>
 
                 {/* Trazabilidad: Fechas */}
-                <div className="grid grid-cols-2 gap-1.5 text-[11px] text-stone-600 mt-2.5">
-                  <div className="p-1.5 bg-stone-50 rounded-lg">
+                <div className="grid grid-cols-2 gap-1.5 text-[11px] text-stone-600 dark:text-stone-400 mt-2.5">
+                  <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                     <span className="text-stone-400 block text-[10px] flex items-center gap-1">
                       <Calendar className="w-3 h-3 text-stone-400" /> F. Fabricación:
                     </span>
-                    <strong className="font-mono text-stone-800">
+                    <strong className="font-mono text-stone-800 dark:text-stone-200">
                       {formatProductDateLabel(item.fechaElaboracion, 'No registrada')}
                     </strong>
                   </div>
-                  <div className="p-1.5 bg-stone-50 rounded-lg">
+                  <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                     <span className="text-stone-400 block text-[10px]">F. Vencimiento:</span>
                     {(() => {
                       if (isProductoSinVencimiento(item)) {
-                        return <strong className="font-mono text-stone-600">Sin vencimiento</strong>;
+                        return <strong className="font-mono text-stone-600 dark:text-stone-400">Sin vencimiento</strong>;
                       }
                       const dVenc = diasHastaVencimientoProducto(item);
                       const cls =
                         dVenc !== null && dVenc < 0
-                          ? 'text-rose-700'
+                          ? 'text-rose-700 dark:text-rose-400'
                           : dVenc !== null && dVenc <= 30
-                          ? 'text-amber-800'
-                          : 'text-stone-900';
+                          ? 'text-amber-800 dark:text-amber-300'
+                          : 'text-stone-900 dark:text-stone-100';
                       return (
                         <strong className={`font-mono ${cls}`}>
                           {formatProductDateLabel(item.fechaVencimiento, 'Sin vencimiento')}
@@ -591,13 +591,13 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 </div>
 
                 {/* Destinos Autorizados */}
-                <div className="mt-2.5 pt-2 border-t border-stone-100">
+                <div className="mt-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
                   <span className="text-[10px] font-bold text-stone-400 uppercase block mb-1">Destinado a:</span>
                   <div className="flex flex-wrap gap-1">
                     {destinos.map((d) => {
                       const cfg = DESTINOS_CONFIG.find((c) => c.id === d);
                       return (
-                        <span key={d} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-stone-100 text-stone-800 border border-stone-200 flex items-center gap-1">
+                        <span key={d} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800 flex items-center gap-1">
                           <span>{cfg?.icon}</span>
                           <span>{cfg?.label}</span>
                         </span>
@@ -607,7 +607,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 </div>
 
                 {item.observaciones && (
-                  <p className="text-[11px] text-stone-500 italic mt-2 bg-stone-50 p-1.5 rounded-lg border border-stone-100">
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400 italic mt-2 bg-stone-50 dark:bg-stone-800/70 p-1.5 rounded-lg border border-stone-100 dark:border-stone-800">
                     "{item.observaciones}"
                   </p>
                 )}
@@ -615,13 +615,13 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
               {/* Botones de Acción */}
               {canEdit && (
-                <div className="flex items-center justify-between gap-2 pt-3 border-t border-stone-100 mt-3">
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-stone-100 dark:border-stone-800 mt-3">
                   <button
                     onClick={() => {
                       setReponiendoId(item.id);
                       setCantidadReponer(item.stockMinimo * 2 || 10);
                     }}
-                    className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 font-bold rounded-xl text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-900 dark:text-blue-200 font-bold rounded-xl text-xs flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Reponer
@@ -630,7 +630,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleOpenEdit(item)}
-                      className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      className="px-2.5 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                       title="Editar material"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
@@ -638,7 +638,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                     </button>
                     <button
                       onClick={() => setMaterialToDelete(item)}
-                      className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      className="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                       title="Eliminar material"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -654,25 +654,25 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
       {/* MODAL: Reposición Rápida */}
       {reponiendoId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 p-5 space-y-4 text-xs">
-            <h3 className="font-bold text-sm text-stone-900">Ingreso de Material a Pañol</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 p-5 space-y-4 text-xs">
+            <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">Ingreso de Material a Pañol</h3>
             <div>
-              <label className="block font-bold text-stone-700 mb-1">Cantidad a Ingresar en Stock:</label>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cantidad a Ingresar en Stock:</label>
               <NumericInput
                 step="0.5"
                 value={cantidadReponer}
                 onValueChange={setCantidadReponer}
-                className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-base text-blue-950"
+                className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-base text-blue-950 dark:text-blue-100"
                 min="0.1"
                 required
               />
             </div>
-            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
               <button
                 type="button"
                 onClick={() => setReponiendoId(null)}
-                className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
               >
                 Cancelar
               </button>
@@ -691,8 +691,8 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
       {/* MODAL: Nuevo Material o Herramienta */}
       {isNewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-blue-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Wrench className="w-4 h-4 text-blue-400" />
@@ -703,11 +703,11 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
             <form onSubmit={handleGuardarNuevo} className="p-5 space-y-3.5 text-xs max-h-[85vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Categoría del Material:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Categoría del Material:</label>
                   <select
                     value={formMaterial.categoriaMaterial}
                     onChange={(e) => setFormMaterial({ ...formMaterial, categoriaMaterial: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-blue-950"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-blue-950 dark:text-blue-100"
                   >
                     <option value="insumo_riego">Insumos de Riego (Goteros, Tuberías, Válvulas)</option>
                     <option value="alambre_estructura">Alambres Acerados & Tensores</option>
@@ -720,12 +720,12 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Nombre Comercial / Descripción:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre Comercial / Descripción:</label>
                   <input
                     type="text"
                     value={formMaterial.nombreComercial}
                     onChange={(e) => setFormMaterial({ ...formMaterial, nombreComercial: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                     placeholder="ej. Gotero Autocompensado Netafim 4 L/h"
                     required
                   />
@@ -734,31 +734,31 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Especificación Técnica / Medidas:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Especificación Técnica / Medidas:</label>
                   <input
                     type="text"
                     value={formMaterial.especificacionTecnica}
                     onChange={(e) => setFormMaterial({ ...formMaterial, especificacionTecnica: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="ej. Diámetro 4-5 pulgadas, largo 2.40m CCA"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fabricante o Proveedor:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fabricante o Proveedor:</label>
                   <input
                     type="text"
                     value={formMaterial.fabricante}
                     onChange={(e) => setFormMaterial({ ...formMaterial, fabricante: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="ej. Netafim, Inchalam, Felco, Marienberg"
                   />
                 </div>
               </div>
 
               {/* Fechas de Fabricación y Vencimiento (Mes/Año por defecto + opción Sin vencimiento) */}
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 dark:text-stone-200 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formMaterial.sinVencimiento}
@@ -769,12 +769,12 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                           fechaVencimiento: e.target.checked ? '' : formMaterial.fechaVencimiento,
                         })
                       }
-                      className="rounded border-stone-300 text-blue-900"
+                      className="rounded border-stone-300 dark:border-stone-700 text-blue-900 dark:text-blue-200 bg-white dark:bg-stone-800"
                     />
                     <span>Sin fecha de vencimiento (herramientas, ferretería, materiales durables)</span>
                   </label>
 
-                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={usarDiaExacto}
@@ -791,7 +791,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                             : toMonthValue(prev.fechaVencimiento),
                         }));
                       }}
-                      className="rounded border-stone-300 text-blue-900"
+                      className="rounded border-stone-300 dark:border-stone-700 text-blue-900 dark:text-blue-200 bg-white dark:bg-stone-800"
                     />
                     <span>Incluir día exacto</span>
                   </label>
@@ -799,22 +799,22 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha de Fabricación / Elaboración {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     <input
                       type={usarDiaExacto ? 'date' : 'month'}
                       value={formMaterial.fechaElaboracion}
                       onChange={(e) => setFormMaterial({ ...formMaterial, fechaElaboracion: e.target.value })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha de Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     {formMaterial.sinVencimiento ? (
-                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                      <div className="w-full p-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg font-mono text-stone-500 dark:text-stone-400">
                         Sin vencimiento (No aplica)
                       </div>
                     ) : (
@@ -822,7 +822,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                         type={usarDiaExacto ? 'date' : 'month'}
                         value={formMaterial.fechaVencimiento}
                         onChange={(e) => setFormMaterial({ ...formMaterial, fechaVencimiento: e.target.value })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-blue-900"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-blue-900 dark:text-blue-200"
                       />
                     )}
                   </div>
@@ -831,7 +831,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
               {/* Destinos */}
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Destinado a:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Destinado a:</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {DESTINOS_CONFIG.map((d) => {
                     const isChecked = formMaterial.destinosUso.includes(d.id);
@@ -842,8 +842,8 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                         onClick={() => handleToggleDestino(d.id)}
                         className={`p-2 rounded-xl border text-center font-bold text-xs flex flex-col items-center gap-1 cursor-pointer transition-all ${
                           isChecked
-                            ? 'bg-blue-100 border-blue-400 text-blue-950 ring-1 ring-blue-300'
-                            : 'bg-white border-stone-200 text-stone-500 hover:bg-stone-50'
+                            ? 'bg-blue-100 dark:bg-blue-950/60 border-blue-400 dark:border-blue-600 text-blue-950 dark:text-blue-100 ring-1 ring-blue-300'
+                            : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800/70'
                         }`}
                       >
                         <span className="text-base">{d.icon}</span>
@@ -857,33 +857,33 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               {/* Stock y Unidad */}
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Inicial:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Inicial:</label>
                   <NumericInput
                     step="0.1"
                     min="0"
                     value={formMaterial.stockActual}
                     onValueChange={(val) => setFormMaterial({ ...formMaterial, stockActual: val })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Mínimo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Mínimo:</label>
                   <NumericInput
                     step="0.1"
                     min="0"
                     value={formMaterial.stockMinimo}
                     onValueChange={(val) => setFormMaterial({ ...formMaterial, stockMinimo: val })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Unidad:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Unidad:</label>
                   <select
                     value={formMaterial.unidad}
                     onChange={(e) => setFormMaterial({ ...formMaterial, unidad: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   >
                     <option value="unidades">Unidades (c/u)</option>
                     <option value="metros">Metros (m)</option>
@@ -896,32 +896,32 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Ubicación en Pañol / Galpón:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Ubicación en Pañol / Galpón:</label>
                 <input
                   type="text"
                   value={formMaterial.ubicacionBodega}
                   onChange={(e) => setFormMaterial({ ...formMaterial, ubicacionBodega: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   placeholder="ej. Rack Mallas, Caseta Riego, Estante 2"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones:</label>
                 <textarea
                   value={formMaterial.observaciones}
                   onChange={(e) => setFormMaterial({ ...formMaterial, observaciones: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   placeholder="Detalles sobre asignación, vida útil, repuestos..."
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsNewModalOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -939,8 +939,8 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
       {/* MODAL: Editar Material (100% Editable) */}
       {isEditModalOpen && editingItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-stone-900 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-blue-400" />
@@ -951,11 +951,11 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
             <form onSubmit={handleGuardarEdicion} className="p-5 space-y-3.5 text-xs max-h-[85vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Categoría del Material:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Categoría del Material:</label>
                   <select
                     value={formMaterial.categoriaMaterial}
                     onChange={(e) => setFormMaterial({ ...formMaterial, categoriaMaterial: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-blue-950"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-blue-950 dark:text-blue-100"
                   >
                     <option value="insumo_riego">Insumos de Riego</option>
                     <option value="alambre_estructura">Alambres Acerados & Tensores</option>
@@ -968,12 +968,12 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Nombre Comercial:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre Comercial:</label>
                   <input
                     type="text"
                     value={formMaterial.nombreComercial}
                     onChange={(e) => setFormMaterial({ ...formMaterial, nombreComercial: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                     required
                   />
                 </div>
@@ -981,29 +981,29 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Especificación Técnica:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Especificación Técnica:</label>
                   <input
                     type="text"
                     value={formMaterial.especificacionTecnica}
                     onChange={(e) => setFormMaterial({ ...formMaterial, especificacionTecnica: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fabricante o Proveedor:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fabricante o Proveedor:</label>
                   <input
                     type="text"
                     value={formMaterial.fabricante}
                     onChange={(e) => setFormMaterial({ ...formMaterial, fabricante: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
               </div>
 
               {/* Fechas */}
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 dark:text-stone-200 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formMaterial.sinVencimiento}
@@ -1014,12 +1014,12 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                           fechaVencimiento: e.target.checked ? '' : formMaterial.fechaVencimiento,
                         })
                       }
-                      className="rounded border-stone-300 text-blue-900"
+                      className="rounded border-stone-300 dark:border-stone-700 text-blue-900 dark:text-blue-200 bg-white dark:bg-stone-800"
                     />
                     <span>Sin fecha de vencimiento (solo fabricación)</span>
                   </label>
 
-                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={usarDiaExacto}
@@ -1036,7 +1036,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                             : toMonthValue(prev.fechaVencimiento),
                         }));
                       }}
-                      className="rounded border-stone-300 text-blue-900"
+                      className="rounded border-stone-300 dark:border-stone-700 text-blue-900 dark:text-blue-200 bg-white dark:bg-stone-800"
                     />
                     <span>Incluir día exacto</span>
                   </label>
@@ -1044,22 +1044,22 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha Fabricación {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     <input
                       type={usarDiaExacto ? 'date' : 'month'}
                       value={formMaterial.fechaElaboracion}
                       onChange={(e) => setFormMaterial({ ...formMaterial, fechaElaboracion: e.target.value })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     {formMaterial.sinVencimiento ? (
-                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                      <div className="w-full p-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg font-mono text-stone-500 dark:text-stone-400">
                         Sin vencimiento (No aplica)
                       </div>
                     ) : (
@@ -1067,7 +1067,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                         type={usarDiaExacto ? 'date' : 'month'}
                         value={formMaterial.fechaVencimiento}
                         onChange={(e) => setFormMaterial({ ...formMaterial, fechaVencimiento: e.target.value })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-blue-900"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-blue-900 dark:text-blue-200"
                       />
                     )}
                   </div>
@@ -1076,7 +1076,7 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
               {/* Destinos */}
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Destinado a:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Destinado a:</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {DESTINOS_CONFIG.map((d) => {
                     const isChecked = formMaterial.destinosUso.includes(d.id);
@@ -1087,8 +1087,8 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
                         onClick={() => handleToggleDestino(d.id)}
                         className={`p-2 rounded-xl border text-center font-bold text-xs flex flex-col items-center gap-1 cursor-pointer transition-all ${
                           isChecked
-                            ? 'bg-blue-100 border-blue-400 text-blue-950 ring-1 ring-blue-300'
-                            : 'bg-white border-stone-200 text-stone-500 hover:bg-stone-50'
+                            ? 'bg-blue-100 dark:bg-blue-950/60 border-blue-400 dark:border-blue-600 text-blue-950 dark:text-blue-100 ring-1 ring-blue-300'
+                            : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800/70'
                         }`}
                       >
                         <span className="text-base">{d.icon}</span>
@@ -1102,33 +1102,33 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               {/* Stock y Unidad */}
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Actual:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Actual:</label>
                   <NumericInput
                     step="0.1"
                     min="0"
                     value={formMaterial.stockActual}
                     onValueChange={(val) => setFormMaterial({ ...formMaterial, stockActual: val })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-blue-950"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-blue-950 dark:text-blue-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Mínimo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Mínimo:</label>
                   <NumericInput
                     step="0.1"
                     min="0"
                     value={formMaterial.stockMinimo}
                     onValueChange={(val) => setFormMaterial({ ...formMaterial, stockMinimo: val })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Unidad:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Unidad:</label>
                   <select
                     value={formMaterial.unidad}
                     onChange={(e) => setFormMaterial({ ...formMaterial, unidad: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   >
                     <option value="unidades">Unidades (c/u)</option>
                     <option value="metros">Metros (m)</option>
@@ -1141,30 +1141,30 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Ubicación en Pañol:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Ubicación en Pañol:</label>
                 <input
                   type="text"
                   value={formMaterial.ubicacionBodega}
                   onChange={(e) => setFormMaterial({ ...formMaterial, ubicacionBodega: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones:</label>
                 <textarea
                   value={formMaterial.observaciones}
                   onChange={(e) => setFormMaterial({ ...formMaterial, observaciones: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1182,24 +1182,24 @@ export const MaterialesRiegoView: React.FC<MaterialesRiegoViewProps> = ({
 
       {/* MODAL: Confirmación de Eliminación de Material */}
       {materialToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 overflow-hidden animate-in fade-in zoom-in-95">
             <div className="bg-rose-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Eliminar Material / Herramienta</h3>
               <button onClick={() => setMaterialToDelete(null)} className="text-rose-200 hover:text-white cursor-pointer">✕</button>
             </div>
             <div className="p-5 space-y-4 text-xs">
-              <p className="text-stone-700">
+              <p className="text-stone-700 dark:text-stone-300">
                 ¿Estás seguro de que deseas eliminar <strong>{materialToDelete.nombreComercial}</strong> del pañol de materiales e insumos?
               </p>
-              <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200 text-stone-600 text-[11px]">
+              <div className="p-2.5 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 text-[11px]">
                 Stock registrado: <strong>{materialToDelete.stockActual} {materialToDelete.unidad}</strong>
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setMaterialToDelete(null)}
-                  className="px-3.5 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer font-medium"
+                  className="px-3.5 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer font-medium"
                 >
                   Cancelar
                 </button>

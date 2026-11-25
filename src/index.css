@@ -1,6 +1,13 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+  :root.dark {
+    color-scheme: dark;
+  }
   html {
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
@@ -46,10 +53,19 @@
 }
 
 @media print {
+  :root, :root.dark {
+    color-scheme: light !important;
+  }
   body {
     background: white !important;
     color: black !important;
     font-size: 11pt !important;
+  }
+  .print-sheet,
+  .print-sheet * {
+    background-color: white !important;
+    color: #1c1917 !important;
+    border-color: #d6d3d1 !important;
   }
   .no-print, header, nav, footer, button, .modal-backdrop {
     display: none !important;

@@ -607,16 +607,16 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-cyan-800 mb-1">
-            <Droplet className="w-3.5 h-3.5 text-cyan-700" />
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300 mb-1">
+            <Droplet className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
             <span>Manejo Hídrico & Medición Estándar</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Control de Riego, Caudalímetros y Parámetros Hidráulicos
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Registro por caudalímetro (inicial/final m³), caudal L/s, lámina bruta/neta, eficiencia, presiones de filtros/línea y fertirriego (solución madre e inyección).
           </p>
         </div>
@@ -625,9 +625,9 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
           <button
             type="button"
             onClick={() => exportRiegoPDF(turnosRiego, sectoresRiego, explotacion)}
-            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            className="px-3.5 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
           >
-            <Download className="w-4 h-4 text-cyan-800" />
+            <Download className="w-4 h-4 text-cyan-800 dark:text-cyan-300" />
             <span>Exportar PDF ({turnosRiego.length})</span>
           </button>
 
@@ -636,9 +636,9 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsSectoresModalOpen(true)}
-                className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+                className="px-3.5 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
               >
-                <Settings className="w-3.5 h-3.5 text-stone-600" />
+                <Settings className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400" />
                 <span>Gestionar Sectores</span>
               </button>
 
@@ -657,67 +657,67 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
 
       {/* Tarjetas de Resumen Hídrico */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-1">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-stone-400">
             <span className="text-[10px] font-bold uppercase tracking-wider">Horas Regadas</span>
             <Clock className="w-4 h-4 text-cyan-600" />
           </div>
-          <div className="text-2xl font-black text-stone-900 font-mono tabular-nums">
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 font-mono tabular-nums">
             {totalHorasRegadas.toFixed(1)} hrs
           </div>
-          <p className="text-[11px] text-stone-500">{turnosRiego.length} turnos registrados</p>
+          <p className="text-[11px] text-stone-500 dark:text-stone-400">{turnosRiego.length} turnos registrados</p>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-1">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-stone-400">
             <span className="text-[10px] font-bold uppercase tracking-wider">Volumen & Caudalímetro</span>
             <Waves className="w-4 h-4 text-blue-600" />
           </div>
-          <div className="text-2xl font-black text-stone-900 font-mono tabular-nums">
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 font-mono tabular-nums">
             {totalM3Riego.toLocaleString('es-CL')} m³
           </div>
-          <p className="text-[11px] text-stone-500 font-mono tabular-nums">
+          <p className="text-[11px] text-stone-500 dark:text-stone-400 font-mono tabular-nums">
             {ultimoCaudalimetroM3 > 0
               ? `Últ. lectura: ${ultimoCaudalimetroM3.toLocaleString('es-CL')} m³`
               : `${(totalM3Riego * 1000).toLocaleString('es-CL')} litros totales`}
           </p>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-1">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-stone-400">
             <span className="text-[10px] font-bold uppercase tracking-wider">Caudal Operativo Prom.</span>
             <Gauge className="w-4 h-4 text-indigo-600" />
           </div>
-          <div className="text-2xl font-black text-stone-900 font-mono tabular-nums">
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 font-mono tabular-nums">
             {caudalPromedioLs} L/s
           </div>
-          <p className="text-[11px] text-stone-500 font-mono tabular-nums">
+          <p className="text-[11px] text-stone-500 dark:text-stone-400 font-mono tabular-nums">
             ≈ {(Number(caudalPromedioLs) * 3.6).toFixed(1)} m³/hora
           </p>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-1">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-stone-400">
             <span className="text-[10px] font-bold uppercase tracking-wider">Lámina Bruta / Neta</span>
-            <Droplet className="w-4 h-4 text-cyan-700" />
+            <Droplet className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
           </div>
-          <div className="text-2xl font-black text-stone-900 font-mono tabular-nums">
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 font-mono tabular-nums">
             {laminaPromedio} mm
           </div>
-          <p className="text-[11px] text-cyan-800 font-mono tabular-nums font-semibold">
+          <p className="text-[11px] text-cyan-800 dark:text-cyan-300 font-mono tabular-nums font-semibold">
             Neta prom.: {laminaNetaPromedio} mm/turno
           </p>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs space-y-1">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-stone-400">
             <span className="text-[10px] font-bold uppercase tracking-wider">Demanda Huerto (ETc)</span>
             <Activity className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-stone-900 font-mono tabular-nums">
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 font-mono tabular-nums">
             {demandaEtc} mm/día
           </div>
-          <p className="text-[11px] text-emerald-700 font-medium font-mono tabular-nums">
+          <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium font-mono tabular-nums">
             ETo ({etoActual}) × Kc ({kcEstimado})
           </p>
         </div>
@@ -726,8 +726,8 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
       {/* Grid de los Sectores de Riego */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-            <Layers className="w-4 h-4 text-cyan-700" />
+          <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+            <Layers className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
             Sectores de Riego del Huerto ({sectoresRiego.length} sectores)
           </h2>
           <span className="text-xs text-stone-400 font-mono tabular-nums">
@@ -736,9 +736,9 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
         </div>
 
         {sectoresRiego.length === 0 ? (
-          <div className="p-6 bg-white rounded-2xl border border-dashed border-stone-300 text-center space-y-2">
-            <p className="text-xs font-bold text-stone-700">No hay sectores de riego configurados todavía.</p>
-            <p className="text-[11px] text-stone-500">
+          <div className="p-6 bg-white dark:bg-stone-900 rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 text-center space-y-2">
+            <p className="text-xs font-bold text-stone-700 dark:text-stone-300">No hay sectores de riego configurados todavía.</p>
+            <p className="text-[11px] text-stone-500 dark:text-stone-400">
               Agrega tus sectores reales de riego para calcular láminas, caudales y asociar cuarteles automáticamente.
             </p>
             {canEdit && (
@@ -762,38 +762,38 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
               return (
                 <div
                   key={sec.id}
-                  className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs hover:shadow-xs transition-shadow space-y-3"
+                  className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs hover:shadow-xs transition-shadow space-y-3"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded-md bg-cyan-100 text-cyan-900 font-extrabold text-[11px]">
+                    <span className="px-2 py-0.5 rounded-md bg-cyan-100 dark:bg-cyan-950/60 text-cyan-900 dark:text-cyan-200 font-extrabold text-[11px]">
                       Sector {sec.id}
                     </span>
-                    <span className="text-xs font-mono font-bold text-stone-700 tabular-nums">
+                    <span className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 tabular-nums">
                       {sec.ha || 0} ha
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="font-extrabold text-stone-900 text-sm leading-tight">{sec.nombre}</h3>
-                    <p className="text-[11px] text-stone-500 mt-1 line-clamp-2">
+                    <h3 className="font-extrabold text-stone-900 dark:text-stone-100 text-sm leading-tight">{sec.nombre}</h3>
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 line-clamp-2">
                       {sec.descripcion || 'Sin descripción técnica'}
                     </p>
                   </div>
 
-                  <div className="p-2.5 bg-stone-50 rounded-xl space-y-1 text-xs">
-                    <div className="flex justify-between text-stone-600">
+                  <div className="p-2.5 bg-stone-50 dark:bg-stone-800/70 rounded-xl space-y-1 text-xs">
+                    <div className="flex justify-between text-stone-600 dark:text-stone-400">
                       <span>Caudal de diseño:</span>
-                      <strong className="text-stone-900 font-mono tabular-nums">{sec.caudalDisenoLs || 0} L/s</strong>
+                      <strong className="text-stone-900 dark:text-stone-100 font-mono tabular-nums">{sec.caudalDisenoLs || 0} L/s</strong>
                     </div>
-                    <div className="flex justify-between text-stone-600 gap-2">
+                    <div className="flex justify-between text-stone-600 dark:text-stone-400 gap-2">
                       <span>Cuarteles:</span>
-                      <strong className="text-cyan-800 text-right">
+                      <strong className="text-cyan-800 dark:text-cyan-300 text-right">
                         {cuarteles.length > 0 ? cuarteles.map((c) => c.codigoCuartel).join(', ') : 'Ninguno'}
                       </strong>
                     </div>
-                    <div className="flex justify-between text-stone-600">
+                    <div className="flex justify-between text-stone-600 dark:text-stone-400">
                       <span>Último riego:</span>
-                      <strong className="text-stone-700 font-mono">{ultTurno ? ultTurno.fecha : 'Sin registros'}</strong>
+                      <strong className="text-stone-700 dark:text-stone-300 font-mono">{ultTurno ? ultTurno.fecha : 'Sin registros'}</strong>
                     </div>
                   </div>
 
@@ -801,9 +801,9 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                     <button
                       type="button"
                       onClick={() => handleOpenNewTurno(sec.id)}
-                      className="w-full py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-200 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                      className="w-full py-1.5 bg-cyan-50 dark:bg-cyan-950/40 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 text-cyan-900 dark:text-cyan-200 border border-cyan-200 dark:border-cyan-800/80 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
-                      <Plus className="w-3.5 h-3.5 text-cyan-700" />
+                      <Plus className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
                       <span>Regar este Sector</span>
                     </button>
                   )}
@@ -815,14 +815,14 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
       </div>
 
       {/* Bitácora de Turnos de Riego */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-2xs overflow-hidden space-y-0">
-        <div className="p-4 border-b border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs overflow-hidden space-y-0">
+        <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <FileSpreadsheet className="w-4 h-4 text-cyan-700" />
-            <h2 className="font-bold text-sm text-stone-900">Bitácora Oficial de Turnos de Riego</h2>
+            <FileSpreadsheet className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
+            <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100">Bitácora Oficial de Turnos de Riego</h2>
             <span className="text-xs text-stone-400 font-mono tabular-nums">({turnosRiego.length} registros)</span>
           </div>
-          <div className="text-[11px] text-stone-500">
+          <div className="text-[11px] text-stone-500 dark:text-stone-400">
             Trazabilidad hidráulica estándar: caudalímetros, caudales, láminas bruta/neta, presiones y fertirriego
           </div>
         </div>
@@ -830,7 +830,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
         {turnosRiego.length === 0 ? (
           <div className="p-8 text-center text-stone-400 space-y-2">
             <Droplet className="w-10 h-10 mx-auto text-stone-300" />
-            <p className="font-bold text-sm text-stone-700">No hay turnos de riego registrados</p>
+            <p className="font-bold text-sm text-stone-700 dark:text-stone-300">No hay turnos de riego registrados</p>
             <p className="text-xs">Comienza registrando el primer turno de riego con tus parámetros estándar y caudalímetro.</p>
             {canEdit && (
               <button
@@ -846,7 +846,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-stone-50 text-stone-600 font-bold border-b border-stone-200">
+              <thead className="bg-stone-50 dark:bg-stone-800/70 text-stone-600 dark:text-stone-400 font-bold border-b border-stone-200 dark:border-stone-800">
                 <tr>
                   <th className="p-3">Fecha & Horario</th>
                   <th className="p-3">Sector / Método / Cuarteles</th>
@@ -860,36 +860,36 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                   {canEdit && <th className="p-3 text-right">Acciones</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100 text-stone-700">
+              <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-stone-700 dark:text-stone-300">
                 {turnosRiego.map((turno) => {
                   const qMedido =
                     turno.caudalMedidoLs ?? calcularCaudalLs(turno.volumenM3 || 0, turno.duracionHoras || 0);
                   const ef = turno.eficienciaRiegoPct ?? 90;
                   const neta = turno.laminaNetaMm ?? calcularLaminaNeta(turno.laminaAguaMm || 0, ef);
                   return (
-                    <tr key={turno.id} className="hover:bg-cyan-50/40 transition-colors align-top">
+                    <tr key={turno.id} className="hover:bg-cyan-50/40 dark:hover:bg-cyan-950/60 transition-colors align-top">
                       <td className="p-3 whitespace-nowrap">
-                        <div className="font-bold text-stone-900 font-mono">{turno.fecha}</div>
-                        <div className="text-[11px] text-stone-500 font-mono">
+                        <div className="font-bold text-stone-900 dark:text-stone-100 font-mono">{turno.fecha}</div>
+                        <div className="text-[11px] text-stone-500 dark:text-stone-400 font-mono">
                           {turno.horaInicio}
                           {turno.horaTermino ? ` - ${turno.horaTermino}` : ''}
                         </div>
                       </td>
                       <td className="p-3">
-                        <div className="font-extrabold text-cyan-950">{turno.sectorNombre}</div>
-                        <div className="text-[10px] font-semibold text-stone-600">
+                        <div className="font-extrabold text-cyan-950 dark:text-cyan-100">{turno.sectorNombre}</div>
+                        <div className="text-[10px] font-semibold text-stone-600 dark:text-stone-400">
                           {turno.metodoRiego || 'Goteo'}
                           {turno.superficieRegadaHa ? ` · ${turno.superficieRegadaHa} ha` : ''}
                         </div>
-                        <div className="text-[11px] text-stone-500">
+                        <div className="text-[11px] text-stone-500 dark:text-stone-400">
                           {turno.cuartelesInvolucrados?.length
                             ? turno.cuartelesInvolucrados.join(', ')
                             : 'Sin cuartel asignado'}
                         </div>
                       </td>
                       <td className="p-3 font-mono tabular-nums whitespace-nowrap">
-                        <div className="font-bold text-stone-900">{turno.duracionHoras} hrs</div>
-                        <div className="text-[11px] text-indigo-800 font-semibold">
+                        <div className="font-bold text-stone-900 dark:text-stone-100">{turno.duracionHoras} hrs</div>
+                        <div className="text-[11px] text-indigo-800 dark:text-indigo-300 font-semibold">
                           {qMedido > 0 ? `${qMedido} L/s` : '—'}
                         </div>
                         {turno.duracionHoras > 0 && turno.volumenM3 > 0 && (
@@ -898,18 +898,18 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           </div>
                         )}
                       </td>
-                      <td className="p-3 font-mono text-[11px] text-stone-700 tabular-nums whitespace-nowrap">
+                      <td className="p-3 font-mono text-[11px] text-stone-700 dark:text-stone-300 tabular-nums whitespace-nowrap">
                         {turno.caudalimetroInicialM3 !== undefined || turno.caudalimetroFinalM3 !== undefined ? (
                           <div>
                             <div>
                               Ini:{' '}
-                              <strong className="text-stone-900">
+                              <strong className="text-stone-900 dark:text-stone-100">
                                 {(turno.caudalimetroInicialM3 ?? 0).toLocaleString('es-CL')}
                               </strong>
                             </div>
                             <div>
                               Fin:{' '}
-                              <strong className="text-cyan-900">
+                              <strong className="text-cyan-900 dark:text-cyan-200">
                                 {(turno.caudalimetroFinalM3 ?? 0).toLocaleString('es-CL')}
                               </strong>
                             </div>
@@ -919,20 +919,20 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                         )}
                       </td>
                       <td className="p-3 font-mono tabular-nums whitespace-nowrap">
-                        <div className="font-bold text-stone-900">{turno.volumenM3.toLocaleString('es-CL')} m³</div>
+                        <div className="font-bold text-stone-900 dark:text-stone-100">{turno.volumenM3.toLocaleString('es-CL')} m³</div>
                         {turno.superficieRegadaHa && turno.superficieRegadaHa > 0 && (
-                          <div className="text-[10px] text-stone-500">
+                          <div className="text-[10px] text-stone-500 dark:text-stone-400">
                             {(turno.volumenM3 / turno.superficieRegadaHa).toFixed(1)} m³/ha
                           </div>
                         )}
                       </td>
                       <td className="p-3 font-mono tabular-nums whitespace-nowrap">
-                        <div className="font-black text-cyan-800">{turno.laminaAguaMm} mm bruta</div>
-                        <div className="text-[11px] text-emerald-700 font-semibold">
+                        <div className="font-black text-cyan-800 dark:text-cyan-300">{turno.laminaAguaMm} mm bruta</div>
+                        <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold">
                           {neta} mm neta ({ef}%)
                         </div>
                       </td>
-                      <td className="p-3 font-mono text-[11px] text-stone-600 whitespace-nowrap">
+                      <td className="p-3 font-mono text-[11px] text-stone-600 dark:text-stone-400 whitespace-nowrap">
                         {turno.presionPreFiltroBar !== undefined && (
                           <div>Pre: <strong>{turno.presionPreFiltroBar}b</strong></div>
                         )}
@@ -940,18 +940,18 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           Cab: <strong>{turno.presionCabezalBar}b</strong> · Fin:{' '}
                           <strong>{turno.presionFinLineaBar}b</strong>
                         </div>
-                        <div className="text-[10px] text-stone-500 font-sans">
+                        <div className="text-[10px] text-stone-500 dark:text-stone-400 font-sans">
                           Filtros: {turno.estadoFiltros || 'Limpios'}
                         </div>
                       </td>
                       <td className="p-3">
                         {turno.conFertirriego ? (
                           <div className="space-y-0.5 text-[11px]">
-                            <div className="font-bold text-emerald-900 flex items-center gap-1">
+                            <div className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1">
                               <Zap className="w-3 h-3 text-emerald-600 shrink-0" />
                               <span>{turno.fertilizanteInyectado || 'Fertirriego'}</span>
                             </div>
-                            <div className="font-mono text-[10px] text-stone-700 tabular-nums">
+                            <div className="font-mono text-[10px] text-stone-700 dark:text-stone-300 tabular-nums">
                               Sol. Madre:{' '}
                               <strong>
                                 {turno.solucionMadreFertilizanteKg ?? turno.dosisFertilizanteKg ?? 0} kg
@@ -961,7 +961,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                                 : ''}
                             </div>
                             {(turno.inyeccionLitrosPorMin ?? 0) > 0 && (
-                              <div className="font-mono text-[10px] text-cyan-800 font-semibold tabular-nums">
+                              <div className="font-mono text-[10px] text-cyan-800 dark:text-cyan-300 font-semibold tabular-nums">
                                 Inyección: {turno.inyeccionLitrosPorMin} L/min
                               </div>
                             )}
@@ -970,14 +970,14 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           <span className="text-stone-400 text-[11px]">Agua pura</span>
                         )}
                       </td>
-                      <td className="p-3 text-[11px] text-stone-600">{turno.operadorRiego}</td>
+                      <td className="p-3 text-[11px] text-stone-600 dark:text-stone-400">{turno.operadorRiego}</td>
                       {canEdit && (
                         <td className="p-3 text-right whitespace-nowrap">
                           <div className="inline-flex items-center gap-1">
                             <button
                               type="button"
                               onClick={() => handleOpenEditTurno(turno)}
-                              className="p-1.5 text-stone-500 hover:text-cyan-700 hover:bg-cyan-50 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-stone-500 dark:text-stone-400 hover:text-cyan-700 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/60 rounded-lg transition-colors cursor-pointer"
                               title="Editar turno"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
@@ -985,7 +985,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                             <button
                               type="button"
                               onClick={() => setTurnoToDelete(turno)}
-                              className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg transition-colors cursor-pointer"
                               title="Eliminar turno"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1004,8 +1004,8 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
 
       {/* MODAL NUEVO / EDITAR TURNO */}
       {(isNewTurnoOpen || isEditTurnoOpen) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-2xl border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-cyan-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Droplet className="w-4 h-4 text-cyan-300" />
@@ -1028,7 +1028,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
               className="p-5 space-y-4 text-xs max-h-[85vh] overflow-y-auto"
             >
               {formError && (
-                <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 font-semibold flex items-center gap-2">
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-700 rounded-xl text-rose-900 dark:text-rose-200 font-semibold flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
                   <span>{formError}</span>
                 </div>
@@ -1037,12 +1037,12 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
               {/* 1. Sector, Fecha, Horario y Duración */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Sector de Riego:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Sector de Riego:</label>
                   {sectoresRiego.length > 0 ? (
                     <select
                       value={formTurno.sectorRiegoId}
                       onChange={(e) => handleSectorChange(e.target.value)}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                       required
                     >
                       <option value="" disabled>
@@ -1060,18 +1060,18 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                       value={formTurno.sectorNombre || ''}
                       onChange={(e) => setFormTurno({ ...formTurno, sectorNombre: e.target.value })}
                       placeholder="Ej. Sector 1 o Cuartel Norte"
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                       required
                     />
                   )}
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Método de Riego:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Método de Riego:</label>
                   <select
                     value={formTurno.metodoRiego || 'Goteo'}
                     onChange={(e) => handleMetodoChange(e.target.value as MetodoRiego)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-semibold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-semibold dark:text-stone-100"
                   >
                     <option value="Goteo">Goteo (Efic. 90%)</option>
                     <option value="Microaspersión">Microaspersión (Efic. 85%)</option>
@@ -1082,25 +1082,25 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha:</label>
                   <input
                     type="date"
                     value={formTurno.fecha}
                     onChange={(e) => setFormTurno({ ...formTurno, fecha: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                     required
                   />
                 </div>
               </div>
 
               {/* Selección de Cuarteles y Superficie real */}
-              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <span className="font-bold text-stone-800">
+                  <span className="font-bold text-stone-800 dark:text-stone-200">
                     Cuarteles Involucrados y Superficie Regada
                   </span>
                   <div className="flex items-center gap-2">
-                    <label className="text-[11px] font-semibold text-stone-600">Superficie (ha):</label>
+                    <label className="text-[11px] font-semibold text-stone-600 dark:text-stone-400">Superficie (ha):</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1114,7 +1114,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           })
                         )
                       }
-                      className="w-24 p-1.5 bg-white border border-stone-300 rounded-lg font-mono font-bold text-right tabular-nums"
+                      className="w-24 p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-right tabular-nums dark:text-stone-100"
                     />
                   </div>
                 </div>
@@ -1131,7 +1131,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors ${
                             checked
                               ? 'bg-cyan-800 text-white border-cyan-800'
-                              : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-100'
+                              : 'bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800'
                           }`}
                         >
                           {checked ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />}
@@ -1157,54 +1157,54 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           .filter(Boolean)
                       })
                     }
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                   />
                 )}
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Hora Inicio:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Hora Inicio:</label>
                   <input
                     type="time"
                     value={formTurno.horaInicio}
                     onChange={(e) => handleHoraChange('horaInicio', e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Hora Término:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Hora Término:</label>
                   <input
                     type="time"
                     value={formTurno.horaTermino}
                     onChange={(e) => handleHoraChange('horaTermino', e.target.value)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Duración (hrs):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Duración (hrs):</label>
                   <input
                     type="number"
                     step="0.25"
                     min="0.25"
                     value={formTurno.duracionHoras}
                     onChange={(e) => handleDuracionChange(parseFloat(e.target.value) || 0)}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold font-mono tabular-nums"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold font-mono tabular-nums dark:text-stone-100"
                     required
                   />
                 </div>
               </div>
 
               {/* 2. Caudalímetro (Inicial y Final) + Caudal Medido */}
-              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2.5">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-stone-800 flex items-center gap-1.5 text-xs">
-                    <Gauge className="w-4 h-4 text-cyan-700" />
+                  <span className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5 text-xs">
+                    <Gauge className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
                     <span>Medición por Caudalímetro (Totalizador m³) & Caudales (L/s)</span>
                   </span>
                   {meterDiffPreview > 0 && (
-                    <span className="text-[11px] font-mono font-bold text-cyan-800 tabular-nums">
+                    <span className="text-[11px] font-mono font-bold text-cyan-800 dark:text-cyan-300 tabular-nums">
                       Δ Caudalímetro: {meterDiffPreview.toLocaleString('es-CL')} m³
                     </span>
                   )}
@@ -1212,7 +1212,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Caudalímetro Inicial (m³):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Caudalímetro Inicial (m³):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -1221,11 +1221,11 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                       onChange={(e) =>
                         handleCaudalimetroChange('caudalimetroInicialM3', parseFloat(e.target.value) || 0)
                       }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold tabular-nums"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold tabular-nums dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Caudalímetro Final (m³):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Caudalímetro Final (m³):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -1234,11 +1234,11 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                       onChange={(e) =>
                         handleCaudalimetroChange('caudalimetroFinalM3', parseFloat(e.target.value) || 0)
                       }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-cyan-950 tabular-nums"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-cyan-950 dark:text-cyan-100 tabular-nums"
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">Caudal Inicial (L/s):</label>
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">Caudal Inicial (L/s):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -1251,11 +1251,11 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           caudalInicialLs: e.target.value === '' ? undefined : parseFloat(e.target.value)
                         })
                       }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono tabular-nums dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">Caudal Final (L/s):</label>
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">Caudal Final (L/s):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -1268,43 +1268,43 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           caudalFinalLs: e.target.value === '' ? undefined : parseFloat(e.target.value)
                         })
                       }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono tabular-nums dark:text-stone-100"
                     />
                   </div>
                 </div>
               </div>
 
               {/* 3. Volumen, Eficiencia y Lámina Bruta / Neta */}
-              <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-xl space-y-2.5">
+              <div className="p-3 bg-cyan-50/70 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/80 rounded-xl space-y-2.5">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   <div>
-                    <label className="block font-bold text-cyan-900 mb-1">Volumen Total (m³):</label>
+                    <label className="block font-bold text-cyan-900 dark:text-cyan-200 mb-1">Volumen Total (m³):</label>
                     <input
                       type="number"
                       step="0.1"
                       min="0"
                       value={formTurno.volumenM3 ?? 0}
                       onChange={(e) => handleVolumenManualChange(parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-black font-mono text-cyan-950 tabular-nums"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded-lg font-black font-mono text-cyan-950 dark:text-cyan-100 tabular-nums"
                       required
                     />
-                    <span className="text-[10px] text-cyan-800 font-mono tabular-nums">
+                    <span className="text-[10px] text-cyan-800 dark:text-cyan-300 font-mono tabular-nums">
                       {m3PorHaPreview !== '—' ? `${m3PorHaPreview} m³/ha` : 'Ingresa ha para m³/ha'}
                     </span>
                   </div>
 
                   <div>
-                    <label className="block font-bold text-cyan-900 mb-1">Caudal Calculado:</label>
-                    <div className="p-2 bg-white border border-cyan-200 rounded-lg font-mono font-black text-indigo-900 tabular-nums">
+                    <label className="block font-bold text-cyan-900 dark:text-cyan-200 mb-1">Caudal Calculado:</label>
+                    <div className="p-2 bg-white dark:bg-stone-900 border border-cyan-200 dark:border-cyan-800/80 rounded-lg font-mono font-black text-indigo-900 dark:text-indigo-200 tabular-nums">
                       {formTurno.caudalMedidoLs || 0} L/s
                     </div>
-                    <span className="text-[10px] text-cyan-800 font-mono tabular-nums">
+                    <span className="text-[10px] text-cyan-800 dark:text-cyan-300 font-mono tabular-nums">
                       {qM3HoraPreview} m³/hora
                     </span>
                   </div>
 
                   <div>
-                    <label className="block font-bold text-cyan-900 mb-1">Eficiencia (%):</label>
+                    <label className="block font-bold text-cyan-900 dark:text-cyan-200 mb-1">Eficiencia (%):</label>
                     <input
                       type="number"
                       min="10"
@@ -1319,13 +1319,13 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           })
                         )
                       }
-                      className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-bold font-mono text-cyan-950 tabular-nums"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded-lg font-bold font-mono text-cyan-950 dark:text-cyan-100 tabular-nums"
                     />
-                    <span className="text-[10px] text-cyan-800">Uniformidad sistema</span>
+                    <span className="text-[10px] text-cyan-800 dark:text-cyan-300">Uniformidad sistema</span>
                   </div>
 
                   <div>
-                    <label className="block font-bold text-cyan-900 mb-1">Lámina Bruta / Neta:</label>
+                    <label className="block font-bold text-cyan-900 dark:text-cyan-200 mb-1">Lámina Bruta / Neta:</label>
                     <input
                       type="number"
                       step="0.1"
@@ -1339,10 +1339,10 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           laminaNetaMm: calcularLaminaNeta(bruta, prev.eficienciaRiegoPct ?? 90)
                         }));
                       }}
-                      className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-black font-mono text-cyan-950 tabular-nums"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded-lg font-black font-mono text-cyan-950 dark:text-cyan-100 tabular-nums"
                       required
                     />
-                    <span className="text-[10px] text-emerald-800 font-bold font-mono tabular-nums">
+                    <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold font-mono tabular-nums">
                       Neta: {formTurno.laminaNetaMm ?? 0} mm
                     </span>
                   </div>
@@ -1350,16 +1350,16 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
               </div>
 
               {/* 4. Presiones Hidráulicas y Control de Filtros */}
-              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-stone-800 flex items-center gap-1.5 text-xs">
-                    <Filter className="w-3.5 h-3.5 text-cyan-700" />
+                  <span className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5 text-xs">
+                    <Filter className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
                     <span>Presiones de Operación (bar) & Cabezal de Filtrado</span>
                   </span>
                   {deltaPresionFiltro !== null && (
                     <span
                       className={`text-[11px] font-mono font-bold tabular-nums ${
-                        deltaPresionFiltro > 0.5 ? 'text-amber-700' : 'text-emerald-700'
+                        deltaPresionFiltro > 0.5 ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'
                       }`}
                     >
                       ΔP Filtros: {deltaPresionFiltro} bar {deltaPresionFiltro > 0.5 ? '(Retrolavar)' : '(OK)'}
@@ -1369,7 +1369,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div>
-                    <label className="block font-semibold text-stone-600 mb-1">Pre-Filtro (bar):</label>
+                    <label className="block font-semibold text-stone-600 dark:text-stone-400 mb-1">Pre-Filtro (bar):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -1382,11 +1382,11 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           presionPreFiltroBar: e.target.value === '' ? undefined : parseFloat(e.target.value)
                         })
                       }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono tabular-nums dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Cabezal / Salida (bar):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cabezal / Salida (bar):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -1395,12 +1395,12 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                       onChange={(e) =>
                         setFormTurno({ ...formTurno, presionCabezalBar: parseFloat(e.target.value) || 0 })
                       }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono tabular-nums dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Fin de Línea (bar):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fin de Línea (bar):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -1409,12 +1409,12 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                       onChange={(e) =>
                         setFormTurno({ ...formTurno, presionFinLineaBar: parseFloat(e.target.value) || 0 })
                       }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono tabular-nums"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono tabular-nums dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Estado de Filtros:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado de Filtros:</label>
                     <select
                       value={formTurno.estadoFiltros || 'Limpios'}
                       onChange={(e) =>
@@ -1423,7 +1423,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                           estadoFiltros: e.target.value as TurnoRiego['estadoFiltros']
                         })
                       }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-semibold"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-semibold dark:text-stone-100"
                     >
                       <option value="Limpios">Limpios</option>
                       <option value="Requiere Retrolavado">Requiere Retrolavado</option>
@@ -1434,16 +1434,16 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
               </div>
 
               {/* 5. Fertirriego: Solución Madre e Inyección (L/min) */}
-              <div className="p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl space-y-3">
+              <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl space-y-3">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={!!formTurno.conFertirriego}
                     onChange={(e) => setFormTurno({ ...formTurno, conFertirriego: e.target.checked })}
-                    className="w-4 h-4 text-emerald-600 rounded"
+                    className="w-4 h-4 text-emerald-600 rounded bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
-                  <span className="font-bold text-stone-800 text-xs flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-emerald-700" />
+                  <span className="font-bold text-stone-800 dark:text-stone-200 text-xs flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                     <span>Inyección de Fertilizante en este Turno (Fertirriego · Solución Madre & Inyección)</span>
                   </span>
                 </label>
@@ -1452,17 +1452,17 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                   <div className="space-y-2.5 pt-1">
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                       <div className="sm:col-span-2">
-                        <label className="block font-semibold text-stone-700 mb-1">Fertilizante Inyectado:</label>
+                        <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">Fertilizante Inyectado:</label>
                         <input
                           type="text"
                           placeholder="ej. Nitrato de Calcio / Sulfato de Potasio"
                           value={formTurno.fertilizanteInyectado || ''}
                           onChange={(e) => setFormTurno({ ...formTurno, fertilizanteInyectado: e.target.value })}
-                          className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                          className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                         />
                       </div>
                       <div>
-                        <label className="block font-semibold text-stone-700 mb-1">Sol. Madre — Fertilizante (kg):</label>
+                        <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">Sol. Madre — Fertilizante (kg):</label>
                         <input
                           type="number"
                           step="0.1"
@@ -1477,11 +1477,11 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                               dosisFertilizanteKg: kg
                             });
                           }}
-                          className="w-full p-2 bg-white border border-emerald-300 rounded-lg font-mono font-bold tabular-nums"
+                          className="w-full p-2 bg-white dark:bg-stone-800 border border-emerald-300 dark:border-emerald-700 rounded-lg font-mono font-bold tabular-nums dark:text-stone-100"
                         />
                       </div>
                       <div>
-                        <label className="block font-semibold text-stone-700 mb-1">Sol. Madre — Agua / Estanque (L):</label>
+                        <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">Sol. Madre — Agua / Estanque (L):</label>
                         <input
                           type="number"
                           step="1"
@@ -1494,14 +1494,14 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                               solucionMadreVolumenLitros: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0
                             })
                           }
-                          className="w-full p-2 bg-white border border-emerald-300 rounded-lg font-mono font-bold tabular-nums"
+                          className="w-full p-2 bg-white dark:bg-stone-800 border border-emerald-300 dark:border-emerald-700 rounded-lg font-mono font-bold tabular-nums dark:text-stone-100"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
                       <div>
-                        <label className="block font-semibold text-stone-700 mb-1">Caudal de Inyección (Litros/min):</label>
+                        <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">Caudal de Inyección (Litros/min):</label>
                         <input
                           type="number"
                           step="0.1"
@@ -1514,12 +1514,12 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                               inyeccionLitrosPorMin: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0
                             })
                           }
-                          className="w-full p-2 bg-white border border-cyan-300 rounded-lg font-mono font-bold text-cyan-950 tabular-nums"
+                          className="w-full p-2 bg-white dark:bg-stone-800 border border-cyan-300 dark:border-cyan-700 rounded-lg font-mono font-bold text-cyan-950 dark:text-cyan-100 tabular-nums"
                         />
                       </div>
 
-                      <div className="p-2 bg-white border border-emerald-200 rounded-lg text-[11px] font-mono tabular-nums text-emerald-950">
-                        <span className="block text-[10px] font-sans font-bold uppercase text-stone-500">
+                      <div className="p-2 bg-white dark:bg-stone-900 border border-emerald-200 dark:border-emerald-800/80 rounded-lg text-[11px] font-mono tabular-nums text-emerald-950 dark:text-emerald-100">
+                        <span className="block text-[10px] font-sans font-bold uppercase text-stone-500 dark:text-stone-400">
                           Concentración Sol. Madre
                         </span>
                         {(formTurno.solucionMadreVolumenLitros ?? 0) > 0 &&
@@ -1541,8 +1541,8 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                         )}
                       </div>
 
-                      <div className="p-2 bg-white border border-cyan-200 rounded-lg text-[11px] font-mono tabular-nums text-cyan-950">
-                        <span className="block text-[10px] font-sans font-bold uppercase text-stone-500">
+                      <div className="p-2 bg-white dark:bg-stone-900 border border-cyan-200 dark:border-cyan-800/80 rounded-lg text-[11px] font-mono tabular-nums text-cyan-950 dark:text-cyan-100">
+                        <span className="block text-[10px] font-sans font-bold uppercase text-stone-500 dark:text-stone-400">
                           Tiempo Estimado Inyección
                         </span>
                         {(formTurno.inyeccionLitrosPorMin ?? 0) > 0 &&
@@ -1566,36 +1566,36 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
               {/* 7. Operador y Observaciones */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Operador Responsable:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Operador Responsable:</label>
                   <input
                     type="text"
                     value={formTurno.operadorRiego}
                     onChange={(e) => setFormTurno({ ...formTurno, operadorRiego: e.target.value })}
                     placeholder="Nombre del operador o regador"
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Observaciones Técnicas:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones Técnicas:</label>
                   <input
                     type="text"
                     value={formTurno.observaciones || ''}
                     onChange={(e) => setFormTurno({ ...formTurno, observaciones: e.target.value })}
                     placeholder="ej. Retrolavado realizado, goteros uniformes."
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => {
                     setIsNewTurnoOpen(false);
                     setIsEditTurnoOpen(false);
                   }}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1613,8 +1613,8 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
 
       {/* MODAL GESTIÓN DE SECTORES DE RIEGO */}
       {isSectoresModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-2xl border border-stone-200 dark:border-stone-800 overflow-hidden flex flex-col max-h-[90vh]">
             <div className="bg-cyan-950 text-white p-4 flex items-center justify-between shrink-0">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Settings className="w-4 h-4 text-cyan-300" />
@@ -1630,8 +1630,8 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
             </div>
 
             <div className="p-5 overflow-y-auto space-y-4 text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-stone-200">
-                <p className="text-stone-500">
+              <div className="flex items-center justify-between pb-2 border-b border-stone-200 dark:border-stone-800">
+                <p className="text-stone-500 dark:text-stone-400">
                   Agrega, renombra, ajusta hectáreas reales y caudales de diseño de cada sector del huerto.
                 </p>
                 <button
@@ -1644,31 +1644,31 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                 </button>
               </div>
 
-              <form onSubmit={handleSaveSector} className="p-4 bg-cyan-50/60 border border-cyan-200 rounded-xl space-y-3">
-                <div className="font-bold text-cyan-950">
+              <form onSubmit={handleSaveSector} className="p-4 bg-cyan-50/60 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/80 rounded-xl space-y-3">
+                <div className="font-bold text-cyan-950 dark:text-cyan-100">
                   {editingSector ? `Editando Sector ${editingSector.id}` : 'Crear / Configurar Sector'}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="sm:col-span-2">
-                    <label className="block font-bold text-stone-700 mb-1">Nombre del Sector:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre del Sector:</label>
                     <input
                       type="text"
                       placeholder="ej. Sector 1 - Parrón Español Norte"
                       value={sectorForm.nombre}
                       onChange={(e) => setSectorForm({ ...sectorForm, nombre: e.target.value })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Superficie (ha):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Superficie (ha):</label>
                     <input
                       type="number"
                       step="0.01"
                       min="0"
                       value={sectorForm.ha}
                       onChange={(e) => setSectorForm({ ...sectorForm, ha: parseFloat(e.target.value) || 0 })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                       required
                     />
                   </div>
@@ -1676,7 +1676,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Caudal de Diseño (L/s):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Caudal de Diseño (L/s):</label>
                     <input
                       type="number"
                       step="0.1"
@@ -1685,18 +1685,18 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                       onChange={(e) =>
                         setSectorForm({ ...sectorForm, caudalDisenoLs: parseFloat(e.target.value) || 0 })
                       }
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Descripción / Tipo de Emisores:</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Descripción / Tipo de Emisores:</label>
                     <input
                       type="text"
                       placeholder="ej. Goteros autocompensados 2.0 L/h cada 0.8m"
                       value={sectorForm.descripcion || ''}
                       onChange={(e) => setSectorForm({ ...sectorForm, descripcion: e.target.value })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     />
                   </div>
                 </div>
@@ -1706,7 +1706,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setEditingSector(null)}
-                      className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-600 bg-white hover:bg-stone-50 cursor-pointer"
+                      className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-600 dark:text-stone-400 bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                     >
                       Cancelar Edición
                     </button>
@@ -1721,21 +1721,21 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
               </form>
 
               <div className="space-y-2">
-                <div className="font-bold text-stone-800 text-xs">Sectores Actuales:</div>
+                <div className="font-bold text-stone-800 dark:text-stone-200 text-xs">Sectores Actuales:</div>
                 <div className="space-y-1.5">
                   {sectoresRiego.map((sec) => (
                     <div
                       key={sec.id}
-                      className="p-3 bg-white border border-stone-200 rounded-xl flex items-center justify-between hover:border-cyan-300 transition-colors"
+                      className="p-3 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl flex items-center justify-between hover:border-cyan-300 transition-colors"
                     >
                       <div>
-                        <div className="font-bold text-stone-900 text-xs flex items-center gap-2">
-                          <span className="px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-900 font-extrabold text-[10px]">
+                        <div className="font-bold text-stone-900 dark:text-stone-100 text-xs flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950/60 text-cyan-900 dark:text-cyan-200 font-extrabold text-[10px]">
                             ID {sec.id}
                           </span>
                           <span>{sec.nombre}</span>
                         </div>
-                        <div className="text-[11px] text-stone-500 mt-0.5 font-mono">
+                        <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5 font-mono">
                           {sec.ha} ha · {sec.caudalDisenoLs} L/s · {sec.descripcion}
                         </div>
                       </div>
@@ -1744,7 +1744,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleOpenEditSector(sec)}
-                          className="p-1.5 text-stone-500 hover:text-cyan-700 hover:bg-cyan-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-stone-500 dark:text-stone-400 hover:text-cyan-700 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/60 rounded-lg transition-colors cursor-pointer"
                           title="Editar"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
@@ -1752,7 +1752,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleDeleteSector(sec.id)}
-                          className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg transition-colors cursor-pointer"
                           title="Eliminar"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1764,7 +1764,7 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
               </div>
             </div>
 
-            <div className="p-4 bg-stone-50 border-t border-stone-200 flex justify-end shrink-0">
+            <div className="p-4 bg-stone-50 dark:bg-stone-800/70 border-t border-stone-200 dark:border-stone-800 flex justify-end shrink-0">
               <button
                 type="button"
                 onClick={() => setIsSectoresModalOpen(false)}
@@ -1779,22 +1779,22 @@ export const RiegoView: React.FC<RiegoViewProps> = ({
 
       {/* MODAL CONFIRMAR ELIMINAR TURNO */}
       {turnoToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 p-5 space-y-4">
             <div className="flex items-center gap-3 text-rose-600">
               <AlertCircle className="w-6 h-6" />
-              <h3 className="font-bold text-sm text-stone-900">¿Eliminar Turno de Riego?</h3>
+              <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">¿Eliminar Turno de Riego?</h3>
             </div>
-            <p className="text-xs text-stone-600">
+            <p className="text-xs text-stone-600 dark:text-stone-400">
               Se eliminará el turno del <strong>{turnoToDelete.fecha}</strong> para el{' '}
               <strong>{turnoToDelete.sectorNombre}</strong> ({turnoToDelete.duracionHoras} hrs,{' '}
               {turnoToDelete.volumenM3} m³).
             </p>
-            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
               <button
                 type="button"
                 onClick={() => setTurnoToDelete(null)}
-                className="px-3 py-1.5 border border-stone-300 rounded-lg text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer"
+                className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
               >
                 Cancelar
               </button>

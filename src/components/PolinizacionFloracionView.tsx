@@ -8,7 +8,8 @@ import {
   PlanCargaRaleo,
   EvaluacionCuajaSemillas,
   SeguimientoFenologico,
-  EstadoFenologicoCatalogo
+  EstadoFenologicoCatalogo,
+  ModuloPestanaId
 } from '../types/campo';
 import {
   combinarCatalogoFenologico,
@@ -75,6 +76,7 @@ interface PolinizacionFloracionViewProps {
   onAddEstadoFenologicoCustom?: (item: EstadoFenologicoCatalogo) => void;
   activeUserName?: string;
   canEdit?: boolean;
+  canEditByTab?: (tab: ModuloPestanaId) => boolean;
 }
 
 const calcularCalificacionAbejas = (
@@ -119,9 +121,17 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
   estadosFenologicosPersonalizados = [],
   onAddEstadoFenologicoCustom,
   activeUserName = 'Administrador',
-  canEdit = true
+  canEdit = true,
+  canEditByTab
 }) => {
   const [activeTab, setActiveTab] = useState<'brotacion' | 'botones' | 'sincronia' | 'colmenas' | 'polen' | 'carga_raleo' | 'cuaja_semillas'>(initialTab);
+
+  const canEditTabKey = (tab: ModuloPestanaId) => (canEditByTab ? canEditByTab(tab) : canEdit);
+  const mappedActiveModulo: ModuloPestanaId =
+    activeTab === 'sincronia' || activeTab === 'colmenas' || activeTab === 'polen'
+      ? 'polinizacion'
+      : activeTab;
+  const effectiveCanEdit = canEditTabKey(mappedActiveModulo);
 
   useEffect(() => {
     if (initialTab) {
@@ -787,7 +797,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
             </p>
           </div>
 
-          {canEdit && activeTab !== 'carga_raleo' && activeTab !== 'cuaja_semillas' && (
+          {effectiveCanEdit && activeTab !== 'carga_raleo' && activeTab !== 'cuaja_semillas' && (
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => {
@@ -862,13 +872,13 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
       </div>
 
       {/* Selector de Sub-pestañas sincronizado */}
-      <div className="flex border-b border-stone-200 bg-white rounded-xl p-1 shadow-2xs gap-1 overflow-x-auto text-xs font-bold">
+      <div className="flex border-b border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 rounded-xl p-1 shadow-2xs gap-1 overflow-x-auto text-xs font-bold">
         <button
           onClick={() => setActiveTab('brotacion')}
           className={`px-3.5 py-2 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'brotacion'
               ? 'bg-emerald-800 text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
           }`}
         >
           <Sprout className="w-4 h-4" />
@@ -880,7 +890,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           className={`px-3.5 py-2 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'botones'
               ? 'bg-amber-600 text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
           }`}
         >
           <Flower2 className="w-4 h-4" />
@@ -892,7 +902,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           className={`px-3.5 py-2 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'colmenas'
               ? 'bg-rose-700 text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
           }`}
         >
           <Bug className="w-4 h-4" />
@@ -904,7 +914,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           className={`px-3.5 py-2 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'sincronia'
               ? 'bg-blue-700 text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
           }`}
         >
           <TrendingUp className="w-4 h-4" />
@@ -916,7 +926,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           className={`px-3.5 py-2 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'polen'
               ? 'bg-purple-700 text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
           }`}
         >
           <Sparkles className="w-4 h-4" />
@@ -928,7 +938,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           className={`px-3.5 py-2 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'carga_raleo'
               ? 'bg-indigo-800 text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
           }`}
         >
           <Scissors className="w-4 h-4" />
@@ -940,7 +950,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           className={`px-3.5 py-2 rounded-lg flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'cuaja_semillas'
               ? 'bg-teal-800 text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
           }`}
         >
           <CircleDot className="w-4 h-4" />
@@ -950,30 +960,30 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
       {/* BARRA CONTEXTUAL EDITABLE DE ESTADO FENOLÓGICO Y FECHA POR CUARTEL */}
       {parcelas.length > 0 && onUpdateParcela && (
-        <div className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-2xs space-y-3">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-emerald-200 dark:border-emerald-800/80 p-4 shadow-2xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Sprout className="w-4 h-4 text-emerald-700 shrink-0" />
+              <Sprout className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
               <div>
-                <h2 className="text-xs sm:text-sm font-bold text-stone-900">
+                <h2 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
                   Estado Fenológico de los Cuarteles &amp; Fecha de Etapa
                 </h2>
-                <p className="text-[11px] text-stone-500">
-                  Etapa sugerida para esta pestaña: <strong className="text-emerald-800">{contextFenStage.label}</strong>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  Etapa sugerida para esta pestaña: <strong className="text-emerald-800 dark:text-emerald-300">{contextFenStage.label}</strong>
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {fenSavedToast && (
-                <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 px-2.5 py-1 rounded-lg">
                   {fenSavedToast}
                 </span>
               )}
-              {canEdit && onAddEstadoFenologicoCustom && (
+              {effectiveCanEdit && onAddEstadoFenologicoCustom && (
                 <button
                   type="button"
                   onClick={() => setIsCatalogoFormOpen((v) => !v)}
-                  className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                  className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/60 dark:hover:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3 h-3" />
                   <span>{isCatalogoFormOpen ? 'Cerrar' : 'Agregar Nuevo Estado'}</span>
@@ -982,29 +992,29 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
             </div>
           </div>
 
-          {isCatalogoFormOpen && canEdit && onAddEstadoFenologicoCustom && (
+          {isCatalogoFormOpen && effectiveCanEdit && onAddEstadoFenologicoCustom && (
             <form
               onSubmit={handleCreateCustomCatalogoItem}
-              className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs items-end"
+              className="p-3 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs items-end"
             >
               <div className="sm:col-span-3">
-                <label className="block font-bold text-stone-700 mb-1">Código / Sigla:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Código / Sigla:</label>
                 <input
                   type="text"
                   value={nuevoCatCode}
                   onChange={(e) => setNuevoCatCode(e.target.value)}
                   placeholder="Ej. BBCH 63"
-                  className="w-full p-1.5 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                  className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                 />
               </div>
               <div className="sm:col-span-7">
-                <label className="block font-bold text-stone-700 mb-1">Nombre del Nuevo Estado Fenológico:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre del Nuevo Estado Fenológico:</label>
                 <input
                   type="text"
                   value={nuevoCatNombre}
                   onChange={(e) => setNuevoCatNombre(e.target.value)}
                   placeholder="Ej. Apertura floral machos 30%"
-                  className="w-full p-1.5 bg-white border border-stone-300 rounded-lg font-semibold"
+                  className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-semibold dark:text-stone-100"
                   required
                 />
               </div>
@@ -1039,13 +1049,13 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                   key={p.id}
                   className={`p-3 rounded-xl border transition-all ${
                     isEditingThis
-                      ? 'bg-emerald-50/70 border-emerald-400'
-                      : 'bg-stone-50 border-stone-200'
+                      ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-400 dark:border-emerald-600'
+                      : 'bg-stone-50 dark:bg-stone-800/70 border-stone-200 dark:border-stone-800'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-bold text-stone-900 truncate">{p.nombre}</span>
-                    {canEdit && !isEditingThis && (
+                    <span className="font-bold text-stone-900 dark:text-stone-100 truncate">{p.nombre}</span>
+                    {effectiveCanEdit && !isEditingThis && (
                       <div className="flex items-center gap-1.5 shrink-0">
                         <button
                           type="button"
@@ -1065,7 +1075,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                             setDraftFenFecha(p.fechaEstadoFenologico || todayISO());
                             setSyncFenTimeline(true);
                           }}
-                          className="px-2 py-0.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                          className="px-2 py-0.5 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-700 rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                         >
                           <Pencil className="w-2.5 h-2.5" />
                           <span>Editar</span>
@@ -1087,7 +1097,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                         onChange={(e) => {
                           if (e.target.value) setDraftFenEstado(e.target.value);
                         }}
-                        className="w-full p-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-700"
+                        className="w-full p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs text-stone-700 dark:text-stone-300"
                       >
                         <option value="">Elegir de lista o escribir abajo...</option>
                         {catalogoEstados.map((b) => {
@@ -1105,7 +1115,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                         value={draftFenEstado}
                         onChange={(e) => setDraftFenEstado(e.target.value)}
                         placeholder="O escribe cualquier estado fenológico nuevo..."
-                        className="w-full p-1.5 bg-white border border-emerald-400 rounded-lg text-xs font-medium"
+                        className="w-full p-1.5 bg-white dark:bg-stone-800 border border-emerald-400 dark:border-emerald-600 rounded-lg text-xs font-medium dark:text-stone-100"
                       />
                       {onAddEstadoFenologicoCustom && draftFenEstado.trim() && !draftEnCatalogo && (
                         <button
@@ -1114,21 +1124,21 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                             const parsed = parseEstadoFenologicoTexto(draftFenEstado);
                             guardarEstadoCatalogoSiNoExiste(parsed.code, parsed.nombre);
                           }}
-                          className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+                          className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
                         >
                           + Guardar &quot;{draftFenEstado.trim()}&quot; en el catálogo
                         </button>
                       )}
                       <div className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                        <Calendar className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
                         <input
                           type="date"
                           value={draftFenFecha}
                           onChange={(e) => setDraftFenFecha(e.target.value)}
-                          className="flex-1 p-1.5 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                          className="flex-1 p-1.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono text-xs dark:text-stone-100"
                         />
                       </div>
-                      <label className="flex items-center gap-1.5 text-[10px] text-stone-600 cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-[10px] text-stone-600 dark:text-stone-400 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={syncFenTimeline}
@@ -1141,7 +1151,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                         <button
                           type="button"
                           onClick={() => setEditingFenCuartelId(null)}
-                          className="px-2.5 py-1 bg-white border border-stone-300 text-stone-700 rounded-lg text-[11px] font-bold cursor-pointer"
+                          className="px-2.5 py-1 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-[11px] font-bold cursor-pointer"
                         >
                           Cancelar
                         </button>
@@ -1159,10 +1169,10 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                     </div>
                   ) : (
                     <div className="flex items-center justify-between gap-2 text-[11px]">
-                      <span className="text-emerald-900 font-semibold truncate">
+                      <span className="text-emerald-900 dark:text-emerald-200 font-semibold truncate">
                         {p.estadoFenologico || 'Sin estado fenológico definido'}
                       </span>
-                      <span className="font-mono tabular-nums text-stone-500 shrink-0">
+                      <span className="font-mono tabular-nums text-stone-500 dark:text-stone-400 shrink-0">
                         {p.fechaEstadoFenologico || 'Sin fecha'}
                       </span>
                     </div>
@@ -1177,14 +1187,14 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
       {/* SECCIÓN 1: % DE BROTACIÓN & YEMAS (CON SWITCH HILERA / CUARTEL) */}
       {activeTab === 'brotacion' && (
         <div className="space-y-4">
-          <div className="bg-white p-3.5 rounded-xl border border-stone-200 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-lg">
+          <div className="bg-white dark:bg-stone-900 p-3.5 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800 p-1 rounded-lg">
               <button
                 onClick={() => setVistaModoBrotacion('hilera')}
                 className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   vistaModoBrotacion === 'hilera'
-                    ? 'bg-white text-emerald-950 shadow-2xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    ? 'bg-white dark:bg-stone-900 text-emerald-950 dark:text-emerald-100 shadow-2xs'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
                 }`}
               >
                 <List className="w-3.5 h-3.5" />
@@ -1194,8 +1204,8 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 onClick={() => setVistaModoBrotacion('cuartel')}
                 className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   vistaModoBrotacion === 'cuartel'
-                    ? 'bg-white text-emerald-950 shadow-2xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    ? 'bg-white dark:bg-stone-900 text-emerald-950 dark:text-emerald-100 shadow-2xs'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -1209,7 +1219,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 <select
                   value={cuartelFiltro}
                   onChange={(e) => setCuartelFiltro(e.target.value)}
-                  className="p-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-medium text-stone-800"
+                  className="p-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium text-stone-800 dark:text-stone-200"
                 >
                   <option value="todos">Todos los cuarteles</option>
                   {parcelas.map((p) => (
@@ -1218,7 +1228,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 </select>
               </div>
 
-              {canEdit && (
+              {effectiveCanEdit && (
                 <button
                   onClick={handleOpenNewBrotacion}
                   className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer flex items-center gap-1 shrink-0"
@@ -1233,17 +1243,17 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           {vistaModoBrotacion === 'hilera' && (
             <div>
               {filteredBrotacion.length === 0 ? (
-                <div className="bg-white rounded-xl p-8 text-center text-stone-500 border border-stone-200">
+                <div className="bg-white dark:bg-stone-900 rounded-xl p-8 text-center text-stone-500 dark:text-stone-400 border border-stone-200 dark:border-stone-800">
                   <Sprout className="w-10 h-10 text-stone-300 mx-auto mb-2" />
-                  <p className="font-bold text-stone-700">Sin muestreos por hilera registrados</p>
-                  <p className="text-xs text-stone-500 mt-1">Presiona "Muestrear Hilera" para ingresar el conteo de yemas de la hilera.</p>
+                  <p className="font-bold text-stone-700 dark:text-stone-300">Sin muestreos por hilera registrados</p>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Presiona "Muestrear Hilera" para ingresar el conteo de yemas de la hilera.</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden">
+                <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs overflow-hidden">
                   <div className="overflow-x-auto text-xs">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-stone-100/90 text-stone-700 border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider">
+                        <tr className="bg-stone-100/90 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800 text-[11px] font-bold uppercase tracking-wider">
                           <th className="p-3">Hilera / Cuartel</th>
                           <th className="p-3">Fecha</th>
                           <th className="p-3">Plantas</th>
@@ -1253,56 +1263,56 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                           <th className="p-3">% Brotación</th>
                           <th className="p-3">Brotes c/Flor</th>
                           <th className="p-3">Distribución Base/Medio/Punta</th>
-                          {canEdit && <th className="p-3 text-right">Acciones</th>}
+                          {effectiveCanEdit && <th className="p-3 text-right">Acciones</th>}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-stone-100">
+                      <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
                         {filteredBrotacion.map((m) => (
-                          <tr key={m.id} className="hover:bg-stone-50 transition-colors">
+                          <tr key={m.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/70 transition-colors">
                             <td className="p-3">
-                              <div className="font-bold text-stone-900 flex items-center gap-1.5">
-                                <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-mono text-[11px]">
+                              <div className="font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                                <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 font-mono text-[11px]">
                                   {m.hilera || 'Hilera -'}
                                 </span>
                               </div>
-                              <div className="text-[11px] text-stone-500 mt-0.5">{m.parcelaNombre}</div>
+                              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">{m.parcelaNombre}</div>
                             </td>
-                            <td className="p-3 font-medium text-stone-700">{m.fecha}</td>
-                            <td className="p-3 font-semibold text-stone-800">{m.plantasMuestreadas || 6} pl.</td>
-                            <td className="p-3 font-semibold text-stone-800">{m.cargadoresEvaluados} carg.</td>
-                            <td className="p-3 font-mono font-bold text-stone-900">{m.yemasTotales}</td>
-                            <td className="p-3 font-mono font-bold text-emerald-800">{m.yemasBrotadas}</td>
+                            <td className="p-3 font-medium text-stone-700 dark:text-stone-300">{m.fecha}</td>
+                            <td className="p-3 font-semibold text-stone-800 dark:text-stone-200">{m.plantasMuestreadas || 6} pl.</td>
+                            <td className="p-3 font-semibold text-stone-800 dark:text-stone-200">{m.cargadoresEvaluados} carg.</td>
+                            <td className="p-3 font-mono font-bold text-stone-900 dark:text-stone-100">{m.yemasTotales}</td>
+                            <td className="p-3 font-mono font-bold text-emerald-800 dark:text-emerald-300">{m.yemasBrotadas}</td>
                             <td className="p-3">
                               <span className={`px-2 py-0.5 rounded-full font-black text-xs ${
                                 m.porcentajeBrotacion >= 65
-                                  ? 'bg-emerald-100 text-emerald-900'
+                                  ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200'
                                   : m.porcentajeBrotacion >= 50
-                                  ? 'bg-amber-100 text-amber-900'
-                                  : 'bg-rose-100 text-rose-900'
+                                  ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200'
+                                  : 'bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200'
                               }`}>
                                 {m.porcentajeBrotacion}%
                               </span>
                             </td>
                             <td className="p-3">
-                              <span className="font-bold text-amber-900">{m.brotesConFlor}</span>
-                              <span className="text-[10px] text-stone-500 ml-1">({m.porcentajeBrotesConFlor}%)</span>
+                              <span className="font-bold text-amber-900 dark:text-amber-200">{m.brotesConFlor}</span>
+                              <span className="text-[10px] text-stone-500 dark:text-stone-400 ml-1">({m.porcentajeBrotesConFlor}%)</span>
                             </td>
-                            <td className="p-3 text-[10px] text-stone-600 font-mono">
+                            <td className="p-3 text-[10px] text-stone-600 dark:text-stone-400 font-mono">
                               B: {m.brotacionBasePct}% · M: {m.brotacionMedioPct}% · P: {m.brotacionPuntaPct}%
                             </td>
-                            {canEdit && (
+                            {effectiveCanEdit && (
                               <td className="p-3 text-right">
                                 <div className="inline-flex items-center gap-1">
                                   <button
                                     onClick={() => handleOpenEditBrotacion(m)}
-                                    className="p-1.5 text-stone-500 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg cursor-pointer"
+                                    className="p-1.5 text-stone-500 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 rounded-lg cursor-pointer"
                                     title="Editar registro de hilera"
                                   >
                                     <Pencil className="w-3.5 h-3.5" />
                                   </button>
                                   <button
                                     onClick={() => onDeleteMuestreoBrotacion(m.id)}
-                                    className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                                    className="p-1.5 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg cursor-pointer"
                                     title="Eliminar registro de hilera"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -1323,45 +1333,45 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           {vistaModoBrotacion === 'cuartel' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {consolidadoBrotacionPorCuartel.map((c) => (
-                <div key={c.parcelaId} className="bg-white rounded-xl border border-stone-200 shadow-2xs p-5 space-y-3">
+                <div key={c.parcelaId} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs p-5 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-bold text-sm text-stone-900">{c.parcelaNombre}</h3>
-                      <div className="text-xs text-stone-500 mt-0.5">
-                        {c.hilerasEvaluadas.length} hileras evaluadas: <span className="font-semibold text-stone-700">{c.hilerasEvaluadas.join(', ') || 'Sin especificar'}</span>
+                      <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">{c.parcelaNombre}</h3>
+                      <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                        {c.hilerasEvaluadas.length} hileras evaluadas: <span className="font-semibold text-stone-700 dark:text-stone-300">{c.hilerasEvaluadas.join(', ') || 'Sin especificar'}</span>
                       </div>
                     </div>
-                    <span className="text-xs bg-emerald-100 text-emerald-950 font-black px-2.5 py-1 rounded-full">
+                    <span className="text-xs bg-emerald-100 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-100 font-black px-2.5 py-1 rounded-full">
                       {c.porcentajeBrotacion}% Promedio
                     </span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-center">
-                      <div className="text-[10px] text-stone-500">Cargadores Muestreados</div>
-                      <div className="text-base font-black text-stone-900 mt-0.5">{c.totalCargadores}</div>
+                    <div className="bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-lg p-2.5 text-center">
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400">Cargadores Muestreados</div>
+                      <div className="text-base font-black text-stone-900 dark:text-stone-100 mt-0.5">{c.totalCargadores}</div>
                       <div className="text-[9px] text-stone-400">Total cuartel</div>
                     </div>
 
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-center">
-                      <div className="text-[10px] text-emerald-800 font-bold">Yemas Brotadas</div>
-                      <div className="text-base font-black text-emerald-900 mt-0.5">{c.totalBrotadas} / {c.totalYemas}</div>
-                      <div className="text-[9px] text-emerald-700">{c.porcentajeBrotacion}% efectivas</div>
+                    <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-lg p-2.5 text-center">
+                      <div className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold">Yemas Brotadas</div>
+                      <div className="text-base font-black text-emerald-900 dark:text-emerald-200 mt-0.5">{c.totalBrotadas} / {c.totalYemas}</div>
+                      <div className="text-[9px] text-emerald-700 dark:text-emerald-400">{c.porcentajeBrotacion}% efectivas</div>
                     </div>
 
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-center">
-                      <div className="text-[10px] text-amber-800 font-bold">Brotes c/Flor</div>
-                      <div className="text-base font-black text-amber-900 mt-0.5">{c.totalBrotesFlor}</div>
-                      <div className="text-[9px] text-amber-700">{c.porcentajeBrotesConFlor}% fertilidad</div>
+                    <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-lg p-2.5 text-center">
+                      <div className="text-[10px] text-amber-800 dark:text-amber-300 font-bold">Brotes c/Flor</div>
+                      <div className="text-base font-black text-amber-900 dark:text-amber-200 mt-0.5">{c.totalBrotesFlor}</div>
+                      <div className="text-[9px] text-amber-700 dark:text-amber-400">{c.porcentajeBrotesConFlor}% fertilidad</div>
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] font-bold text-stone-600">
+                    <div className="flex justify-between text-[11px] font-bold text-stone-600 dark:text-stone-400">
                       <span>Nivel de Brotación Cuartel:</span>
                       <span>{c.porcentajeBrotacion}% ({c.porcentajeBrotacion >= 65 ? 'Óptimo' : 'Bajo'})</span>
                     </div>
-                    <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-stone-100 dark:bg-stone-800 rounded-full h-2 overflow-hidden">
                       <div
                         className={`h-2 rounded-full transition-all ${
                           c.porcentajeBrotacion >= 65 ? 'bg-emerald-600' : 'bg-amber-500'
@@ -1380,14 +1390,14 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
       {/* SECCIÓN 2: BOTONES FLORALES & RALEO */}
       {activeTab === 'botones' && (
         <div className="space-y-4">
-          <div className="bg-white p-3.5 rounded-xl border border-stone-200 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-lg">
+          <div className="bg-white dark:bg-stone-900 p-3.5 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800 p-1 rounded-lg">
               <button
                 onClick={() => setVistaModoBotones('hilera')}
                 className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   vistaModoBotones === 'hilera'
-                    ? 'bg-white text-amber-950 shadow-2xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    ? 'bg-white dark:bg-stone-900 text-amber-950 dark:text-amber-100 shadow-2xs'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
                 }`}
               >
                 <List className="w-3.5 h-3.5" />
@@ -1397,8 +1407,8 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 onClick={() => setVistaModoBotones('cuartel')}
                 className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   vistaModoBotones === 'cuartel'
-                    ? 'bg-white text-amber-950 shadow-2xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    ? 'bg-white dark:bg-stone-900 text-amber-950 dark:text-amber-100 shadow-2xs'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -1412,7 +1422,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 <select
                   value={cuartelFiltro}
                   onChange={(e) => setCuartelFiltro(e.target.value)}
-                  className="p-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-medium text-stone-800"
+                  className="p-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium text-stone-800 dark:text-stone-200"
                 >
                   <option value="todos">Todos los cuarteles</option>
                   {parcelas.map((p) => (
@@ -1421,7 +1431,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 </select>
               </div>
 
-              {canEdit && (
+              {effectiveCanEdit && (
                 <button
                   onClick={handleOpenNewBotones}
                   className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg cursor-pointer flex items-center gap-1 shrink-0"
@@ -1436,17 +1446,17 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           {vistaModoBotones === 'hilera' && (
             <div>
               {filteredBotones.length === 0 ? (
-                <div className="bg-white rounded-xl p-8 text-center text-stone-500 border border-stone-200">
+                <div className="bg-white dark:bg-stone-900 rounded-xl p-8 text-center text-stone-500 dark:text-stone-400 border border-stone-200 dark:border-stone-800">
                   <Flower2 className="w-10 h-10 text-stone-300 mx-auto mb-2" />
-                  <p className="font-bold text-stone-700">Sin conteos de botones por hilera registrados</p>
-                  <p className="text-xs text-stone-500 mt-1">Presiona "Contar Hilera" para registrar flores King y mariposas de cada hilera.</p>
+                  <p className="font-bold text-stone-700 dark:text-stone-300">Sin conteos de botones por hilera registrados</p>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Presiona "Contar Hilera" para registrar flores King y mariposas de cada hilera.</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden">
+                <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs overflow-hidden">
                   <div className="overflow-x-auto text-xs">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-stone-100/90 text-stone-700 border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider">
+                        <tr className="bg-stone-100/90 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800 text-[11px] font-bold uppercase tracking-wider">
                           <th className="p-3">Hilera / Cuartel</th>
                           <th className="p-3">Fecha</th>
                           <th className="p-3">Brotes Evaluados</th>
@@ -1455,52 +1465,52 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                           <th className="p-3">Mariposas / Defectos</th>
                           <th className="p-3">Densidad bot/m²</th>
                           <th className="p-3">Avance Raleo</th>
-                          {canEdit && <th className="p-3 text-right">Acciones</th>}
+                          {effectiveCanEdit && <th className="p-3 text-right">Acciones</th>}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-stone-100">
+                      <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
                         {filteredBotones.map((c) => (
-                          <tr key={c.id} className="hover:bg-stone-50 transition-colors">
+                          <tr key={c.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/70 transition-colors">
                             <td className="p-3">
-                              <div className="font-bold text-stone-900 flex items-center gap-1.5">
-                                <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-mono text-[11px]">
+                              <div className="font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                                <span className="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 font-mono text-[11px]">
                                   {c.hilera || 'Hilera -'}
                                 </span>
                               </div>
-                              <div className="text-[11px] text-stone-500 mt-0.5">{c.parcelaNombre}</div>
+                              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">{c.parcelaNombre}</div>
                             </td>
-                            <td className="p-3 font-medium text-stone-700">{c.fecha}</td>
-                            <td className="p-3 font-semibold text-stone-800">{c.brotesEvaluados} brotes</td>
-                            <td className="p-3 font-mono font-bold text-stone-900">{c.botonesPorBrotePromedio}</td>
-                            <td className="p-3 font-mono font-bold text-emerald-800">{c.botonesUnicosKing} King</td>
-                            <td className="p-3 font-mono font-bold text-rose-800">
+                            <td className="p-3 font-medium text-stone-700 dark:text-stone-300">{c.fecha}</td>
+                            <td className="p-3 font-semibold text-stone-800 dark:text-stone-200">{c.brotesEvaluados} brotes</td>
+                            <td className="p-3 font-mono font-bold text-stone-900 dark:text-stone-100">{c.botonesPorBrotePromedio}</td>
+                            <td className="p-3 font-mono font-bold text-emerald-800 dark:text-emerald-300">{c.botonesUnicosKing} King</td>
+                            <td className="p-3 font-mono font-bold text-rose-800 dark:text-rose-300">
                               {c.botonesDoblesTriplesMariposas + c.floresDefectuosasPlanas} a ralear
                             </td>
-                            <td className="p-3 font-mono text-stone-700">{c.densidadBotonesPorM2} bot/m²</td>
+                            <td className="p-3 font-mono text-stone-700 dark:text-stone-300">{c.densidadBotonesPorM2} bot/m²</td>
                             <td className="p-3">
                               <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
                                 c.estadoRaleoBotones === 'Finalizado'
-                                  ? 'bg-emerald-100 text-emerald-900'
+                                  ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200'
                                   : c.estadoRaleoBotones === 'En curso'
-                                  ? 'bg-amber-100 text-amber-900'
-                                  : 'bg-stone-100 text-stone-700'
+                                  ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200'
+                                  : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
                               }`}>
                                 {c.estadoRaleoBotones} ({c.porcentajeAvanceRaleo}%)
                               </span>
                             </td>
-                            {canEdit && (
+                            {effectiveCanEdit && (
                               <td className="p-3 text-right">
                                 <div className="inline-flex items-center gap-1">
                                   <button
                                     onClick={() => handleOpenEditBotones(c)}
-                                    className="p-1.5 text-stone-500 hover:text-amber-800 hover:bg-amber-50 rounded-lg cursor-pointer"
+                                    className="p-1.5 text-stone-500 dark:text-stone-400 hover:text-amber-800 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/60 rounded-lg cursor-pointer"
                                     title="Editar conteo de hilera"
                                   >
                                     <Pencil className="w-3.5 h-3.5" />
                                   </button>
                                   <button
                                     onClick={() => onDeleteConteoBotones(c.id)}
-                                    className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                                    className="p-1.5 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg cursor-pointer"
                                     title="Eliminar registro"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -1521,45 +1531,45 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           {vistaModoBotones === 'cuartel' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {consolidadoBotonesPorCuartel.map((c) => (
-                <div key={c.parcelaId} className="bg-white rounded-xl border border-stone-200 shadow-2xs p-5 space-y-3">
+                <div key={c.parcelaId} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs p-5 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-bold text-sm text-stone-900">{c.parcelaNombre}</h3>
-                      <div className="text-xs text-stone-500 mt-0.5">
-                        {c.hilerasEvaluadas.length} hileras evaluadas: <span className="font-semibold text-stone-700">{c.hilerasEvaluadas.join(', ') || 'Sin especificar'}</span>
+                      <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">{c.parcelaNombre}</h3>
+                      <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                        {c.hilerasEvaluadas.length} hileras evaluadas: <span className="font-semibold text-stone-700 dark:text-stone-300">{c.hilerasEvaluadas.join(', ') || 'Sin especificar'}</span>
                       </div>
                     </div>
-                    <span className="text-xs bg-amber-100 text-amber-950 font-black px-2.5 py-1 rounded-full">
+                    <span className="text-xs bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-100 font-black px-2.5 py-1 rounded-full">
                       {c.promedioAvanceRaleo}% Raleo Cuartel
                     </span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-center">
-                      <div className="text-[10px] text-emerald-800 font-bold">Flores King Totales</div>
-                      <div className="text-base font-black text-emerald-900 mt-0.5">{c.totalBotonesKing}</div>
-                      <div className="text-[9px] text-emerald-700">{c.pctKing}% del total</div>
+                    <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-lg p-2.5 text-center">
+                      <div className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold">Flores King Totales</div>
+                      <div className="text-base font-black text-emerald-900 dark:text-emerald-200 mt-0.5">{c.totalBotonesKing}</div>
+                      <div className="text-[9px] text-emerald-700 dark:text-emerald-400">{c.pctKing}% del total</div>
                     </div>
 
-                    <div className="bg-rose-50 border border-rose-200 rounded-lg p-2.5 text-center">
-                      <div className="text-[10px] text-rose-800 font-bold">Mariposas / Defectos</div>
-                      <div className="text-base font-black text-rose-900 mt-0.5">{c.totalMariposas + c.totalPlanas}</div>
-                      <div className="text-[9px] text-rose-700">A eliminar en raleo</div>
+                    <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-lg p-2.5 text-center">
+                      <div className="text-[10px] text-rose-800 dark:text-rose-300 font-bold">Mariposas / Defectos</div>
+                      <div className="text-base font-black text-rose-900 dark:text-rose-200 mt-0.5">{c.totalMariposas + c.totalPlanas}</div>
+                      <div className="text-[9px] text-rose-700 dark:text-rose-400">A eliminar en raleo</div>
                     </div>
 
-                    <div className="bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-center">
-                      <div className="text-[10px] text-stone-500">Jornales Acumulados</div>
-                      <div className="text-base font-black text-stone-900 mt-0.5">{c.totalJornales.toFixed(1)}</div>
+                    <div className="bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-lg p-2.5 text-center">
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400">Jornales Acumulados</div>
+                      <div className="text-base font-black text-stone-900 dark:text-stone-100 mt-0.5">{c.totalJornales.toFixed(1)}</div>
                       <div className="text-[9px] text-stone-400">Jornales/ha invertidos</div>
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] font-bold text-stone-600">
+                    <div className="flex justify-between text-[11px] font-bold text-stone-600 dark:text-stone-400">
                       <span>Progreso de Raleo de Botones Cuartel:</span>
                       <span>{c.promedioAvanceRaleo}% completado</span>
                     </div>
-                    <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-stone-100 dark:bg-stone-800 rounded-full h-2 overflow-hidden">
                       <div
                         className="bg-amber-600 h-2 rounded-full transition-all"
                         style={{ width: `${c.promedioAvanceRaleo}%` }}
@@ -1576,35 +1586,35 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
       {/* SECCIÓN 3: COLMENAS & CONTEO DE ABEJAS (CON AGREGAR, EDITAR Y ELIMINAR) */}
       {activeTab === 'colmenas' && (
         <div className="space-y-4">
-          <div className="bg-rose-50/70 border border-rose-200 rounded-xl p-4 text-xs space-y-2">
-            <div className="font-bold text-rose-900 text-sm flex items-center gap-1.5">
-              <Bug className="w-4 h-4 text-rose-700" />
+          <div className="bg-rose-50/70 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-xl p-4 text-xs space-y-2">
+            <div className="font-bold text-rose-900 dark:text-rose-200 text-sm flex items-center gap-1.5">
+              <Bug className="w-4 h-4 text-rose-700 dark:text-rose-400" />
               Manejo de Colmenas y Pecoreo en Floración del Kiwi Hayward
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-stone-700 text-xs">
-              <div className="bg-white p-3 rounded-lg border border-rose-100">
-                <span className="font-bold text-rose-800 block mb-1">Dosis Recomendada SAG</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-stone-700 dark:text-stone-300 text-xs">
+              <div className="bg-white dark:bg-stone-900 p-3 rounded-lg border border-rose-100 dark:border-rose-900/60">
+                <span className="font-bold text-rose-800 dark:text-rose-300 block mb-1">Dosis Recomendada SAG</span>
                 8 a 10 colmenas/ha de <em>Apis mellifera</em> (con 8 marcos de cría activa) + 2 a 3 colonias/ha de abejorros <em>Bombus terrestris</em> para pecoreo con viento o frío.
               </div>
-              <div className="bg-white p-3 rounded-lg border border-rose-100">
-                <span className="font-bold text-rose-800 block mb-1">Horario Óptimo de Conteo</span>
+              <div className="bg-white dark:bg-stone-900 p-3 rounded-lg border border-rose-100 dark:border-rose-900/60">
+                <span className="font-bold text-rose-800 dark:text-rose-300 block mb-1">Horario Óptimo de Conteo</span>
                 Entre las 11:00 y las 15:30 horas, con temperatura superior a 15°C y vientos bajo 12 km/h. La flor del kiwi no tiene néctar, sólo polen.
               </div>
-              <div className="bg-white p-3 rounded-lg border border-rose-100">
-                <span className="font-bold text-rose-800 block mb-1">Umbral Crítico</span>
+              <div className="bg-white dark:bg-stone-900 p-3 rounded-lg border border-rose-100 dark:border-rose-900/60">
+                <span className="font-bold text-rose-800 dark:text-rose-300 block mb-1">Umbral Crítico</span>
                 Si el conteo es inferior a 10 abejas/m² en plena flor, se requiere reforzar inmediatamente con polinización artificial con polen asistido.
               </div>
             </div>
           </div>
 
           {/* Barra de filtro + botón */}
-          <div className="bg-white p-3.5 rounded-xl border border-stone-200 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="bg-white dark:bg-stone-900 p-3.5 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               <Filter className="w-3.5 h-3.5 text-stone-400" />
               <select
                 value={cuartelFiltro}
                 onChange={(e) => setCuartelFiltro(e.target.value)}
-                className="p-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-medium text-stone-800"
+                className="p-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium text-stone-800 dark:text-stone-200"
               >
                 <option value="todos">Todos los cuarteles</option>
                 {parcelas.map((p) => (
@@ -1614,8 +1624,8 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
               {resumenColmenasPorCuartel.totalHa > 0 && (
                 <span className={`px-2.5 py-1 rounded-lg font-bold text-[11px] flex items-center gap-1 ${
                   resumenColmenasPorCuartel.densidadApisHa >= 8
-                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                    : 'bg-amber-50 text-amber-900 border border-amber-200'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80'
+                    : 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800/80'
                 }`}>
                   {resumenColmenasPorCuartel.densidadApisHa >= 8 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
                   Cobertura actual: {resumenColmenasPorCuartel.densidadApisHa} colmenas Apis/ha
@@ -1623,7 +1633,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
               )}
             </div>
 
-            {canEdit && (
+            {effectiveCanEdit && (
               <button
                 onClick={handleOpenNewSincronia}
                 className="px-3.5 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-lg text-xs cursor-pointer flex items-center gap-1.5 shrink-0"
@@ -1634,22 +1644,22 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
             )}
           </div>
 
-          <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden">
-            <div className="p-4 border-b border-stone-200 bg-stone-50 flex items-center justify-between">
-              <div className="font-bold text-sm text-stone-900">Historial de Conteo de Polinizadores y Colmenas ({filteredSincronias.length})</div>
+          <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs overflow-hidden">
+            <div className="p-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/70 flex items-center justify-between">
+              <div className="font-bold text-sm text-stone-900 dark:text-stone-100">Historial de Conteo de Polinizadores y Colmenas ({filteredSincronias.length})</div>
             </div>
 
             {filteredSincronias.length === 0 ? (
-              <div className="p-8 text-center text-stone-500">
+              <div className="p-8 text-center text-stone-500 dark:text-stone-400">
                 <Bug className="w-10 h-10 text-stone-300 mx-auto mb-2" />
-                <p className="font-bold text-stone-700 text-sm">Sin conteos de colmenas o abejas registrados</p>
-                <p className="text-xs text-stone-500 mt-1">Presiona "Registrar Conteo de Pecoreo / Colmenas" para ingresar tus datos.</p>
+                <p className="font-bold text-stone-700 dark:text-stone-300 text-sm">Sin conteos de colmenas o abejas registrados</p>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Presiona "Registrar Conteo de Pecoreo / Colmenas" para ingresar tus datos.</p>
               </div>
             ) : (
               <div className="overflow-x-auto text-xs">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-stone-100/80 text-stone-600 border-b border-stone-200 text-[11px] uppercase tracking-wider">
+                    <tr className="bg-stone-100/80 dark:bg-stone-800 text-stone-600 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800 text-[11px] uppercase tracking-wider">
                       <th className="p-3">Fecha</th>
                       <th className="p-3">Cuartel</th>
                       <th className="p-3">Colmenas Apis</th>
@@ -1657,48 +1667,48 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                       <th className="p-3">Abejas / m²</th>
                       <th className="p-3">Calificación</th>
                       <th className="p-3">Clima</th>
-                      {canEdit && <th className="p-3 text-right">Acciones</th>}
+                      {effectiveCanEdit && <th className="p-3 text-right">Acciones</th>}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100">
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
                     {filteredSincronias.map((s) => (
-                      <tr key={s.id} className="hover:bg-stone-50">
-                        <td className="p-3 font-medium text-stone-900 whitespace-nowrap">{s.fecha}</td>
+                      <tr key={s.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/70">
+                        <td className="p-3 font-medium text-stone-900 dark:text-stone-100 whitespace-nowrap">{s.fecha}</td>
                         <td className="p-3">
-                          <div className="font-semibold text-stone-900">{s.parcelaNombre}</div>
+                          <div className="font-semibold text-stone-900 dark:text-stone-100">{s.parcelaNombre}</div>
                           {s.observaciones && (
-                            <div className="text-[10px] text-stone-500 italic truncate max-w-[220px]" title={s.observaciones}>
+                            <div className="text-[10px] text-stone-500 dark:text-stone-400 italic truncate max-w-[220px]" title={s.observaciones}>
                               {s.observaciones}
                             </div>
                           )}
                         </td>
-                        <td className="p-3 font-bold text-amber-800 whitespace-nowrap">{s.colmenasApisInstaladas} colmenas</td>
-                        <td className="p-3 font-bold text-stone-700 whitespace-nowrap">{s.colmenasBombusInstaladas} colonias</td>
-                        <td className="p-3 font-black text-stone-900 whitespace-nowrap">{s.abejasPorM2} abejas/m²</td>
+                        <td className="p-3 font-bold text-amber-800 dark:text-amber-300 whitespace-nowrap">{s.colmenasApisInstaladas} colmenas</td>
+                        <td className="p-3 font-bold text-stone-700 dark:text-stone-300 whitespace-nowrap">{s.colmenasBombusInstaladas} colonias</td>
+                        <td className="p-3 font-black text-stone-900 dark:text-stone-100 whitespace-nowrap">{s.abejasPorM2} abejas/m²</td>
                         <td className="p-3 whitespace-nowrap">
                           <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
                             s.actividadPolinizadores.includes('Óptima')
-                              ? 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                               : s.actividadPolinizadores.includes('Media')
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-rose-100 text-rose-800'
+                              ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
+                              : 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300'
                           }`}>
                             {s.actividadPolinizadores}
                           </span>
                         </td>
-                        <td className="p-3 text-stone-500 whitespace-nowrap">{s.temperaturaAmbienteC}°C · {s.humedadRelativa}% HR</td>
-                        {canEdit && (
+                        <td className="p-3 text-stone-500 dark:text-stone-400 whitespace-nowrap">{s.temperaturaAmbienteC}°C · {s.humedadRelativa}% HR</td>
+                        {effectiveCanEdit && (
                           <td className="p-3 text-right whitespace-nowrap">
                             <div className="inline-flex items-center gap-1">
                               <button
                                 onClick={() => handleOpenEditSincronia(s)}
-                                className="p-1.5 text-stone-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg cursor-pointer"
+                                className="p-1.5 text-stone-500 dark:text-stone-400 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 rounded-lg cursor-pointer"
                                 title="Editar conteo de colmenas y pecoreo"
                               >
                                 <Pencil className="w-3.5 h-3.5" />
                               </button>
                               {pendingDeleteKey === `col-${s.id}` ? (
-                                <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                                <div className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-lg px-1.5 py-0.5">
                                   <button
                                     onClick={() => {
                                       onDeleteSincroniaFloral(s.id);
@@ -1710,7 +1720,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                                   </button>
                                   <button
                                     onClick={() => setPendingDeleteKey(null)}
-                                    className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
+                                    className="px-1.5 py-0.5 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-semibold text-[10px] cursor-pointer"
                                   >
                                     No
                                   </button>
@@ -1718,7 +1728,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                               ) : (
                                 <button
                                   onClick={() => setPendingDeleteKey(`col-${s.id}`)}
-                                  className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                                  className="p-1.5 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg cursor-pointer"
                                   title="Eliminar registro"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -1740,17 +1750,17 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
       {/* SECCIÓN 4: SINCRONÍA FLORAL (CON AGREGAR, EDITAR Y ELIMINAR) */}
       {activeTab === 'sincronia' && (
         <div className="space-y-4">
-          <div className="bg-blue-50/70 border border-blue-200 rounded-xl p-4 text-xs text-blue-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 rounded-xl p-4 text-xs text-blue-950 dark:text-blue-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="space-y-1">
-              <span className="font-bold flex items-center gap-1.5 text-blue-900">
+              <span className="font-bold flex items-center gap-1.5 text-blue-900 dark:text-blue-200">
                 <TrendingUp className="w-4 h-4" />
                 Sincronía Floral Hayward (Hembra) vs Polinizadores (Tomuri / Chieftain):
               </span>
-              <p className="text-stone-600 text-[11px] max-w-3xl">
+              <p className="text-stone-600 dark:text-stone-400 text-[11px] max-w-3xl">
                 El kiwi es una especie dioica estricta. Las flores femeninas sólo son receptivas durante 3 a 5 días tras la apertura. Es crucial que los machos florezcan al unísono con las hembras para asegurar granos de polen viables en el estigma.
               </p>
             </div>
-            {canEdit && (
+            {effectiveCanEdit && (
               <button
                 onClick={handleOpenNewSincronia}
                 className="px-3.5 py-2 bg-blue-800 hover:bg-blue-700 text-white font-bold rounded-lg shrink-0 cursor-pointer flex items-center gap-1.5"
@@ -1762,13 +1772,13 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           </div>
 
           {/* Filtro por cuartel */}
-          <div className="bg-white p-3 rounded-xl border border-stone-200 shadow-2xs flex items-center gap-2 text-xs">
+          <div className="bg-white dark:bg-stone-900 p-3 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs flex items-center gap-2 text-xs">
             <Filter className="w-3.5 h-3.5 text-stone-400" />
-            <span className="font-bold text-stone-600">Filtrar por Cuartel:</span>
+            <span className="font-bold text-stone-600 dark:text-stone-400">Filtrar por Cuartel:</span>
             <select
               value={cuartelFiltro}
               onChange={(e) => setCuartelFiltro(e.target.value)}
-              className="p-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-medium text-stone-800"
+              className="p-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium text-stone-800 dark:text-stone-200"
             >
               <option value="todos">Todos los cuarteles</option>
               {parcelas.map((p) => (
@@ -1778,19 +1788,19 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           </div>
 
           {filteredSincronias.length === 0 ? (
-            <div className="bg-white rounded-xl p-8 text-center text-stone-500 border border-stone-200">
+            <div className="bg-white dark:bg-stone-900 rounded-xl p-8 text-center text-stone-500 dark:text-stone-400 border border-stone-200 dark:border-stone-800">
               <TrendingUp className="w-10 h-10 text-stone-300 mx-auto mb-2" />
-              <p className="font-bold text-stone-700">Sin curvas de sincronía floral registradas</p>
-              <p className="text-xs text-stone-500 mt-1">Presiona "Registrar Curva Floral" para evaluar el porcentaje de apertura entre hembras y machos.</p>
+              <p className="font-bold text-stone-700 dark:text-stone-300">Sin curvas de sincronía floral registradas</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Presiona "Registrar Curva Floral" para evaluar el porcentaje de apertura entre hembras y machos.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredSincronias.map((s) => (
-                <div key={s.id} className="bg-white rounded-xl border border-stone-200 shadow-2xs p-4 space-y-3">
+                <div key={s.id} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs p-4 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="font-bold text-sm text-stone-900">{s.parcelaNombre}</div>
-                      <div className="text-xs text-stone-500 mt-0.5 flex items-center gap-1.5">
+                      <div className="font-bold text-sm text-stone-900 dark:text-stone-100">{s.parcelaNombre}</div>
+                      <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5" />
                         Fecha: {s.fecha} · T°: {s.temperaturaAmbienteC}°C · HR: {s.humedadRelativa}%
                       </div>
@@ -1799,23 +1809,23 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                     <div className="flex items-center gap-1 shrink-0">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         s.estadoSincronia === 'Sincronizado'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-amber-100 text-amber-800'
+                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
+                          : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
                       }`}>
                         {s.estadoSincronia} ({s.diasDesfase >= 0 ? `+${s.diasDesfase}` : s.diasDesfase} d)
                       </span>
 
-                      {canEdit && (
+                      {effectiveCanEdit && (
                         <>
                           <button
                             onClick={() => handleOpenEditSincronia(s)}
-                            className="p-1.5 text-stone-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg cursor-pointer"
+                            className="p-1.5 text-stone-500 dark:text-stone-400 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 rounded-lg cursor-pointer"
                             title="Editar sincronía floral"
                           >
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
                           {pendingDeleteKey === `sin-${s.id}` ? (
-                            <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                            <div className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-lg px-1.5 py-0.5">
                               <button
                                 onClick={() => {
                                   onDeleteSincroniaFloral(s.id);
@@ -1827,7 +1837,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                               </button>
                               <button
                                 onClick={() => setPendingDeleteKey(null)}
-                                className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
+                                className="px-1.5 py-0.5 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-semibold text-[10px] cursor-pointer"
                               >
                                 No
                               </button>
@@ -1835,7 +1845,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                           ) : (
                             <button
                               onClick={() => setPendingDeleteKey(`sin-${s.id}`)}
-                              className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                              className="p-1.5 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg cursor-pointer"
                               title="Eliminar sincronía floral"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1849,11 +1859,11 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                   {/* Comparación Hembra vs Macho */}
                   <div className="space-y-2">
                     <div>
-                      <div className="flex justify-between text-xs font-bold text-stone-700">
+                      <div className="flex justify-between text-xs font-bold text-stone-700 dark:text-stone-300">
                         <span>🌸 Hembra (Hayward):</span>
                         <span>{s.porcentajeFloracionHembra}% flor abierta</span>
                       </div>
-                      <div className="w-full bg-stone-100 rounded-full h-2.5 overflow-hidden mt-1">
+                      <div className="w-full bg-stone-100 dark:bg-stone-800 rounded-full h-2.5 overflow-hidden mt-1">
                         <div
                           className="bg-pink-500 h-2.5 rounded-full transition-all"
                           style={{ width: `${Math.min(100, Math.max(0, s.porcentajeFloracionHembra))}%` }}
@@ -1862,11 +1872,11 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                     </div>
 
                     <div>
-                      <div className="flex justify-between text-xs font-bold text-stone-700">
+                      <div className="flex justify-between text-xs font-bold text-stone-700 dark:text-stone-300">
                         <span>🌼 Machos (Tomuri / Chieftain):</span>
                         <span>{s.porcentajeFloracionMacho}% flor abierta</span>
                       </div>
-                      <div className="w-full bg-stone-100 rounded-full h-2.5 overflow-hidden mt-1">
+                      <div className="w-full bg-stone-100 dark:bg-stone-800 rounded-full h-2.5 overflow-hidden mt-1">
                         <div
                           className="bg-amber-500 h-2.5 rounded-full transition-all"
                           style={{ width: `${Math.min(100, Math.max(0, s.porcentajeFloracionMacho))}%` }}
@@ -1875,21 +1885,21 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs bg-stone-50 p-2.5 rounded-lg border border-stone-100">
+                  <div className="grid grid-cols-2 gap-2 text-xs bg-stone-50 dark:bg-stone-800/70 p-2.5 rounded-lg border border-stone-100 dark:border-stone-800">
                     <div>
-                      <div className="text-[10px] text-stone-500">Actividad de Pecoreo</div>
-                      <div className="font-bold text-stone-800 mt-0.5">{s.actividadPolinizadores}</div>
-                      <div className="text-[10px] text-stone-500">{s.abejasPorM2} abejas/m²</div>
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400">Actividad de Pecoreo</div>
+                      <div className="font-bold text-stone-800 dark:text-stone-200 mt-0.5">{s.actividadPolinizadores}</div>
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400">{s.abejasPorM2} abejas/m²</div>
                     </div>
                     <div>
-                      <div className="text-[10px] text-stone-500">Colmenas de Apoyo</div>
-                      <div className="font-bold text-stone-800 mt-0.5">{s.colmenasApisInstaladas} Apis</div>
-                      <div className="text-[10px] text-stone-500">{s.colmenasBombusInstaladas} Bombus</div>
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400">Colmenas de Apoyo</div>
+                      <div className="font-bold text-stone-800 dark:text-stone-200 mt-0.5">{s.colmenasApisInstaladas} Apis</div>
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400">{s.colmenasBombusInstaladas} Bombus</div>
                     </div>
                   </div>
 
                   {s.observaciones && (
-                    <div className="text-xs text-stone-600 bg-stone-50 p-2 rounded border border-stone-200 italic">
+                    <div className="text-xs text-stone-600 dark:text-stone-400 bg-stone-50 dark:bg-stone-800/70 p-2 rounded border border-stone-200 dark:border-stone-800 italic">
                       "{s.observaciones}"
                     </div>
                   )}
@@ -1913,7 +1923,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 Garantiza entre 1.000 y 1.400 semillas por fruto de kiwi Hayward, requisito biológico indispensable para alcanzar calibres sobre calibre 27-30 (105 a 125 gramos). Se aplica al 40-50% y 80% de flor abierta con polen de viabilidad comprobada &gt;80%.
               </p>
             </div>
-            {canEdit && (
+            {effectiveCanEdit && (
               <button
                 onClick={handleOpenNewPolen}
                 className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-lg shrink-0 cursor-pointer flex items-center gap-1.5"
@@ -1925,35 +1935,35 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           </div>
 
           {filteredPolen.length === 0 ? (
-            <div className="bg-white rounded-xl p-8 text-center text-stone-500 border border-stone-200">
+            <div className="bg-white dark:bg-stone-900 rounded-xl p-8 text-center text-stone-500 dark:text-stone-400 border border-stone-200 dark:border-stone-800">
               <Sparkles className="w-10 h-10 text-stone-300 mx-auto mb-2" />
-              <p className="font-bold text-stone-700">Sin aplicaciones de polen registradas</p>
-              <p className="text-xs text-stone-500 mt-1">Presiona "Nueva Aplicación de Polen" para registrar la pulverización electrostática o líquida.</p>
+              <p className="font-bold text-stone-700 dark:text-stone-300">Sin aplicaciones de polen registradas</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Presiona "Nueva Aplicación de Polen" para registrar la pulverización electrostática o líquida.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredPolen.map((a) => (
-                <div key={a.id} className="bg-white rounded-xl border border-stone-200 shadow-2xs p-4 space-y-3">
+                <div key={a.id} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs p-4 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="font-bold text-sm text-stone-900">{a.tipoPolen}</div>
-                      <div className="text-xs text-stone-500 mt-0.5 flex items-center gap-1.5">
+                      <div className="font-bold text-sm text-stone-900 dark:text-stone-100">{a.tipoPolen}</div>
+                      <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
                         Fecha: {a.fecha} a las {a.hora} hrs · Lote: {a.lotePolen}
                       </div>
                     </div>
 
-                    {canEdit && (
+                    {effectiveCanEdit && (
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => handleOpenEditPolen(a)}
-                          className="p-1.5 text-stone-500 hover:text-purple-700 hover:bg-purple-50 rounded-lg cursor-pointer"
+                          className="p-1.5 text-stone-500 dark:text-stone-400 hover:text-purple-700 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/60 rounded-lg cursor-pointer"
                           title="Editar aplicación de polen"
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         {pendingDeleteKey === `pol-${a.id}` ? (
-                          <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                          <div className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-lg px-1.5 py-0.5">
                             <button
                               onClick={() => {
                                 onDeleteAplicacionPolen(a.id);
@@ -1965,7 +1975,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                             </button>
                             <button
                               onClick={() => setPendingDeleteKey(null)}
-                              className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
+                              className="px-1.5 py-0.5 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-semibold text-[10px] cursor-pointer"
                             >
                               No
                             </button>
@@ -1973,7 +1983,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                         ) : (
                           <button
                             onClick={() => setPendingDeleteKey(`pol-${a.id}`)}
-                            className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                            className="p-1.5 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg cursor-pointer"
                             title="Eliminar registro"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1984,38 +1994,38 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                   </div>
 
                   <div className="text-xs">
-                    <span className="font-bold text-stone-700">Cuarteles tratados: </span>
-                    <span className="text-stone-600">{a.parcelasNombres.join(', ')}</span>
+                    <span className="font-bold text-stone-700 dark:text-stone-300">Cuarteles tratados: </span>
+                    <span className="text-stone-600 dark:text-stone-400">{a.parcelasNombres.join(', ')}</span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 text-center">
-                      <div className="text-[10px] text-amber-800 font-bold">Dosis / Ha</div>
-                      <div className="text-lg font-black text-amber-900 mt-0.5">{a.dosisGramosPorHa} g/ha</div>
-                      <div className="text-[9px] text-amber-700">Polen puro</div>
+                    <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-lg p-2 text-center">
+                      <div className="text-[10px] text-amber-800 dark:text-amber-300 font-bold">Dosis / Ha</div>
+                      <div className="text-lg font-black text-amber-900 dark:text-amber-200 mt-0.5">{a.dosisGramosPorHa} g/ha</div>
+                      <div className="text-[9px] text-amber-700 dark:text-amber-400">Polen puro</div>
                     </div>
 
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-center">
-                      <div className="text-[10px] text-emerald-800 font-bold">Viabilidad</div>
-                      <div className="text-lg font-black text-emerald-900 mt-0.5">{a.viabilidadPolenPorcentaje}%</div>
-                      <div className="text-[9px] text-emerald-700">Germinación test</div>
+                    <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-lg p-2 text-center">
+                      <div className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold">Viabilidad</div>
+                      <div className="text-lg font-black text-emerald-900 dark:text-emerald-200 mt-0.5">{a.viabilidadPolenPorcentaje}%</div>
+                      <div className="text-[9px] text-emerald-700 dark:text-emerald-400">Germinación test</div>
                     </div>
 
-                    <div className="bg-stone-50 border border-stone-200 rounded-lg p-2 text-center">
-                      <div className="text-[10px] text-stone-500">Método</div>
-                      <div className="text-[11px] font-bold text-stone-800 mt-1 line-clamp-1" title={a.metodoAplicacion}>{a.metodoAplicacion}</div>
+                    <div className="bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-lg p-2 text-center">
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400">Método</div>
+                      <div className="text-[11px] font-bold text-stone-800 dark:text-stone-200 mt-1 line-clamp-1" title={a.metodoAplicacion}>{a.metodoAplicacion}</div>
                       <div className="text-[9px] text-stone-400">{a.volumenAguaLHa ? `${a.volumenAguaLHa} L agua/ha` : 'Seco'}</div>
                     </div>
                   </div>
 
-                  <div className="text-[11px] text-stone-600 bg-stone-50 p-2.5 rounded-lg border border-stone-100 space-y-1">
+                  <div className="text-[11px] text-stone-600 dark:text-stone-400 bg-stone-50 dark:bg-stone-800/70 p-2.5 rounded-lg border border-stone-100 dark:border-stone-800 space-y-1">
                     <div><strong>Equipo:</strong> {a.equipoMaquinaria || 'No especificado'}</div>
                     <div><strong>Operador:</strong> {a.operador || 'No especificado'}</div>
                     <div><strong>Clima durante faena:</strong> {a.condicionesClimaticas || 'No registrado'}</div>
                   </div>
 
                   {a.observaciones && (
-                    <div className="text-xs text-stone-600 bg-stone-50 p-2 rounded border border-stone-200 italic">
+                    <div className="text-xs text-stone-600 dark:text-stone-400 bg-stone-50 dark:bg-stone-800/70 p-2 rounded border border-stone-200 dark:border-stone-800 italic">
                       "{a.observaciones}"
                     </div>
                   )}
@@ -2037,7 +2047,7 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           onUpdatePlan={onUpdatePlanCargaRaleo}
           onDeletePlan={onDeletePlanCargaRaleo}
           activeUserName={activeUserName}
-          canEdit={canEdit}
+          canEdit={canEditTabKey('carga_raleo')}
         />
       )}
 
@@ -2050,14 +2060,14 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
           onUpdateEvaluacion={onUpdateEvaluacionCuajaSemillas}
           onDeleteEvaluacion={onDeleteEvaluacionCuajaSemillas}
           activeUserName={activeUserName}
-          canEdit={canEdit}
+          canEdit={canEditTabKey('cuaja_semillas')}
         />
       )}
 
       {/* MODAL 1: MUESTREO DE BROTACIÓN (CREAR / EDITAR) */}
       {isModalBrotacionOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Sprout className="w-4 h-4 text-emerald-400" />
@@ -2071,21 +2081,21 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
             <form onSubmit={handleSaveBrotacion} className="p-5 space-y-3 overflow-y-auto flex-1 text-xs">
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-1">
-                  <label className="font-bold text-stone-700 block mb-1">Fecha:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Fecha:</label>
                   <input
                     type="date"
                     value={formBrotacion.fecha}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, fecha: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div className="col-span-1">
-                  <label className="font-bold text-stone-700 block mb-1">Cuartel:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Cuartel:</label>
                   <select
                     value={formBrotacion.parcelaId}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, parcelaId: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs font-semibold"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-semibold bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   >
                     {parcelas.length === 0 ? (
@@ -2098,13 +2108,13 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                   </select>
                 </div>
                 <div className="col-span-1">
-                  <label className="font-bold text-stone-700 block mb-1">Hilera:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Hilera:</label>
                   <input
                     type="text"
                     value={formBrotacion.hilera}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, hilera: e.target.value })}
                     placeholder="Ej. Hilera 4"
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs font-bold text-emerald-900 bg-emerald-50/50"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/40"
                     required
                   />
                 </div>
@@ -2112,24 +2122,24 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Plantas en la Hilera:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Plantas en la Hilera:</label>
                   <input
                     type="number"
                     min="1"
                     value={formBrotacion.plantasMuestreadas}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, plantasMuestreadas: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Cargadores Evaluados:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Cargadores Evaluados:</label>
                   <input
                     type="number"
                     min="1"
                     value={formBrotacion.cargadoresEvaluados}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, cargadoresEvaluados: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
@@ -2137,98 +2147,98 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
               <div className="grid grid-cols-4 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Yemas Tot.:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Yemas Tot.:</label>
                   <input
                     type="number"
                     min="1"
                     value={formBrotacion.yemasTotales}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, yemasTotales: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Brotadas:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Brotadas:</label>
                   <input
                     type="number"
                     min="0"
                     value={formBrotacion.yemasBrotadas}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, yemasBrotadas: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Con Flor:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Con Flor:</label>
                   <input
                     type="number"
                     min="0"
                     value={formBrotacion.brotesConFlor}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, brotesConFlor: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Ciegos:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Ciegos:</label>
                   <input
                     type="number"
                     min="0"
                     value={formBrotacion.brotesVegetativosCiegos}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, brotesVegetativosCiegos: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">% Base:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">% Base:</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={formBrotacion.brotacionBasePct}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, brotacionBasePct: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">% Medio:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">% Medio:</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={formBrotacion.brotacionMedioPct}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, brotacionMedioPct: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">% Punta:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">% Punta:</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={formBrotacion.brotacionPuntaPct}
                     onChange={(e) => setFormBrotacion({ ...formBrotacion, brotacionPuntaPct: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex justify-between items-center text-xs">
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-lg flex justify-between items-center text-xs">
                 <div>
-                  <div className="text-[10px] text-emerald-800 font-bold uppercase">% Brotación en esta Hilera:</div>
-                  <div className="text-xl font-black text-emerald-950">
+                  <div className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold uppercase">% Brotación en esta Hilera:</div>
+                  <div className="text-xl font-black text-emerald-950 dark:text-emerald-100">
                     {formBrotacion.yemasTotales > 0
                       ? ((formBrotacion.yemasBrotadas / formBrotacion.yemasTotales) * 100).toFixed(1)
                       : 0}%
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] text-emerald-800 font-bold uppercase">% Brotes con Flor:</div>
-                  <div className="text-xl font-black text-emerald-950">
+                  <div className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold uppercase">% Brotes con Flor:</div>
+                  <div className="text-xl font-black text-emerald-950 dark:text-emerald-100">
                     {formBrotacion.yemasBrotadas > 0
                       ? ((formBrotacion.brotesConFlor / formBrotacion.yemasBrotadas) * 100).toFixed(1)
                       : 0}%
@@ -2237,32 +2247,32 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Evaluador:</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Evaluador:</label>
                 <input
                   type="text"
                   value={formBrotacion.evaluador}
                   onChange={(e) => setFormBrotacion({ ...formBrotacion, evaluador: e.target.value })}
-                  className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   required
                 />
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Observaciones:</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Observaciones:</label>
                 <textarea
                   rows={2}
                   value={formBrotacion.observaciones}
                   onChange={(e) => setFormBrotacion({ ...formBrotacion, observaciones: e.target.value })}
                   placeholder="Ej. Brotes de vigor uniforme, sin signos de Psa..."
-                  className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-3 border-t border-stone-200 flex justify-end gap-2">
+              <div className="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsModalBrotacionOpen(false)}
-                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold rounded-xl cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -2280,8 +2290,8 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
       {/* MODAL 2: CONTEO DE BOTONES FLORALES (CREAR / EDITAR) */}
       {isModalBotonesOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
             <div className="bg-amber-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Flower2 className="w-4 h-4 text-amber-400" />
@@ -2295,21 +2305,21 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
             <form onSubmit={handleSaveBotones} className="p-5 space-y-3 overflow-y-auto flex-1 text-xs">
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Fecha:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Fecha:</label>
                   <input
                     type="date"
                     value={formBotones.fecha}
                     onChange={(e) => setFormBotones({ ...formBotones, fecha: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Cuartel:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Cuartel:</label>
                   <select
                     value={formBotones.parcelaId}
                     onChange={(e) => setFormBotones({ ...formBotones, parcelaId: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs font-semibold"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-semibold bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   >
                     {parcelas.length === 0 ? (
@@ -2322,13 +2332,13 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Hilera:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Hilera:</label>
                   <input
                     type="text"
                     value={formBotones.hilera}
                     onChange={(e) => setFormBotones({ ...formBotones, hilera: e.target.value })}
                     placeholder="Ej. Hilera 4"
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs font-bold text-amber-900 bg-amber-50/50"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-bold text-amber-900 dark:text-amber-200 bg-amber-50/50 dark:bg-amber-950/40"
                     required
                   />
                 </div>
@@ -2336,81 +2346,81 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Brotes Evaluados:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Brotes Evaluados:</label>
                   <input
                     type="number"
                     min="1"
                     value={formBotones.brotesEvaluados}
                     onChange={(e) => setFormBotones({ ...formBotones, brotesEvaluados: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Botones/Brote:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Botones/Brote:</label>
                   <input
                     type="number"
                     step="0.1"
                     value={formBotones.botonesPorBrotePromedio}
                     onChange={(e) => setFormBotones({ ...formBotones, botonesPorBrotePromedio: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Densidad bot/m²:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Densidad bot/m²:</label>
                   <input
                     type="number"
                     step="0.5"
                     value={formBotones.densidadBotonesPorM2}
                     onChange={(e) => setFormBotones({ ...formBotones, densidadBotonesPorM2: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Botones King (Únicos):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Botones King (Únicos):</label>
                   <input
                     type="number"
                     min="0"
                     value={formBotones.botonesUnicosKing}
                     onChange={(e) => setFormBotones({ ...formBotones, botonesUnicosKing: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Mariposas / Triples:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Mariposas / Triples:</label>
                   <input
                     type="number"
                     min="0"
                     value={formBotones.botonesDoblesTriplesMariposas}
                     onChange={(e) => setFormBotones({ ...formBotones, botonesDoblesTriplesMariposas: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Flores Planas:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Flores Planas:</label>
                   <input
                     type="number"
                     min="0"
                     value={formBotones.floresDefectuosasPlanas}
                     onChange={(e) => setFormBotones({ ...formBotones, floresDefectuosasPlanas: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Estado de Raleo:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Estado de Raleo:</label>
                   <select
                     value={formBotones.estadoRaleoBotones}
                     onChange={(e) => setFormBotones({ ...formBotones, estadoRaleoBotones: e.target.value as any })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   >
                     <option value="Pendiente">Pendiente</option>
                     <option value="En curso">En curso</option>
@@ -2418,45 +2428,45 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">% Avance Raleo:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">% Avance Raleo:</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={formBotones.porcentajeAvanceRaleo}
                     onChange={(e) => setFormBotones({ ...formBotones, porcentajeAvanceRaleo: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Jornales/ha:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Jornales/ha:</label>
                   <input
                     type="number"
                     step="0.5"
                     min="0"
                     value={formBotones.jornalesPorHaUtilizados}
                     onChange={(e) => setFormBotones({ ...formBotones, jornalesPorHaUtilizados: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Observaciones:</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Observaciones:</label>
                 <textarea
                   rows={2}
                   value={formBotones.observaciones}
                   onChange={(e) => setFormBotones({ ...formBotones, observaciones: e.target.value })}
                   placeholder="Ej. Raleo selectivo de mariposas..."
-                  className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-3 border-t border-stone-200 flex justify-end gap-2">
+              <div className="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsModalBotonesOpen(false)}
-                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold rounded-xl cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -2474,8 +2484,8 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
       {/* MODAL 3: SINCRONÍA FLORAL & COLMENAS (CREAR / EDITAR COMPLETO) */}
       {isModalSincroniaOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
             <div className="bg-rose-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Bug className="w-4 h-4 text-rose-400" />
@@ -2489,21 +2499,21 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
             <form onSubmit={handleSaveSincronia} className="p-5 space-y-3 overflow-y-auto flex-1 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Fecha de Muestreo:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Fecha de Muestreo:</label>
                   <input
                     type="date"
                     value={formSincronia.fecha}
                     onChange={(e) => setFormSincronia({ ...formSincronia, fecha: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Cuartel:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Cuartel:</label>
                   <select
                     value={formSincronia.parcelaId}
                     onChange={(e) => setFormSincronia({ ...formSincronia, parcelaId: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs font-semibold"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-semibold bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   >
                     {parcelas.length === 0 ? (
@@ -2517,32 +2527,32 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                 </div>
               </div>
 
-              <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-2.5">
-                <div className="font-bold text-blue-950 text-[11px] uppercase tracking-wider">
+              <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 rounded-xl space-y-2.5">
+                <div className="font-bold text-blue-950 dark:text-blue-100 text-[11px] uppercase tracking-wider">
                   Sincronía Floral (Hayward vs Polinizadores)
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="font-bold text-stone-700 block mb-1">% Flor Abierta Hayward:</label>
+                    <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">% Flor Abierta Hayward:</label>
                     <input
                       type="number"
                       min="0"
                       max="100"
                       value={formSincronia.porcentajeFloracionHembra}
                       onChange={(e) => setFormSincronia({ ...formSincronia, porcentajeFloracionHembra: Number(e.target.value) })}
-                      className="w-full p-2 border border-stone-300 bg-white rounded-lg text-xs"
+                      className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg text-xs dark:text-stone-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-stone-700 block mb-1">% Flor Abierta Machos:</label>
+                    <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">% Flor Abierta Machos:</label>
                     <input
                       type="number"
                       min="0"
                       max="100"
                       value={formSincronia.porcentajeFloracionMacho}
                       onChange={(e) => setFormSincronia({ ...formSincronia, porcentajeFloracionMacho: Number(e.target.value) })}
-                      className="w-full p-2 border border-stone-300 bg-white rounded-lg text-xs"
+                      className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg text-xs dark:text-stone-100"
                       required
                     />
                   </div>
@@ -2550,11 +2560,11 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="font-bold text-stone-700 block mb-1">Estado de Sincronía:</label>
+                    <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Estado de Sincronía:</label>
                     <select
                       value={formSincronia.estadoSincronia}
                       onChange={(e) => setFormSincronia({ ...formSincronia, estadoSincronia: e.target.value as SincroniaFloral['estadoSincronia'] })}
-                      className="w-full p-2 border border-stone-300 bg-white rounded-lg text-xs"
+                      className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg text-xs dark:text-stone-100"
                     >
                       <option value="Sincronizado">Sincronizado</option>
                       <option value="Macho adelantado">Macho adelantado</option>
@@ -2562,44 +2572,44 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                     </select>
                   </div>
                   <div>
-                    <label className="font-bold text-stone-700 block mb-1">Días de Desfase:</label>
+                    <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Días de Desfase:</label>
                     <input
                       type="number"
                       value={formSincronia.diasDesfase}
                       onChange={(e) => setFormSincronia({ ...formSincronia, diasDesfase: Number(e.target.value) })}
-                      className="w-full p-2 border border-stone-300 bg-white rounded-lg text-xs"
+                      className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg text-xs dark:text-stone-100"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-rose-50/70 border border-rose-200 rounded-xl space-y-2.5">
-                <div className="font-bold text-rose-950 text-[11px] uppercase tracking-wider">
+              <div className="p-3 bg-rose-50/70 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-xl space-y-2.5">
+                <div className="font-bold text-rose-950 dark:text-rose-100 text-[11px] uppercase tracking-wider">
                   Colmenas & Conteo de Pecoreo
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="font-bold text-stone-700 block mb-1">Colmenas Apis:</label>
+                    <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Colmenas Apis:</label>
                     <input
                       type="number"
                       min="0"
                       value={formSincronia.colmenasApisInstaladas}
                       onChange={(e) => setFormSincronia({ ...formSincronia, colmenasApisInstaladas: Number(e.target.value) })}
-                      className="w-full p-2 border border-stone-300 bg-white rounded-lg text-xs"
+                      className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg text-xs dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-stone-700 block mb-1">Colonias Bombus:</label>
+                    <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Colonias Bombus:</label>
                     <input
                       type="number"
                       min="0"
                       value={formSincronia.colmenasBombusInstaladas}
                       onChange={(e) => setFormSincronia({ ...formSincronia, colmenasBombusInstaladas: Number(e.target.value) })}
-                      className="w-full p-2 border border-stone-300 bg-white rounded-lg text-xs"
+                      className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg text-xs dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-stone-700 block mb-1">Abejas / m²:</label>
+                    <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Abejas / m²:</label>
                     <input
                       type="number"
                       min="0"
@@ -2612,17 +2622,17 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                           actividadPolinizadores: calcularCalificacionAbejas(val)
                         });
                       }}
-                      className="w-full p-2 border border-stone-300 bg-white rounded-lg text-xs"
+                      className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg text-xs dark:text-stone-100"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Calificación de Actividad:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Calificación de Actividad:</label>
                   <select
                     value={formSincronia.actividadPolinizadores}
                     onChange={(e) => setFormSincronia({ ...formSincronia, actividadPolinizadores: e.target.value as SincroniaFloral['actividadPolinizadores'] })}
-                    className="w-full p-2 border border-stone-300 bg-white rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg text-xs dark:text-stone-100"
                   >
                     <option value="Baja (< 10 abejas/m²)">Baja (&lt; 10 abejas/m²)</option>
                     <option value="Media (10-25 abejas/m²)">Media (10-25 abejas/m²)</option>
@@ -2633,44 +2643,44 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Temperatura Ambiente (°C):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Temperatura Ambiente (°C):</label>
                   <input
                     type="number"
                     step="0.1"
                     value={formSincronia.temperaturaAmbienteC}
                     onChange={(e) => setFormSincronia({ ...formSincronia, temperaturaAmbienteC: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Humedad Relativa (%):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Humedad Relativa (%):</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={formSincronia.humedadRelativa}
                     onChange={(e) => setFormSincronia({ ...formSincronia, humedadRelativa: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Observaciones:</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Observaciones:</label>
                 <textarea
                   rows={2}
                   value={formSincronia.observaciones}
                   onChange={(e) => setFormSincronia({ ...formSincronia, observaciones: e.target.value })}
                   placeholder="Ej. Pecoreo activo al mediodía, buena apertura floral..."
-                  className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-3 border-t border-stone-200 flex justify-end gap-2">
+              <div className="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsModalSincroniaOpen(false)}
-                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold rounded-xl cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -2688,8 +2698,8 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
       {/* MODAL 4: APLICACIÓN DE POLEN ASISTIDO (CREAR / EDITAR COMPLETO) */}
       {isModalPolenOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
             <div className="bg-stone-900 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
@@ -2703,31 +2713,31 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
             <form onSubmit={handleSavePolen} className="p-5 space-y-3 overflow-y-auto flex-1 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Fecha:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Fecha:</label>
                   <input
                     type="date"
                     value={formPolen.fecha}
                     onChange={(e) => setFormPolen({ ...formPolen, fecha: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Hora de Aplicación:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Hora de Aplicación:</label>
                   <input
                     type="text"
                     value={formPolen.hora}
                     onChange={(e) => setFormPolen({ ...formPolen, hora: e.target.value })}
                     placeholder="Ej. 10:00"
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Cuarteles Destino:</label>
-                <div className="grid grid-cols-2 gap-2 border border-stone-200 p-2.5 rounded-lg bg-stone-50 max-h-32 overflow-y-auto">
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Cuarteles Destino:</label>
+                <div className="grid grid-cols-2 gap-2 border border-stone-200 dark:border-stone-800 p-2.5 rounded-lg bg-stone-50 dark:bg-stone-800/70 max-h-32 overflow-y-auto">
                   {parcelas.map((p) => (
                     <label key={p.id} className="flex items-center gap-1.5 cursor-pointer">
                       <input
@@ -2740,9 +2750,9 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                             setFormPolen({ ...formPolen, parcelasIds: formPolen.parcelasIds.filter((id) => id !== p.id) });
                           }
                         }}
-                        className="rounded text-amber-600"
+                        className="rounded text-amber-600 bg-white dark:bg-stone-800 dark:text-stone-100"
                       />
-                      <span className="text-[11px] font-medium text-stone-800">{p.nombre}</span>
+                      <span className="text-[11px] font-medium text-stone-800 dark:text-stone-200">{p.nombre}</span>
                     </label>
                   ))}
                 </div>
@@ -2750,11 +2760,11 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Tipo de Polen:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Tipo de Polen:</label>
                   <select
                     value={formPolen.tipoPolen}
                     onChange={(e) => setFormPolen({ ...formPolen, tipoPolen: e.target.value as AplicacionPolenAsistido['tipoPolen'] })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   >
                     <option value="Polen Puro Liofilizado Tomuri">Polen Puro Liofilizado Tomuri</option>
                     <option value="Polen Fresco Cosecha Propia">Polen Fresco Cosecha Propia</option>
@@ -2762,23 +2772,23 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Lote del Polen:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Lote del Polen:</label>
                   <input
                     type="text"
                     value={formPolen.lotePolen}
                     onChange={(e) => setFormPolen({ ...formPolen, lotePolen: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Método de Aplicación:</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Método de Aplicación:</label>
                 <select
                   value={formPolen.metodoAplicacion}
                   onChange={(e) => setFormPolen({ ...formPolen, metodoAplicacion: e.target.value as AplicacionPolenAsistido['metodoAplicacion'] })}
-                  className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                 >
                   <option value="Pulverización Líquida en Suspensión">Pulverización Líquida en Suspensión</option>
                   <option value="Electrostático Neumático (Duster en Seco)">Electrostático Neumático (Duster en Seco)</option>
@@ -2788,91 +2798,91 @@ export const PolinizacionFloracionView: React.FC<PolinizacionFloracionViewProps>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Dosis (g/ha):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Dosis (g/ha):</label>
                   <input
                     type="number"
                     min="1"
                     step="10"
                     value={formPolen.dosisGramosPorHa}
                     onChange={(e) => setFormPolen({ ...formPolen, dosisGramosPorHa: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">% Viabilidad:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">% Viabilidad:</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={formPolen.viabilidadPolenPorcentaje}
                     onChange={(e) => setFormPolen({ ...formPolen, viabilidadPolenPorcentaje: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Vol. Agua (L/ha):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Vol. Agua (L/ha):</label>
                   <input
                     type="number"
                     min="0"
                     value={formPolen.volumenAguaLHa}
                     onChange={(e) => setFormPolen({ ...formPolen, volumenAguaLHa: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Equipo / Maquinaria:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Equipo / Maquinaria:</label>
                   <input
                     type="text"
                     value={formPolen.equipoMaquinaria}
                     onChange={(e) => setFormPolen({ ...formPolen, equipoMaquinaria: e.target.value })}
                     placeholder="Ej. Nebulizador electrostático"
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Operador:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Operador:</label>
                   <input
                     type="text"
                     value={formPolen.operador}
                     onChange={(e) => setFormPolen({ ...formPolen, operador: e.target.value })}
                     placeholder="Nombre del aplicador"
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Condiciones Climáticas:</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Condiciones Climáticas:</label>
                 <input
                   type="text"
                   value={formPolen.condicionesClimaticas}
                   onChange={(e) => setFormPolen({ ...formPolen, condicionesClimaticas: e.target.value })}
                   placeholder="Ej. T° 21.5°C, HR 58%, Viento 3.5 km/h"
-                  className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Observaciones:</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Observaciones:</label>
                 <textarea
                   rows={2}
                   value={formPolen.observaciones}
                   onChange={(e) => setFormPolen({ ...formPolen, observaciones: e.target.value })}
                   placeholder="Ej. Aplicación en 40-50% de floración abierta..."
-                  className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs bg-white dark:bg-stone-800 dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-3 border-t border-stone-200 flex justify-end gap-2">
+              <div className="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsModalPolenOpen(false)}
-                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold rounded-xl cursor-pointer"
                 >
                   Cancelar
                 </button>

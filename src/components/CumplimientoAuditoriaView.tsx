@@ -605,26 +605,26 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
   return (
     <div className="space-y-5">
       {/* Encabezado Principal */}
-      <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200">
+      <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800">
         <div>
-          <div className="text-[11px] font-semibold text-emerald-800 tracking-wide flex items-center gap-1.5">
+          <div className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 tracking-wide flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>GlobalG.A.P. IFA v6 · Buenas Prácticas Agrícolas · Normativa SAG</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight mt-0.5">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight mt-0.5">
             Auditoría BPA, Envases Limpios &amp; Calibraciones
           </h1>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
             Planilla interactiva preformada con reinicio desde cero, acciones correctivas, evidencias fotográficas y respaldo técnico.
           </p>
         </div>
 
-        <div className="p-1 bg-stone-100 rounded-xl border border-stone-200 text-xs font-semibold flex flex-wrap gap-1 self-start sm:self-center">
+        <div className="p-1 bg-stone-100 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-800 text-xs font-semibold flex flex-wrap gap-1 self-start sm:self-center">
           <button
             type="button"
             onClick={() => setSubTab('checklist')}
             className={`px-3 py-1.5 rounded-lg cursor-pointer whitespace-nowrap transition-colors ${
-              subTab === 'checklist' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+              subTab === 'checklist' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
             }`}
           >
             Planilla BPA ({statsBpa.revisados}/{statsBpa.total})
@@ -633,7 +633,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
             type="button"
             onClick={() => setSubTab('envases')}
             className={`px-3 py-1.5 rounded-lg cursor-pointer whitespace-nowrap transition-colors ${
-              subTab === 'envases' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+              subTab === 'envases' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
             }`}
           >
             Triple Lavado ({registrosEnvases.length})
@@ -642,7 +642,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
             type="button"
             onClick={() => setSubTab('calibraciones')}
             className={`px-3 py-1.5 rounded-lg cursor-pointer whitespace-nowrap transition-colors ${
-              subTab === 'calibraciones' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+              subTab === 'calibraciones' ? 'bg-emerald-800 text-white font-bold shadow-2xs' : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
             }`}
           >
             Calibraciones ({calibracionesEquipo.length})
@@ -655,15 +655,15 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
         <div className="space-y-4">
           {/* Aviso de acción realizada */}
           {statusNotice && (
-            <div className="no-print p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-950 flex items-center justify-between gap-2">
+            <div className="no-print p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl text-xs text-emerald-950 dark:text-emerald-100 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
                 <span>{statusNotice}</span>
               </div>
               <button
                 type="button"
                 onClick={() => setStatusNotice(null)}
-                className="text-emerald-700 hover:text-emerald-950 p-1 cursor-pointer"
+                className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-950 dark:hover:text-emerald-100 p-1 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -721,7 +721,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                       onClick={() =>
                         setConfirmResetMode((prev) => (prev === 'none' ? 'answers_only' : 'none'))
                       }
-                      className="px-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-100 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap transition-colors"
+                      className="px-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 dark:border-amber-600 text-amber-100 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap transition-colors"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       <span>Reiniciar Planilla</span>
@@ -751,7 +751,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
             {/* Confirmación Inline de Reinicio desde Cero */}
             {canEdit && confirmResetMode !== 'none' && (
-              <div className="no-print p-4 bg-stone-900/90 border border-amber-400/40 rounded-xl space-y-2.5 text-xs">
+              <div className="no-print p-4 bg-stone-900/90 dark:bg-black/75 border border-amber-400/40 rounded-xl space-y-2.5 text-xs">
                 <div className="font-bold text-amber-200 flex items-center gap-1.5">
                   <RotateCcw className="w-4 h-4 shrink-0" />
                   <span>Reiniciar Planilla de Auditoría BPA</span>
@@ -787,16 +787,16 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
           </div>
 
           {/* Ficha Editable de la Auditoría Actual */}
-          <div className="bg-white rounded-2xl border border-stone-200 p-4 space-y-3 text-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 space-y-3 text-xs">
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="font-bold text-stone-800 flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-emerald-700" />
+              <div className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 <span>Datos de la Planilla &amp; Auditoría</span>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAutoChecksBanner((v) => !v)}
-                className="no-print text-xs font-semibold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1 cursor-pointer"
+                className="no-print text-xs font-semibold text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-emerald-100 inline-flex items-center gap-1 cursor-pointer"
               >
                 <ClipboardCheck className="w-3.5 h-3.5" />
                 <span>{showAutoChecksBanner ? 'Ocultar diagnóstico en vivo (8 puntos)' : 'Ver diagnóstico en vivo del huerto (8 puntos)'}</span>
@@ -805,18 +805,18 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
               <div className="lg:col-span-2">
-                <label className="block text-[11px] font-semibold text-stone-600 mb-1">Nombre / Título Planilla:</label>
+                <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">Nombre / Título Planilla:</label>
                 <input
                   type="text"
                   disabled={!canEdit}
                   value={planillaBpa.titulo}
                   onChange={(e) => updatePlanillaHeader({ titulo: e.target.value })}
-                  className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg font-semibold text-stone-900 disabled:opacity-75"
+                  className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg font-semibold text-stone-900 dark:text-stone-100 disabled:opacity-75"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-stone-600 mb-1">Norma / Tipo:</label>
+                <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">Norma / Tipo:</label>
                 <select
                   disabled={!canEdit}
                   value={planillaBpa.tipoAuditoria}
@@ -825,7 +825,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                       tipoAuditoria: e.target.value as PlanillaAuditoriaBPA['tipoAuditoria'],
                     })
                   }
-                  className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg font-medium text-stone-900 disabled:opacity-75"
+                  className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg font-medium text-stone-900 dark:text-stone-100 disabled:opacity-75"
                 >
                   <option value="Autoevaluación BPA">Autoevaluación BPA</option>
                   <option value="GlobalG.A.P. IFA v6">GlobalG.A.P. IFA v6</option>
@@ -835,7 +835,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-stone-600 mb-1">Temporada / Fecha:</label>
+                <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">Temporada / Fecha:</label>
                 <div className="grid grid-cols-2 gap-1.5">
                   <input
                     type="text"
@@ -843,49 +843,49 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                     value={planillaBpa.temporada}
                     onChange={(e) => updatePlanillaHeader({ temporada: e.target.value })}
                     placeholder="2025-2026"
-                    className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg font-mono text-stone-900 disabled:opacity-75"
+                    className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg font-mono text-stone-900 dark:text-stone-100 disabled:opacity-75"
                   />
                   <input
                     type="date"
                     disabled={!canEdit}
                     value={planillaBpa.fechaInicio}
                     onChange={(e) => updatePlanillaHeader({ fechaInicio: e.target.value })}
-                    className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg font-mono text-stone-900 disabled:opacity-75"
+                    className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg font-mono text-stone-900 dark:text-stone-100 disabled:opacity-75"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-stone-600 mb-1">Auditor / Responsable:</label>
+                <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">Auditor / Responsable:</label>
                 <input
                   type="text"
                   disabled={!canEdit}
                   value={planillaBpa.auditorResponsable}
                   onChange={(e) => updatePlanillaHeader({ auditorResponsable: e.target.value })}
                   placeholder={activeUserName || 'Nombre del auditor'}
-                  className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-900 disabled:opacity-75"
+                  className="w-full p-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg text-stone-900 dark:text-stone-100 disabled:opacity-75"
                 />
               </div>
             </div>
 
             {/* Panel desplegable de diagnóstico automático en vivo */}
             {showAutoChecksBanner && (
-              <div className="pt-3 border-t border-stone-200 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
+              <div className="pt-3 border-t border-stone-200 dark:border-stone-800 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 {checksAutomaticos.map((c) => (
                   <div
                     key={c.id}
                     className={`p-2.5 rounded-xl border text-[11px] flex items-start gap-2 ${
-                      c.ok ? 'bg-emerald-50/70 border-emerald-200' : 'bg-amber-50/70 border-amber-200'
+                      c.ok ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/80' : 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/80'
                     }`}
                   >
                     {c.ok ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                     ) : (
-                      <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                      <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                     )}
                     <div>
-                      <div className="font-bold text-stone-900">{c.titulo}</div>
-                      <div className="text-stone-600 mt-0.5">{c.detalle}</div>
+                      <div className="font-bold text-stone-900 dark:text-stone-100">{c.titulo}</div>
+                      <div className="text-stone-600 dark:text-stone-400 mt-0.5">{c.detalle}</div>
                     </div>
                   </div>
                 ))}
@@ -894,7 +894,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
           </div>
 
           {/* Barra de Búsqueda y Filtros */}
-          <div className="no-print bg-white rounded-2xl border border-stone-200 p-3.5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 text-xs">
+          <div className="no-print bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-3.5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 text-xs">
             <div className="relative flex-1">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
               <input
@@ -902,7 +902,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                 value={busquedaBpa}
                 onChange={(e) => setBusquedaBpa(e.target.value)}
                 placeholder="Buscar punto por código, requisito, criterio u observación..."
-                className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:text-stone-100"
               />
             </div>
 
@@ -910,7 +910,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
               <select
                 value={filtroSeccion}
                 onChange={(e) => setFiltroSeccion(e.target.value)}
-                className="p-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-800 max-w-xs"
+                className="p-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-xl text-xs font-medium text-stone-800 dark:text-stone-200 max-w-xs"
               >
                 <option value="todas">Todas las secciones ({seccionesUnicas.length})</option>
                 {seccionesUnicas.map((sec) => (
@@ -920,7 +920,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                 ))}
               </select>
 
-              <div className="inline-flex bg-stone-100 p-1 rounded-xl border border-stone-200 gap-1">
+              <div className="inline-flex bg-stone-100 dark:bg-stone-800 p-1 rounded-xl border border-stone-200 dark:border-stone-800 gap-1">
                 {(
                   [
                     { id: 'todos', label: 'Todos' },
@@ -937,7 +937,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                     className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer whitespace-nowrap transition-colors ${
                       filtroEstado === f.id
                         ? 'bg-emerald-800 text-white shadow-2xs'
-                        : 'text-stone-600 hover:text-stone-900'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
                     }`}
                   >
                     {f.label}
@@ -949,7 +949,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
           {/* Lista Interactiva por Secciones */}
           {itemsPorSeccion.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-stone-200 p-8 text-center text-xs text-stone-500 space-y-2">
+            <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-8 text-center text-xs text-stone-500 dark:text-stone-400 space-y-2">
               <p>No hay puntos que coincidan con el filtro seleccionado.</p>
               <button
                 type="button"
@@ -958,7 +958,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                   setFiltroEstado('todos');
                   setFiltroSeccion('todas');
                 }}
-                className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold rounded-lg cursor-pointer"
+                className="px-3 py-1.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-semibold rounded-lg cursor-pointer"
               >
                 Mostrar todos los puntos
               </button>
@@ -969,16 +969,16 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                 const secCumple = items.filter((i) => i.estado === 'cumple').length;
                 const secNoCumple = items.filter((i) => i.estado === 'no_cumple').length;
                 return (
-                  <div key={seccion} className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-                    <div className="px-5 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between gap-2 flex-wrap">
-                      <h2 className="font-bold text-xs sm:text-sm text-stone-900">{seccion}</h2>
-                      <div className="text-[11px] text-stone-500 font-mono tabular-nums">
+                  <div key={seccion} className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden">
+                    <div className="px-5 py-3 bg-stone-50 dark:bg-stone-800/70 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-2 flex-wrap">
+                      <h2 className="font-bold text-xs sm:text-sm text-stone-900 dark:text-stone-100">{seccion}</h2>
+                      <div className="text-[11px] text-stone-500 dark:text-stone-400 font-mono tabular-nums">
                         {secCumple} cumple / {items.length} puntos
                         {secNoCumple > 0 ? ` · ${secNoCumple} hallazgo(s)` : ''}
                       </div>
                     </div>
 
-                    <div className="divide-y divide-stone-100">
+                    <div className="divide-y divide-stone-100 dark:divide-stone-800">
                       {items.map((item) => {
                         const isExpanded = expandedItemId === item.id;
                         const hasDetails = Boolean(
@@ -993,27 +993,27 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                             key={item.id}
                             className={`p-4 transition-colors ${
                               item.estado === 'no_cumple'
-                                ? 'bg-rose-50/40'
+                                ? 'bg-rose-50/40 dark:bg-rose-950/40'
                                 : item.estado === 'cumple'
-                                ? 'bg-emerald-50/20'
+                                ? 'bg-emerald-50/20 dark:bg-emerald-950/40'
                                 : ''
                             }`}
                           >
                             <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
                               {/* Columna de texto del punto */}
                               <div className="flex-1 space-y-1">
-                                <div className="flex items-center gap-2 text-[11px] text-stone-500 flex-wrap">
-                                  <span className="font-mono font-bold text-stone-800 tabular-nums">
+                                <div className="flex items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400 flex-wrap">
+                                  <span className="font-mono font-bold text-stone-800 dark:text-stone-200 tabular-nums">
                                     {item.codigo}
                                   </span>
                                   <span aria-hidden="true">·</span>
                                   <span
                                     className={`font-semibold ${
                                       item.criticidad === 'Mayor'
-                                        ? 'text-rose-800'
+                                        ? 'text-rose-800 dark:text-rose-300'
                                         : item.criticidad === 'Menor'
-                                        ? 'text-amber-800'
-                                        : 'text-stone-600'
+                                        ? 'text-amber-800 dark:text-amber-300'
+                                        : 'text-stone-600 dark:text-stone-400'
                                     }`}
                                   >
                                     Obligación {item.criticidad}
@@ -1021,7 +1021,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                   {item.autoCheckKey && (
                                     <>
                                       <span aria-hidden="true">·</span>
-                                      <span className="text-emerald-700 font-medium">
+                                      <span className="text-emerald-700 dark:text-emerald-400 font-medium">
                                         Vinculado a registros
                                       </span>
                                     </>
@@ -1036,26 +1036,26 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                   )}
                                 </div>
 
-                                <div className="text-xs sm:text-sm font-semibold text-stone-900 leading-snug">
+                                <div className="text-xs sm:text-sm font-semibold text-stone-900 dark:text-stone-100 leading-snug">
                                   {item.requisito}
                                 </div>
 
                                 {item.criterioCumplimiento && (
-                                  <p className="text-[11px] text-stone-500 leading-relaxed">
+                                  <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">
                                     {item.criterioCumplimiento}
                                   </p>
                                 )}
 
                                 {(item.observacion || item.accionCorrectiva) && !isExpanded && (
-                                  <div className="pt-1 text-[11px] text-stone-700 space-y-0.5">
+                                  <div className="pt-1 text-[11px] text-stone-700 dark:text-stone-300 space-y-0.5">
                                     {item.observacion && (
                                       <div>
-                                        <span className="font-semibold text-stone-500">Nota:</span>{' '}
+                                        <span className="font-semibold text-stone-500 dark:text-stone-400">Nota:</span>{' '}
                                         {item.observacion}
                                       </div>
                                     )}
                                     {item.estado === 'no_cumple' && item.accionCorrectiva && (
-                                      <div className="text-rose-800 font-medium">
+                                      <div className="text-rose-800 dark:text-rose-300 font-medium">
                                         Acción correctiva: {item.accionCorrectiva}
                                         {item.fechaLimiteAccion ? ` (Plazo: ${item.fechaLimiteAccion})` : ''}
                                       </div>
@@ -1066,7 +1066,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
                               {/* Controles interactivos de estado + detalle */}
                               <div className="no-print flex flex-wrap items-center gap-2 shrink-0">
-                                <div className="inline-flex bg-stone-100 p-0.5 rounded-xl border border-stone-200 gap-0.5 text-[11px] font-bold">
+                                <div className="inline-flex bg-stone-100 dark:bg-stone-800 p-0.5 rounded-xl border border-stone-200 dark:border-stone-800 gap-0.5 text-[11px] font-bold">
                                   <button
                                     type="button"
                                     disabled={!canEdit}
@@ -1074,7 +1074,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                     className={`px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1 cursor-pointer transition-colors disabled:opacity-60 ${
                                       item.estado === 'cumple'
                                         ? 'bg-emerald-700 text-white shadow-2xs'
-                                        : 'text-stone-600 hover:text-emerald-800 hover:bg-white'
+                                        : 'text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-white dark:hover:bg-stone-800'
                                     }`}
                                   >
                                     <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1091,7 +1091,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                     className={`px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1 cursor-pointer transition-colors disabled:opacity-60 ${
                                       item.estado === 'no_cumple'
                                         ? 'bg-rose-700 text-white shadow-2xs'
-                                        : 'text-stone-600 hover:text-rose-800 hover:bg-white'
+                                        : 'text-stone-600 dark:text-stone-400 hover:text-rose-800 dark:hover:text-rose-300 hover:bg-white dark:hover:bg-stone-800'
                                     }`}
                                   >
                                     <XCircle className="w-3.5 h-3.5" />
@@ -1105,7 +1105,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                     className={`px-2 py-1.5 rounded-lg inline-flex items-center gap-1 cursor-pointer transition-colors disabled:opacity-60 ${
                                       item.estado === 'na'
                                         ? 'bg-stone-700 text-white shadow-2xs'
-                                        : 'text-stone-600 hover:text-stone-900 hover:bg-white'
+                                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-white dark:hover:bg-stone-800'
                                     }`}
                                   >
                                     <MinusCircle className="w-3.5 h-3.5" />
@@ -1119,7 +1119,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                     className={`px-2 py-1.5 rounded-lg inline-flex items-center gap-1 cursor-pointer transition-colors disabled:opacity-60 ${
                                       item.estado === 'pendiente'
                                         ? 'bg-amber-600 text-white shadow-2xs'
-                                        : 'text-stone-500 hover:text-amber-800 hover:bg-white'
+                                        : 'text-stone-500 dark:text-stone-400 hover:text-amber-800 dark:hover:text-amber-300 hover:bg-white dark:hover:bg-stone-800'
                                     }`}
                                   >
                                     <Clock className="w-3.5 h-3.5" />
@@ -1134,11 +1134,11 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                   }
                                   className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-semibold inline-flex items-center gap-1 cursor-pointer whitespace-nowrap ${
                                     isExpanded || hasDetails
-                                      ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                                      : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'
+                                      ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/80 text-emerald-900 dark:text-emerald-200'
+                                      : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70'
                                   }`}
                                 >
-                                  {item.evidenciaFotoDataUrl && <Camera className="w-3 h-3 text-emerald-700" />}
+                                  {item.evidenciaFotoDataUrl && <Camera className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />}
                                   <span>Notas / Evidencia</span>
                                   {isExpanded ? (
                                     <ChevronUp className="w-3.5 h-3.5" />
@@ -1151,10 +1151,10 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
                             {/* Editor Desplegable de Detalle, Acción Correctiva y Foto */}
                             {isExpanded && (
-                              <div className="no-print mt-3 pt-3 border-t border-stone-200 space-y-3 text-xs">
+                              <div className="no-print mt-3 pt-3 border-t border-stone-200 dark:border-stone-800 space-y-3 text-xs">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                   <div className="md:col-span-2">
-                                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                                    <label className="block text-[11px] font-semibold text-stone-700 dark:text-stone-300 mb-1">
                                       Observaciones / Evidencia de Verificación:
                                     </label>
                                     <textarea
@@ -1165,13 +1165,13 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                         updateItem(item.id, { observacion: e.target.value })
                                       }
                                       placeholder="Ej. Carpeta HDS completa en estante 1; registro firmado al día..."
-                                      className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                                     />
                                   </div>
 
                                   <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
                                     <div>
-                                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                                      <label className="block text-[11px] font-semibold text-stone-700 dark:text-stone-300 mb-1">
                                         Responsable Revisión:
                                       </label>
                                       <input
@@ -1182,11 +1182,11 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                           updateItem(item.id, { responsable: e.target.value })
                                         }
                                         placeholder={activeUserName || 'Encargado BPA'}
-                                        className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                                       />
                                     </div>
                                     <div>
-                                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                                      <label className="block text-[11px] font-semibold text-stone-700 dark:text-stone-300 mb-1">
                                         Fecha Verificación:
                                       </label>
                                       <input
@@ -1196,16 +1196,16 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                         onChange={(e) =>
                                           updateItem(item.id, { fechaVerificacion: e.target.value })
                                         }
-                                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                                       />
                                     </div>
                                   </div>
                                 </div>
 
                                 {item.estado === 'no_cumple' && (
-                                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl grid grid-cols-1 md:grid-cols-4 gap-3">
+                                  <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-xl grid grid-cols-1 md:grid-cols-4 gap-3">
                                     <div className="md:col-span-3">
-                                      <label className="block text-[11px] font-bold text-rose-900 mb-1">
+                                      <label className="block text-[11px] font-bold text-rose-900 dark:text-rose-200 mb-1">
                                         Plan de Acción Correctiva Requerida:
                                       </label>
                                       <input
@@ -1216,11 +1216,11 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                           updateItem(item.id, { accionCorrectiva: e.target.value })
                                         }
                                         placeholder="Describe la medida correctiva para cerrar la no conformidad..."
-                                        className="w-full p-2 bg-white border border-rose-300 rounded-lg"
+                                        className="w-full p-2 bg-white dark:bg-stone-800 border border-rose-300 dark:border-rose-700 rounded-lg dark:text-stone-100"
                                       />
                                     </div>
                                     <div>
-                                      <label className="block text-[11px] font-bold text-rose-900 mb-1">
+                                      <label className="block text-[11px] font-bold text-rose-900 dark:text-rose-200 mb-1">
                                         Plazo Límite:
                                       </label>
                                       <input
@@ -1230,7 +1230,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                         onChange={(e) =>
                                           updateItem(item.id, { fechaLimiteAccion: e.target.value })
                                         }
-                                        className="w-full p-2 bg-white border border-rose-300 rounded-lg font-mono"
+                                        className="w-full p-2 bg-white dark:bg-stone-800 border border-rose-300 dark:border-rose-700 rounded-lg font-mono dark:text-stone-100"
                                       />
                                     </div>
                                   </div>
@@ -1239,8 +1239,8 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                 <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                                   <div className="flex flex-wrap items-center gap-2">
                                     {canEdit && (
-                                      <label className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-lg text-[11px] font-semibold text-stone-800 inline-flex items-center gap-1.5 cursor-pointer">
-                                        <Camera className="w-3.5 h-3.5 text-emerald-700" />
+                                      <label className="px-3 py-1.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-300 dark:border-stone-700 rounded-lg text-[11px] font-semibold text-stone-800 dark:text-stone-200 inline-flex items-center gap-1.5 cursor-pointer">
+                                        <Camera className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                                         <span>
                                           {item.evidenciaFotoDataUrl ? 'Cambiar Foto Evidencia' : 'Adjuntar Foto Evidencia'}
                                         </span>
@@ -1258,7 +1258,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                         <button
                                           type="button"
                                           onClick={() => setPreviewPhoto(item.evidenciaFotoDataUrl!)}
-                                          className="px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg text-[11px] font-semibold cursor-pointer"
+                                          className="px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-emerald-900 dark:text-emerald-200 rounded-lg text-[11px] font-semibold cursor-pointer"
                                         >
                                           Ver Foto Adjunta
                                         </button>
@@ -1268,7 +1268,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                             onClick={() =>
                                               updateItem(item.id, { evidenciaFotoDataUrl: undefined })
                                             }
-                                            className="px-2 py-1.5 text-rose-700 hover:bg-rose-50 rounded-lg text-[11px] font-semibold cursor-pointer"
+                                            className="px-2 py-1.5 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg text-[11px] font-semibold cursor-pointer"
                                           >
                                             Quitar Foto
                                           </button>
@@ -1280,8 +1280,8 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                   {canEdit && (
                                     <div>
                                       {confirmDeleteItemId === item.id ? (
-                                        <div className="inline-flex items-center gap-1.5 bg-rose-50 border border-rose-200 rounded-lg px-2 py-1">
-                                          <span className="text-[11px] text-rose-900 font-semibold">
+                                        <div className="inline-flex items-center gap-1.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-lg px-2 py-1">
+                                          <span className="text-[11px] text-rose-900 dark:text-rose-200 font-semibold">
                                             ¿Quitar punto?
                                           </span>
                                           <button
@@ -1294,7 +1294,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                           <button
                                             type="button"
                                             onClick={() => setConfirmDeleteItemId(null)}
-                                            className="px-1.5 py-0.5 text-stone-600 text-[10px] font-semibold cursor-pointer"
+                                            className="px-1.5 py-0.5 text-stone-600 dark:text-stone-400 text-[10px] font-semibold cursor-pointer"
                                           >
                                             No
                                           </button>
@@ -1303,7 +1303,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                                         <button
                                           type="button"
                                           onClick={() => setConfirmDeleteItemId(item.id)}
-                                          className="px-2.5 py-1.5 text-stone-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1 cursor-pointer"
+                                          className="px-2.5 py-1.5 text-stone-500 dark:text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1 cursor-pointer"
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />
                                           <span>Eliminar Punto</span>
@@ -1328,14 +1328,14 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
       {/* SUBTAB 2: Triple Lavado */}
       {subTab === 'envases' && (
-        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
-          <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between gap-2">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
+          <div className="px-5 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-2">
             <div>
-              <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                <Recycle className="w-4 h-4 text-emerald-700" />
+              <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Recycle className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 Registro de Triple Lavado y Entrega de Envases Vacíos
               </h2>
-              <p className="text-[11px] text-stone-500">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 Trazabilidad exigida por SAG y Campo Limpio para disposición final de envases fitosanitarios.
               </p>
             </div>
@@ -1352,13 +1352,13 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
           </div>
 
           {registrosEnvases.length === 0 ? (
-            <div className="p-8 text-center text-xs text-stone-500">
+            <div className="p-8 text-center text-xs text-stone-500 dark:text-stone-400">
               No hay entregas de envases registradas aún.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px]">
+                <thead className="bg-stone-50 dark:bg-stone-800/70 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 font-bold uppercase text-[10px]">
                   <tr>
                     <th className="px-4 py-3">Fecha</th>
                     <th className="px-4 py-3">Producto / Envase</th>
@@ -1369,31 +1369,31 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                     {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100">
+                <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
                   {registrosEnvases.map((r) => (
-                    <tr key={r.id} className="hover:bg-stone-50">
+                    <tr key={r.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/70">
                       <td className="px-4 py-3 font-mono tabular-nums">{r.fecha}</td>
-                      <td className="px-4 py-3 font-bold text-stone-900">{r.productoNombre}</td>
+                      <td className="px-4 py-3 font-bold text-stone-900 dark:text-stone-100">{r.productoNombre}</td>
                       <td className="px-4 py-3 font-mono tabular-nums">
                         {r.cantidadEnvases} u ({r.capacidadUnidad})
                       </td>
-                      <td className="px-4 py-3 font-semibold text-emerald-800">
+                      <td className="px-4 py-3 font-semibold text-emerald-800 dark:text-emerald-300">
                         {r.tripleLavadoRealizado ? '3x Lavado OK' : 'Sin 3x Lavado'}
                         {r.perforadoInutilizado ? ' · Perforado' : ''}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-medium text-stone-800">{r.centroAcopioDestino}</div>
+                        <div className="font-medium text-stone-800 dark:text-stone-200">{r.centroAcopioDestino}</div>
                         {r.numeroComprobante && (
-                          <div className="font-mono text-[10px] text-stone-500">Comp: {r.numeroComprobante}</div>
+                          <div className="font-mono text-[10px] text-stone-500 dark:text-stone-400">Comp: {r.numeroComprobante}</div>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-stone-600">{r.responsable}</td>
+                      <td className="px-4 py-3 text-stone-600 dark:text-stone-400">{r.responsable}</td>
                       {canEdit && (
                         <td className="px-4 py-3 text-right">
                           <button
                             type="button"
                             onClick={() => onDeleteEnvase(r.id)}
-                            className="p-1 text-stone-400 hover:text-rose-700 cursor-pointer"
+                            className="p-1 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1410,14 +1410,14 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
       {/* SUBTAB 3: Calibraciones */}
       {subTab === 'calibraciones' && (
-        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
-          <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between gap-2">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
+          <div className="px-5 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-2">
             <div>
-              <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                <Wrench className="w-4 h-4 text-emerald-700" />
+              <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Wrench className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 Calibración de Equipos (Nebulizadores, Refractómetros, Romanas)
               </h2>
-              <p className="text-[11px] text-stone-500">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 Control de calibración periódica exigida para asegurar dosis exactas y lecturas oficiales de cosecha.
               </p>
             </div>
@@ -1434,13 +1434,13 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
           </div>
 
           {calibracionesEquipo.length === 0 ? (
-            <div className="p-8 text-center text-xs text-stone-500">
+            <div className="p-8 text-center text-xs text-stone-500 dark:text-stone-400">
               No hay calibraciones registradas aún.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px]">
+                <thead className="bg-stone-50 dark:bg-stone-800/70 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 font-bold uppercase text-[10px]">
                   <tr>
                     <th className="px-4 py-3">Fecha Cal.</th>
                     <th className="px-4 py-3">Próxima</th>
@@ -1451,31 +1451,31 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                     {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100">
+                <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
                   {calibracionesEquipo.map((c) => {
                     const vencido = Date.parse(c.fechaProximaCalibracion) < Date.now();
                     return (
-                      <tr key={c.id} className="hover:bg-stone-50">
+                      <tr key={c.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/70">
                         <td className="px-4 py-3 font-mono tabular-nums">{c.fechaCalibracion}</td>
-                        <td className={`px-4 py-3 font-mono tabular-nums font-bold ${vencido ? 'text-rose-700' : 'text-stone-700'}`}>
+                        <td className={`px-4 py-3 font-mono tabular-nums font-bold ${vencido ? 'text-rose-700 dark:text-rose-400' : 'text-stone-700 dark:text-stone-300'}`}>
                           {c.fechaProximaCalibracion}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-bold text-stone-900">{c.equipoNombre}</div>
-                          <div className="text-[10px] text-stone-500">{c.tipoEquipo}</div>
+                          <div className="font-bold text-stone-900 dark:text-stone-100">{c.equipoNombre}</div>
+                          <div className="text-[10px] text-stone-500 dark:text-stone-400">{c.tipoEquipo}</div>
                         </td>
                         <td className="px-4 py-3">
                           <div>{c.patronMetodo || '—'}</div>
-                          <div className="font-mono tabular-nums text-[10px] text-stone-500">Desv: {c.desviacionPct}%</div>
+                          <div className="font-mono tabular-nums text-[10px] text-stone-500 dark:text-stone-400">Desv: {c.desviacionPct}%</div>
                         </td>
                         <td className="px-4 py-3 font-bold">
                           <span
                             className={
                               c.resultado === 'Aprobado / Calibrado'
-                                ? 'text-emerald-800'
+                                ? 'text-emerald-800 dark:text-emerald-300'
                                 : c.resultado === 'Requiere Ajuste'
-                                ? 'text-amber-800'
-                                : 'text-rose-800'
+                                ? 'text-amber-800 dark:text-amber-300'
+                                : 'text-rose-800 dark:text-rose-300'
                             }
                           >
                             {c.resultado}
@@ -1486,7 +1486,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                             <button
                               type="button"
                               onClick={() => setPreviewPhoto(c.fotoEvidenciaDataUrl!)}
-                              className="px-2 py-1 bg-stone-100 hover:bg-stone-200 rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                              className="px-2 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                             >
                               <Camera className="w-3 h-3" /> Foto
                             </button>
@@ -1499,7 +1499,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                             <button
                               type="button"
                               onClick={() => onDeleteCalibracion(c.id)}
-                              className="p-1 text-stone-400 hover:text-rose-700 cursor-pointer"
+                              className="p-1 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1517,8 +1517,8 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
       {/* Modal Agregar Punto Personalizado a Planilla BPA */}
       {isAddItemModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Agregar Punto de Verificación BPA</h3>
               <button
@@ -1531,11 +1531,11 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
             </div>
             <form onSubmit={handleAgregarItemPersonalizado} className="p-5 space-y-3.5 text-xs">
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Sección de la Planilla:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Sección de la Planilla:</label>
                 <select
                   value={newItemForm.seccion}
                   onChange={(e) => setNewItemForm({ ...newItemForm, seccion: e.target.value })}
-                  className="w-full p-2 border border-stone-300 rounded-lg"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                 >
                   {seccionesUnicas.map((sec) => (
                     <option key={sec} value={sec}>
@@ -1548,7 +1548,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
               {newItemForm.seccion === '__nueva__' && (
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Nombre Nueva Sección:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre Nueva Sección:</label>
                   <input
                     type="text"
                     value={newItemForm.seccionPersonalizada}
@@ -1556,7 +1556,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                       setNewItemForm({ ...newItemForm, seccionPersonalizada: e.target.value })
                     }
                     placeholder="Ej. 07. Requisitos Exportadora / Orgánico"
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
@@ -1564,17 +1564,17 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Código (opcional):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Código (opcional):</label>
                   <input
                     type="text"
                     value={newItemForm.codigo}
                     onChange={(e) => setNewItemForm({ ...newItemForm, codigo: e.target.value })}
                     placeholder="Ej. 01.5"
-                    className="w-full p-2 border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Nivel de Criticidad:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nivel de Criticidad:</label>
                   <select
                     value={newItemForm.criticidad}
                     onChange={(e) =>
@@ -1583,7 +1583,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                         criticidad: e.target.value as ItemAuditoriaBPA['criticidad'],
                       })
                     }
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   >
                     <option value="Mayor">Obligación Mayor</option>
                     <option value="Menor">Obligación Menor</option>
@@ -1593,19 +1593,19 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Requisito / Pregunta a Verificar:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Requisito / Pregunta a Verificar:</label>
                 <textarea
                   rows={2}
                   value={newItemForm.requisito}
                   onChange={(e) => setNewItemForm({ ...newItemForm, requisito: e.target.value })}
                   placeholder="Ej. Registro de lavado y sanitización de capachos semanalmente..."
-                  className="w-full p-2 border border-stone-300 rounded-lg"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Criterio de Cumplimiento (opcional):</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Criterio de Cumplimiento (opcional):</label>
                 <textarea
                   rows={2}
                   value={newItemForm.criterioCumplimiento}
@@ -1613,15 +1613,15 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                     setNewItemForm({ ...newItemForm, criterioCumplimiento: e.target.value })
                   }
                   placeholder="Cómo se verifica en terreno o en documentación..."
-                  className="w-full p-2 border border-stone-300 rounded-lg"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsAddItemModalOpen(false)}
-                  className="px-4 py-2 border border-stone-300 rounded-xl cursor-pointer"
+                  className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-xl cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1639,8 +1639,8 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
       {/* Modal Envases */}
       {isEnvaseModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Registrar Triple Lavado &amp; Entrega de Envases</h3>
               <button
@@ -1654,30 +1654,30 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
             <form onSubmit={handleSaveEnvase} className="p-5 space-y-3.5 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha:</label>
                   <input
                     type="date"
                     value={envaseForm.fecha}
                     onChange={(e) => setEnvaseForm({ ...envaseForm, fecha: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Producto / Envase:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Producto / Envase:</label>
                   <input
                     type="text"
                     value={envaseForm.productoNombre}
                     onChange={(e) => setEnvaseForm({ ...envaseForm, productoNombre: e.target.value })}
                     placeholder="Ej. Cobre / Fungicida"
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Cantidad de Envases:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cantidad de Envases:</label>
                   <input
                     type="number"
                     min="1"
@@ -1685,23 +1685,23 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                     onChange={(e) =>
                       setEnvaseForm({ ...envaseForm, cantidadEnvases: parseInt(e.target.value) || 1 })
                     }
-                    className="w-full p-2 border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-bold bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Capacidad Unitaria:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Capacidad Unitaria:</label>
                   <input
                     type="text"
                     value={envaseForm.capacidadUnidad}
                     onChange={(e) => setEnvaseForm({ ...envaseForm, capacidadUnidad: e.target.value })}
                     placeholder="1 L, 5 L, 20 Kg"
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
-              <div className="flex flex-wrap gap-4 p-2.5 bg-emerald-50 rounded-xl border border-emerald-200">
-                <label className="inline-flex items-center gap-2 font-bold text-emerald-950 cursor-pointer">
+              <div className="flex flex-wrap gap-4 p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/80">
+                <label className="inline-flex items-center gap-2 font-bold text-emerald-950 dark:text-emerald-100 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={envaseForm.tripleLavadoRealizado}
@@ -1711,7 +1711,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                   />
                   Triple Lavado ejecutado
                 </label>
-                <label className="inline-flex items-center gap-2 font-bold text-emerald-950 cursor-pointer">
+                <label className="inline-flex items-center gap-2 font-bold text-emerald-950 dark:text-emerald-100 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={envaseForm.perforadoInutilizado}
@@ -1724,34 +1724,34 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Centro de Acopio:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Centro de Acopio:</label>
                   <input
                     type="text"
                     value={envaseForm.centroAcopioDestino}
                     onChange={(e) =>
                       setEnvaseForm({ ...envaseForm, centroAcopioDestino: e.target.value })
                     }
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">N° Comprobante / Guía:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">N° Comprobante / Guía:</label>
                   <input
                     type="text"
                     value={envaseForm.numeroComprobante}
                     onChange={(e) =>
                       setEnvaseForm({ ...envaseForm, numeroComprobante: e.target.value })
                     }
-                    className="w-full p-2 border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsEnvaseModalOpen(false)}
-                  className="px-4 py-2 border border-stone-300 rounded-xl cursor-pointer"
+                  className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-xl cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1769,8 +1769,8 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
 
       {/* Modal Calibración */}
       {isCalModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Registrar Calibración de Equipo</h3>
               <button
@@ -1784,18 +1784,18 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
             <form onSubmit={handleSaveCalibracion} className="p-5 space-y-3.5 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Nombre / ID Equipo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre / ID Equipo:</label>
                   <input
                     type="text"
                     value={calForm.equipoNombre}
                     onChange={(e) => setCalForm({ ...calForm, equipoNombre: e.target.value })}
                     placeholder="Ej. Nebulizador 2000L"
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Tipo Equipo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Tipo Equipo:</label>
                   <select
                     value={calForm.tipoEquipo}
                     onChange={(e) =>
@@ -1804,7 +1804,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                         tipoEquipo: e.target.value as CalibracionEquipo['tipoEquipo'],
                       })
                     }
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   >
                     <option value="Pulverizador / Nebulizador">Pulverizador / Nebulizador</option>
                     <option value="Refractómetro">Refractómetro</option>
@@ -1817,41 +1817,41 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Calibración:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha Calibración:</label>
                   <input
                     type="date"
                     value={calForm.fechaCalibracion}
                     onChange={(e) => setCalForm({ ...calForm, fechaCalibracion: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Próxima Calibración:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Próxima Calibración:</label>
                   <input
                     type="date"
                     value={calForm.fechaProximaCalibracion}
                     onChange={(e) =>
                       setCalForm({ ...calForm, fechaProximaCalibracion: e.target.value })
                     }
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-2">
-                  <label className="block font-bold text-stone-700 mb-1">Método / Patrón Usado:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Método / Patrón Usado:</label>
                   <input
                     type="text"
                     value={calForm.patronMetodo}
                     onChange={(e) => setCalForm({ ...calForm, patronMetodo: e.target.value })}
                     placeholder="Ej. Aforo boquillas L/min / Agua destilada 0°"
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Desviación %:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Desviación %:</label>
                   <input
                     type="number"
                     step="0.1"
@@ -1859,13 +1859,13 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                     onChange={(e) =>
                       setCalForm({ ...calForm, desviacionPct: parseFloat(e.target.value) || 0 })
                     }
-                    className="w-full p-2 border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-mono bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Resultado:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Resultado:</label>
                   <select
                     value={calForm.resultado}
                     onChange={(e) =>
@@ -1874,7 +1874,7 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                         resultado: e.target.value as CalibracionEquipo['resultado'],
                       })
                     }
-                    className="w-full p-2 border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-bold bg-white dark:bg-stone-800 dark:text-stone-100"
                   >
                     <option value="Aprobado / Calibrado">Aprobado / Calibrado</option>
                     <option value="Requiere Ajuste">Requiere Ajuste</option>
@@ -1882,20 +1882,20 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Foto Certificado / Boquillas:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Foto Certificado / Boquillas:</label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handlePhotoUpload}
-                    className="w-full text-[11px]"
+                    className="w-full text-[11px] bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsCalModalOpen(false)}
-                  className="px-4 py-2 border border-stone-300 rounded-xl cursor-pointer"
+                  className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-xl cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1917,15 +1917,15 @@ export const CumplimientoAuditoriaView: React.FC<CumplimientoAuditoriaViewProps>
           onClick={() => setPreviewPhoto(null)}
         >
           <div
-            className="max-w-xl w-full bg-white rounded-2xl p-3 space-y-2"
+            className="max-w-xl w-full bg-white dark:bg-stone-900 rounded-2xl p-3 space-y-2"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-stone-700">Foto Evidencia</span>
+              <span className="text-xs font-bold text-stone-700 dark:text-stone-300">Foto Evidencia</span>
               <button
                 type="button"
                 onClick={() => setPreviewPhoto(null)}
-                className="text-stone-500 hover:text-stone-900 cursor-pointer"
+                className="text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>

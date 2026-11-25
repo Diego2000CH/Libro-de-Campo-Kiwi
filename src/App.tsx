@@ -129,6 +129,7 @@ import {
   TareaAgronomica,
   ResumenTemporada,
   PlanillaAuditoriaBPA,
+  ModuloPestanaId,
   AppStateData
 } from './types/campo';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
@@ -141,11 +142,15 @@ import {
 } from './lib/firestoreSync';
 import {
   canEditAppData,
+  canEditTab,
+  getEditableTabLabels,
   getNivelAcceso,
   getNivelAccesoMeta,
   getRolLabel,
+  getTabLabel,
   isAdminUser,
 } from './utils/permissions';
+import { useTheme } from './hooks/useTheme';
 import {
   HELADAS_CONFIG,
   buildNotificacionHelada,
@@ -172,6 +177,7 @@ import { BellRing, Check, KeyRound, Lock, RotateCcw, ShieldAlert, Snowflake, Sun
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+  const { theme, toggleTheme } = useTheme();
 
   // Estado Principal de Datos
   const [explotacion, setExplotacion] = useState<ExplotacionAgricola>(getStoredExplotacion);
@@ -933,17 +939,37 @@ export default function App() {
   const isAdmin = isAdminUser(activeUser);
   const canEdit = canEditAppData(activeUser);
 
-  const notifyPermissionDenied = (required: 'edit' | 'admin') => {
+  const notifyPermissionDenied = (required: 'edit' | 'admin', tab?: ModuloPestanaId) => {
+    if (required === 'admin') {
+      setPermissionErrorToast(
+        'Acción restringida: solo el Administrador del Huerto puede realizar esta operación.'
+      );
+      return;
+    }
+
+    const nivel = getNivelAcceso(activeUser);
+    if (nivel === 'editor_selectivo') {
+      const editableLabels = getEditableTabLabels(activeUser);
+      const tabNombre = tab ? getTabLabel(tab) : 'esta pestaña';
+      setPermissionErrorToast(
+        editableLabels.length > 0
+          ? `Solo Lectura en «${tabNombre}»: tu cuenta solo tiene permiso de edición en ${editableLabels.join(', ')}.`
+          : 'Solo Lectura: aún no tienes pestañas habilitadas para editar. Consulta al Administrador.'
+      );
+      return;
+    }
+
     setPermissionErrorToast(
-      required === 'admin'
-        ? 'Acción restringida: solo el Administrador del Huerto puede realizar esta operación.'
-        : 'Modo Solo Lectura: puedes explorar mapas, filtros y simuladores, pero no agregar, editar ni eliminar datos.'
+      'Modo Solo Lectura: puedes explorar mapas, filtros y simuladores, pero no agregar, editar ni eliminar datos.'
     );
   };
 
-  const guardEdit = <T extends unknown[]>(fn: (...args: T) => void) => (...args: T) => {
-    if (!canEdit) {
-      notifyPermissionDenied('edit');
+  const guardTabEdit = <T extends unknown[]>(
+    tab: ModuloPestanaId,
+    fn: (...args: T) => void
+  ) => (...args: T) => {
+    if (!canEditTab(activeUser, tab)) {
+      notifyPermissionDenied('edit', tab);
       return;
     }
     fn(...args);
@@ -957,7 +983,15 @@ export default function App() {
     fn(...args);
   };
 
-  const handleAddEstadoFenologicoCustom = guardEdit((item: EstadoFenologicoCatalogo) => {
+  const handleAddEstadoFenologicoCustom = (item: EstadoFenologicoCatalogo) => {
+    const canModifyFenCatalog =
+      canEditTab(activeUser, activeTab) ||
+      canEditTab(activeUser, 'fenologia') ||
+      canEditTab(activeUser, 'parcelas');
+    if (!canModifyFenCatalog) {
+      notifyPermissionDenied('edit', activeTab);
+      return;
+    }
     setEstadosFenologicosCustom((prev) => {
       const dup = prev.some(
         (e) =>
@@ -966,11 +1000,18 @@ export default function App() {
       );
       return dup ? prev : [...prev, item];
     });
-  });
+  };
 
-  const handleDeleteEstadoFenologicoCustom = guardEdit((id: string) => {
+  const handleDeleteEstadoFenologicoCustom = (id: string) => {
+    const canModifyFenCatalog =
+      canEditTab(activeUser, activeTab) ||
+      canEditTab(activeUser, 'fenologia');
+    if (!canModifyFenCatalog) {
+      notifyPermissionDenied('edit', activeTab);
+      return;
+    }
     setEstadosFenologicosCustom((prev) => prev.filter((item) => item.id !== id));
-  });
+  };
 
   const openSwitchUserModal = (target?: UsuarioPredio) => {
     setSwitchTargetUser(target || null);
@@ -1093,16 +1134,16 @@ export default function App() {
   };
 
   const handleUpdateOrden = (ordenActualizada: OrdenTrabajoFitosanitaria) => {
-    if (!canEdit) {
-      notifyPermissionDenied('edit');
+    if (!canEditTab(activeUser, 'ordenes')) {
+      notifyPermissionDenied('edit', 'ordenes');
       return;
     }
     setOrdenesTrabajo((prev) => prev.map((o) => (o.id === ordenActualizada.id ? ordenActualizada : o)));
   };
 
   const handleOpenNewLabor = () => {
-    if (!canEdit) {
-      notifyPermissionDenied('edit');
+    if (!canEditTab(activeUser, 'labores')) {
+      notifyPermissionDenied('edit', 'labores');
       return;
     }
     setEditingLabor(null);
@@ -1112,8 +1153,10 @@ export default function App() {
   };
 
   const handleOpenNewLaborWithDefaults = (parcelaId?: string, tipoLabor?: TipoLabor) => {
-    if (!canEdit) {
-      notifyPermissionDenied('edit');
+    const allowedFromMonitoreo =
+      tipoLabor === 'monitoreo' && canEditTab(activeUser, 'monitoreo');
+    if (!canEditTab(activeUser, 'labores') && !allowedFromMonitoreo) {
+      notifyPermissionDenied('edit', tipoLabor === 'monitoreo' ? 'monitoreo' : 'labores');
       return;
     }
     setEditingLabor(null);
@@ -1123,8 +1166,8 @@ export default function App() {
   };
 
   const handleEditLabor = (labor: RegistroLabor) => {
-    if (!canEdit) {
-      notifyPermissionDenied('edit');
+    if (!canEditTab(activeUser, 'labores')) {
+      notifyPermissionDenied('edit', 'labores');
       return;
     }
     setEditingLabor(labor);
@@ -1134,8 +1177,10 @@ export default function App() {
   };
 
   const handleSaveLabor = (laborToSave: RegistroLabor) => {
-    if (!canEdit) {
-      notifyPermissionDenied('edit');
+    const allowedFromMonitoreo =
+      laborToSave.tipoLabor === 'monitoreo' && canEditTab(activeUser, 'monitoreo');
+    if (!canEditTab(activeUser, 'labores') && !allowedFromMonitoreo) {
+      notifyPermissionDenied('edit', laborToSave.tipoLabor === 'monitoreo' ? 'monitoreo' : 'labores');
       return;
     }
     // Descuento de stock si aplica a la labor
@@ -1170,8 +1215,8 @@ export default function App() {
   };
 
   const handleDeleteLabor = (id: string) => {
-    if (!canEdit) {
-      notifyPermissionDenied('edit');
+    if (!canEditTab(activeUser, 'labores')) {
+      notifyPermissionDenied('edit', 'labores');
       return;
     }
     const labor = labores.find((l) => l.id === id);
@@ -1299,11 +1344,12 @@ export default function App() {
         notifyPermissionDenied('admin');
         return;
       }
-      // Un usuario no-admin solo puede editar su propia clave/datos, nunca su rol ni nivelAcceso
+      // Un usuario no-admin solo puede editar su propia clave/datos, nunca su rol, nivelAcceso ni pestanasEditables
       const safeUser: UsuarioPredio = {
         ...u,
         rol: activeUser.rol,
         nivelAcceso: activeUser.nivelAcceso,
+        pestanasEditables: activeUser.pestanasEditables,
       };
       setUsuarios((prev) => prev.map((item) => (item.id === safeUser.id ? safeUser : item)));
       setCurrentUser(safeUser);
@@ -1322,38 +1368,83 @@ export default function App() {
     }
   };
 
-  const handleUpdateInsumoSafe = guardEdit((updated: InsumoInventario) => {
+  const resolveBodegaTabForInsumo = (insumo?: InsumoInventario): 'fitosanitarios' | 'materiales' => {
+    if (!insumo) return 'fitosanitarios';
+    const isMat =
+      insumo.categoriaBodega === 'material_riego' ||
+      (insumo.categoria && insumo.categoria !== 'fitosanitario' && insumo.categoria !== 'fertilizante');
+    return isMat ? 'materiales' : 'fitosanitarios';
+  };
+
+  const handleUpdateInsumoSafe = (updated: InsumoInventario) => {
+    const bodegaTab = resolveBodegaTabForInsumo(updated);
+    if (!canEditTab(activeUser, bodegaTab)) {
+      notifyPermissionDenied('edit', bodegaTab);
+      return;
+    }
     const normalized: InsumoInventario =
       (updated.stockMinimo || 0) > 0 && (updated.stockActual || 0) > (updated.stockMinimo || 0)
         ? { ...updated, alertaStockOculta: false }
         : updated;
     setInventario((prev) => prev.map((i) => (i.id === normalized.id ? normalized : i)));
-  });
+  };
 
-  const handleDismissLowStockAlert = guardEdit((insumoId: string) => {
+  const handleDismissLowStockAlert = (insumoId: string) => {
+    const target = inventario.find((i) => i.id === insumoId);
+    const bodegaTab = resolveBodegaTabForInsumo(target);
+    if (!canEditTab(activeUser, bodegaTab)) {
+      notifyPermissionDenied('edit', bodegaTab);
+      return;
+    }
     setInventario((prev) =>
       prev.map((i) => (i.id === insumoId ? { ...i, alertaStockOculta: true } : i))
     );
-  });
+  };
 
-  const handleDismissAllLowStockAlerts = guardEdit((insumoIds: string[]) => {
+  const handleDismissAllLowStockAlerts = (insumoIds: string[]) => {
+    const canFito = canEditTab(activeUser, 'fitosanitarios');
+    const canMat = canEditTab(activeUser, 'materiales');
+    if (!canFito && !canMat) {
+      notifyPermissionDenied('edit', 'fitosanitarios');
+      return;
+    }
     const idSet = new Set(insumoIds);
     setInventario((prev) =>
-      prev.map((i) => (idSet.has(i.id) ? { ...i, alertaStockOculta: true } : i))
+      prev.map((i) => {
+        if (!idSet.has(i.id)) return i;
+        const tab = resolveBodegaTabForInsumo(i);
+        return canEditTab(activeUser, tab) ? { ...i, alertaStockOculta: true } : i;
+      })
     );
-  });
+  };
 
-  const handleRestoreLowStockAlert = guardEdit((insumoId: string) => {
+  const handleRestoreLowStockAlert = (insumoId: string) => {
+    const target = inventario.find((i) => i.id === insumoId);
+    const bodegaTab = resolveBodegaTabForInsumo(target);
+    if (!canEditTab(activeUser, bodegaTab)) {
+      notifyPermissionDenied('edit', bodegaTab);
+      return;
+    }
     setInventario((prev) =>
       prev.map((i) => (i.id === insumoId ? { ...i, alertaStockOculta: false } : i))
     );
-  });
+  };
 
-  const handleRestoreAllLowStockAlerts = guardEdit(() => {
+  const handleRestoreAllLowStockAlerts = () => {
+    const canFito = canEditTab(activeUser, 'fitosanitarios');
+    const canMat = canEditTab(activeUser, 'materiales');
+    if (!canFito && !canMat) {
+      notifyPermissionDenied('edit', 'fitosanitarios');
+      return;
+    }
     setInventario((prev) =>
-      prev.map((i) => (i.alertaStockOculta ? { ...i, alertaStockOculta: false } : i))
+      prev.map((i) => {
+        if (!i.alertaStockOculta) return i;
+        const tab = resolveBodegaTabForInsumo(i);
+        return canEditTab(activeUser, tab) ? { ...i, alertaStockOculta: false } : i;
+      })
     );
-  });
+  };
 
   const lowStockCount = inventario.filter(isInsumoStockBajoActivo).length;
 
@@ -1375,14 +1466,14 @@ export default function App() {
   }).length;
 
   const quotaBanner = mapsQuotaExceeded ? (
-    <div className="bg-amber-50 border-b border-amber-200 text-amber-900 px-4 py-2.5 text-xs md:text-sm text-center sticky top-0 z-50 shadow-sm">
+    <div className="bg-amber-50 dark:bg-amber-950/60 border-b border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100 px-4 py-2.5 text-xs md:text-sm text-center sticky top-0 z-50 shadow-sm">
       <span>
         Google Maps Platform quota reached. If you are the app owner, visit{' '}
         <a
           href="https://developers.google.com/maps/ai/ai-studio?utm_campaign=gmp_mcp_codeassist_v1_aistudio#quota_exceeded_errors"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline font-semibold text-amber-950 hover:text-amber-800"
+          className="underline font-semibold text-amber-950 dark:text-amber-200 hover:text-amber-800 dark:hover:text-amber-100"
         >
           maps developer site
         </a>{' '}
@@ -1811,6 +1902,8 @@ export default function App() {
           usuarios={usuarios}
           onLoginSuccess={handleLoginSuccess}
           fundoNombre={explotacion.nombreFundo}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
         <OfflineIndicator hasPendingSync={pendingOfflineSync} onRetrySync={handleForceSync} />
       </>
@@ -1818,7 +1911,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-stone-50 flex flex-col font-sans text-stone-900 selection:bg-emerald-200 selection:text-emerald-950">
+    <div className="min-h-[100dvh] bg-stone-50 dark:bg-stone-950 flex flex-col font-sans text-stone-900 dark:text-stone-100 selection:bg-emerald-200 dark:selection:bg-emerald-800 selection:text-emerald-950 dark:selection:text-emerald-50 transition-colors">
       {quotaBanner}
       <Navbar
         activeTab={activeTab}
@@ -1845,19 +1938,21 @@ export default function App() {
             Boolean(unreadFrostNotifForUser) ||
             (evalSensorGlobal.sensorActivo && clima.tempMinima <= configControlHeladas.umbralAlertaC)
         )}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {permissionErrorToast && (
         <div className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-3">
-          <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 text-xs flex items-center justify-between gap-2 shadow-2xs">
+          <div className="p-3 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-900 dark:text-rose-100 text-xs flex items-center justify-between gap-2 shadow-2xs">
             <div className="flex items-center gap-2 font-semibold">
-              <ShieldAlert className="w-4 h-4 text-rose-700 shrink-0" />
+              <ShieldAlert className="w-4 h-4 text-rose-700 dark:text-rose-400 shrink-0" />
               <span>{permissionErrorToast}</span>
             </div>
             <button
               type="button"
               onClick={() => setPermissionErrorToast(null)}
-              className="text-rose-700 hover:text-rose-950 p-1 cursor-pointer"
+              className="text-rose-700 dark:text-rose-300 hover:text-rose-950 dark:hover:text-white p-1 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -1867,16 +1962,16 @@ export default function App() {
 
       {(unreadFrostNotifForUser || evalSensorGlobal.bajoUmbralCritico || liveBroadcastAlert) && (
         <div className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-3">
-          <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-xl text-rose-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-800 rounded-xl text-rose-950 dark:text-rose-100 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
             <div className="flex items-start gap-2.5 min-w-0">
-              <BellRing className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
+              <BellRing className="w-4 h-4 text-rose-700 dark:text-rose-400 shrink-0 mt-0.5" />
               <div className="min-w-0 space-y-0.5">
-                <div className="font-black text-rose-900">
+                <div className="font-black text-rose-900 dark:text-rose-100">
                   {unreadFrostNotifForUser?.titulo ||
                     liveBroadcastAlert ||
                     `ALERTA CRÍTICA DE HELADA: Sensor ${evalSensorGlobal.tempSensorC.toFixed(1)}°C (< ${evalSensorGlobal.umbralCriticoC.toFixed(1)}°C)`}
                 </div>
-                <p className="text-[11px] text-rose-900 leading-snug">
+                <p className="text-[11px] text-rose-900 dark:text-rose-200 leading-snug">
                   {unreadFrostNotifForUser?.mensaje ||
                     `Temperatura bajo umbral crítico (${evalSensorGlobal.umbralCriticoC.toFixed(1)}°C). Notificación dirigida al Administrador y a todo el equipo.`}
                 </p>
@@ -1887,9 +1982,9 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('heladas')}
-                  className="px-3 py-1.5 bg-white hover:bg-rose-100 text-rose-900 border border-rose-300 rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                  className="px-3 py-1.5 bg-white dark:bg-stone-800 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-900 dark:text-rose-100 border border-rose-300 dark:border-rose-700 rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
                 >
-                  <Snowflake className="w-3.5 h-3.5 text-cyan-800" />
+                  <Snowflake className="w-3.5 h-3.5 text-cyan-800 dark:text-cyan-400" />
                   <span>Ir a Control Heladas</span>
                 </button>
               )}
@@ -1910,7 +2005,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setLiveBroadcastAlert(null)}
-                  className="p-1 text-rose-700 hover:text-rose-950 cursor-pointer"
+                  className="p-1 text-rose-700 dark:text-rose-300 hover:text-rose-950 dark:hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1922,14 +2017,14 @@ export default function App() {
 
       {unreadUvNotif && (
         <div className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-3">
-          <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl text-amber-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="p-3.5 bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 rounded-xl text-amber-950 dark:text-amber-100 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
             <div className="flex items-start gap-2.5 min-w-0">
-              <Sun className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <Sun className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
               <div className="min-w-0 space-y-0.5">
-                <div className="font-black text-amber-950">
+                <div className="font-black text-amber-950 dark:text-amber-100">
                   Alerta Diaria Radiación UV ({unreadUvNotif.horaProgramada} hrs) · Máx {unreadUvNotif.uvMaximoDia.toFixed(1)} ({unreadUvNotif.nivelRiesgo})
                 </div>
-                <p className="text-[11px] text-amber-900 leading-snug">
+                <p className="text-[11px] text-amber-900 dark:text-amber-200 leading-snug">
                   <span className="font-semibold">{unreadUvNotif.ubicacionNombre}</span> ({unreadUvNotif.latitud.toFixed(4)}°, {unreadUvNotif.longitud.toFixed(4)}°) · Pico a las {unreadUvNotif.horaPicoUv}. {unreadUvNotif.recomendacion}
                 </p>
               </div>
@@ -1939,9 +2034,9 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('clima')}
-                  className="px-3 py-1.5 bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                  className="px-3 py-1.5 bg-white dark:bg-stone-800 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-950 dark:text-amber-100 border border-amber-300 dark:border-amber-700 rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
                 >
-                  <Sun className="w-3.5 h-3.5 text-amber-700" />
+                  <Sun className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                   <span>Ver Clima y UV</span>
                 </button>
               )}
@@ -1971,7 +2066,8 @@ export default function App() {
             horasFrio={normalizarCondicionHorasFrio(horasFrio, registrosTermicos)}
             usuarios={usuarios}
             activeUserId={activeUser?.id || activeUserId}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, 'labores')}
+            canEditTabFn={(tab) => canEditTab(activeUser, tab)}
             isAdmin={isAdmin}
             onOpenNewLaborWithDefaults={handleOpenNewLaborWithDefaults}
             onNavigateTab={setActiveTab}
@@ -1982,6 +2078,7 @@ export default function App() {
             alertasProactivas={alertasProactivas}
             onDismissLowStockAlert={handleDismissLowStockAlert}
             fenologia={fenologia}
+            ordenesTrabajo={ordenesTrabajo}
           />
         )}
 
@@ -1997,13 +2094,13 @@ export default function App() {
               lat: explotacion.latitud ?? -39.628593,
               lng: explotacion.longitud ?? -72.461085,
             }}
-            canEdit={canEdit}
-            onAddParcela={guardEdit((p) => setParcelas((prev) => [...prev, p]))}
-            onUpdateParcela={guardEdit((p) => setParcelas((prev) => prev.map((item) => item.id === p.id ? p : item)))}
-            onDeleteParcela={guardEdit((id) => setParcelas((prev) => prev.filter((item) => item.id !== id)))}
-            onAddLugar={guardEdit((l) => setLugares((prev) => [...prev, l]))}
-            onUpdateLugar={guardEdit((l) => setLugares((prev) => prev.map((item) => item.id === l.id ? l : item)))}
-            onDeleteLugar={guardEdit((id) => setLugares((prev) => prev.filter((item) => item.id !== id)))}
+            canEdit={canEditTab(activeUser, 'parcelas')}
+            onAddParcela={guardTabEdit('parcelas', (p) => setParcelas((prev) => [...prev, p]))}
+            onUpdateParcela={guardTabEdit('parcelas', (p) => setParcelas((prev) => prev.map((item) => item.id === p.id ? p : item)))}
+            onDeleteParcela={guardTabEdit('parcelas', (id) => setParcelas((prev) => prev.filter((item) => item.id !== id)))}
+            onAddLugar={guardTabEdit('parcelas', (l) => setLugares((prev) => [...prev, l]))}
+            onUpdateLugar={guardTabEdit('parcelas', (l) => setLugares((prev) => prev.map((item) => item.id === l.id ? l : item)))}
+            onDeleteLugar={guardTabEdit('parcelas', (id) => setLugares((prev) => prev.filter((item) => item.id !== id)))}
             onRegisterLaborForParcela={(pId) => handleOpenNewLaborWithDefaults(pId, undefined)}
             estadosFenologicosPersonalizados={estadosFenologicosCustom}
             onAddEstadoFenologicoCustom={handleAddEstadoFenologicoCustom}
@@ -2015,18 +2112,18 @@ export default function App() {
             fundoNombre={explotacion.nombreFundo}
             parcelas={parcelas}
             muestreos={muestreosMadurez}
-            onAddMuestreo={guardEdit((m) => setMuestreosMadurez((prev) => [m, ...prev]))}
-            onDeleteMuestreo={guardEdit((id) => setMuestreosMadurez((prev) => prev.filter((m) => m.id !== id)))}
+            onAddMuestreo={guardTabEdit('cosecha', (m) => setMuestreosMadurez((prev) => [m, ...prev]))}
+            onDeleteMuestreo={guardTabEdit('cosecha', (id) => setMuestreosMadurez((prev) => prev.filter((m) => m.id !== id)))}
             cosechas={cosechasLote}
-            onAddCosecha={guardEdit((c) => setCosechasLote((prev) => [c, ...prev]))}
-            onDeleteCosecha={guardEdit((id) => setCosechasLote((prev) => prev.filter((c) => c.id !== id)))}
+            onAddCosecha={guardTabEdit('cosecha', (c) => setCosechasLote((prev) => [c, ...prev]))}
+            onDeleteCosecha={guardTabEdit('cosecha', (id) => setCosechasLote((prev) => prev.filter((c) => c.id !== id)))}
             liquidaciones={liquidacionesPacking}
-            onAddLiquidacion={guardEdit((l) => setLiquidacionesPacking((prev) => [l, ...prev]))}
-            onDeleteLiquidacion={guardEdit((id) => setLiquidacionesPacking((prev) => prev.filter((l) => l.id !== id)))}
+            onAddLiquidacion={guardTabEdit('cosecha', (l) => setLiquidacionesPacking((prev) => [l, ...prev]))}
+            onDeleteLiquidacion={guardTabEdit('cosecha', (id) => setLiquidacionesPacking((prev) => prev.filter((l) => l.id !== id)))}
             labores={labores}
             ordenesTrabajo={ordenesTrabajo}
             activeUserName={activeUser?.nombre}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, 'cosecha')}
           />
         )}
 
@@ -2039,10 +2136,10 @@ export default function App() {
             activeUser={activeUser}
             explotacion={explotacion}
             clima={clima}
-            canEdit={canEdit}
-            onAddOrden={guardEdit(handleAddOrden)}
+            canEdit={canEditTab(activeUser, 'ordenes')}
+            onAddOrden={guardTabEdit('ordenes', handleAddOrden)}
             onUpdateOrden={handleUpdateOrden}
-            onExecuteOrden={guardEdit((ordenId, aplicadorNombre, firma) => {
+            onExecuteOrden={guardTabEdit('ordenes', (ordenId, aplicadorNombre, firma) => {
               setOrdenesTrabajo((prev) =>
                 prev.map((o) => o.id === ordenId ? { 
                   ...o, 
@@ -2053,7 +2150,7 @@ export default function App() {
                 } : o)
               );
             })}
-            onDeleteOrden={guardEdit((id) => setOrdenesTrabajo((prev) => prev.filter((o) => o.id !== id)))}
+            onDeleteOrden={guardTabEdit('ordenes', (id) => setOrdenesTrabajo((prev) => prev.filter((o) => o.id !== id)))}
           />
         )}
 
@@ -2061,10 +2158,10 @@ export default function App() {
           <FitosanitariosView
             inventario={inventario}
             explotacion={explotacion}
-            canEdit={canEdit}
-            onAddInsumo={guardEdit((i) => setInventario((prev) => [...prev, i]))}
+            canEdit={canEditTab(activeUser, 'fitosanitarios')}
+            onAddInsumo={guardTabEdit('fitosanitarios', (i) => setInventario((prev) => [...prev, i]))}
             onUpdateInsumo={handleUpdateInsumoSafe}
-            onDeleteInsumo={guardEdit((id) => setInventario((prev) => prev.filter((item) => item.id !== id)))}
+            onDeleteInsumo={guardTabEdit('fitosanitarios', (id) => setInventario((prev) => prev.filter((item) => item.id !== id)))}
             onOpenAlertsModal={() => setIsAlertsModalOpen(true)}
           />
         )}
@@ -2073,10 +2170,10 @@ export default function App() {
           <MaterialesRiegoView
             inventario={inventario}
             explotacion={explotacion}
-            canEdit={canEdit}
-            onAddInsumo={guardEdit((i) => setInventario((prev) => [...prev, i]))}
+            canEdit={canEditTab(activeUser, 'materiales')}
+            onAddInsumo={guardTabEdit('materiales', (i) => setInventario((prev) => [...prev, i]))}
             onUpdateInsumo={handleUpdateInsumoSafe}
-            onDeleteInsumo={guardEdit((id) => setInventario((prev) => prev.filter((item) => item.id !== id)))}
+            onDeleteInsumo={guardTabEdit('materiales', (id) => setInventario((prev) => prev.filter((item) => item.id !== id)))}
             onOpenAlertsModal={() => setIsAlertsModalOpen(true)}
           />
         )}
@@ -2085,23 +2182,23 @@ export default function App() {
           <PozoView
             registrosPozo={registrosPozo}
             explotacion={explotacion}
-            canEdit={canEdit}
-            onAddRegistroPozo={guardEdit((r) => setRegistrosPozo((prev) => [r, ...prev]))}
-            onUpdateRegistroPozo={guardEdit((r) => setRegistrosPozo((prev) => prev.map((item) => item.id === r.id ? r : item)))}
-            onDeleteRegistroPozo={guardEdit((id) => setRegistrosPozo((prev) => prev.filter((p) => p.id !== id)))}
+            canEdit={canEditTab(activeUser, 'pozo')}
+            onAddRegistroPozo={guardTabEdit('pozo', (r) => setRegistrosPozo((prev) => [r, ...prev]))}
+            onUpdateRegistroPozo={guardTabEdit('pozo', (r) => setRegistrosPozo((prev) => prev.map((item) => item.id === r.id ? r : item)))}
+            onDeleteRegistroPozo={guardTabEdit('pozo', (id) => setRegistrosPozo((prev) => prev.filter((p) => p.id !== id)))}
           />
         )}
 
         {activeTab === 'riego' && (
           <RiegoView
             turnosRiego={turnosRiego}
-            onAddTurnoRiego={guardEdit((t) => setTurnosRiego((prev) => [t, ...prev]))}
-            onUpdateTurnoRiego={guardEdit((t) => setTurnosRiego((prev) => prev.map((item) => item.id === t.id ? t : item)))}
-            onDeleteTurnoRiego={guardEdit((id) => setTurnosRiego((prev) => prev.filter((t) => t.id !== id)))}
+            onAddTurnoRiego={guardTabEdit('riego', (t) => setTurnosRiego((prev) => [t, ...prev]))}
+            onUpdateTurnoRiego={guardTabEdit('riego', (t) => setTurnosRiego((prev) => prev.map((item) => item.id === t.id ? t : item)))}
+            onDeleteTurnoRiego={guardTabEdit('riego', (id) => setTurnosRiego((prev) => prev.filter((t) => t.id !== id)))}
             parcelas={parcelas}
             clima={clima}
             explotacion={explotacion}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, 'riego')}
           />
         )}
 
@@ -2110,44 +2207,44 @@ export default function App() {
             maquinarias={maquinarias}
             registrosMantencion={registrosMantencion}
             explotacion={explotacion}
-            canEdit={canEdit}
-            onAddMaquinaria={guardEdit((m) => setMaquinarias((prev) => [m, ...prev]))}
-            onUpdateMaquinaria={guardEdit((m) => setMaquinarias((prev) => prev.map((item) => item.id === m.id ? m : item)))}
-            onDeleteMaquinaria={guardEdit((id) => setMaquinarias((prev) => prev.filter((item) => item.id !== id)))}
-            onAddMantencion={guardEdit((reg) => setRegistrosMantencion((prev) => [reg, ...prev]))}
-            onDeleteMantencion={guardEdit((id) => setRegistrosMantencion((prev) => prev.filter((item) => item.id !== id)))}
+            canEdit={canEditTab(activeUser, 'maquinarias')}
+            onAddMaquinaria={guardTabEdit('maquinarias', (m) => setMaquinarias((prev) => [m, ...prev]))}
+            onUpdateMaquinaria={guardTabEdit('maquinarias', (m) => setMaquinarias((prev) => prev.map((item) => item.id === m.id ? m : item)))}
+            onDeleteMaquinaria={guardTabEdit('maquinarias', (id) => setMaquinarias((prev) => prev.filter((item) => item.id !== id)))}
+            onAddMantencion={guardTabEdit('maquinarias', (reg) => setRegistrosMantencion((prev) => [reg, ...prev]))}
+            onDeleteMantencion={guardTabEdit('maquinarias', (id) => setRegistrosMantencion((prev) => prev.filter((item) => item.id !== id)))}
           />
         )}
 
         {activeTab === 'fenologia' && (
           <HorasFrioFenologiaView
             parcelas={parcelas}
-            onUpdateParcela={guardEdit((p) => setParcelas((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
+            onUpdateParcela={guardTabEdit('fenologia', (p) => setParcelas((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
             horasFrio={horasFrio}
-            onUpdateHorasFrio={guardEdit(setHorasFrio)}
+            onUpdateHorasFrio={guardTabEdit('fenologia', setHorasFrio)}
             registrosTermicos={registrosTermicos}
-            onAddRegistroTermico={guardEdit((r) => setRegistrosTermicos((prev) => [r, ...prev]))}
-            onUpdateRegistroTermico={guardEdit((r) =>
+            onAddRegistroTermico={guardTabEdit('fenologia', (r) => setRegistrosTermicos((prev) => [r, ...prev]))}
+            onUpdateRegistroTermico={guardTabEdit('fenologia', (r) =>
               setRegistrosTermicos((prev) => prev.map((item) => (item.id === r.id ? r : item)))
             )}
-            onDeleteRegistroTermico={guardEdit((id) =>
+            onDeleteRegistroTermico={guardTabEdit('fenologia', (id) =>
               setRegistrosTermicos((prev) => prev.filter((item) => item.id !== id))
             )}
             clima={clima}
             fenologia={fenologia}
-            onAddFenologia={guardEdit((f) => setFenologia((prev) => [f, ...prev]))}
-            onUpdateFenologia={guardEdit((f) => setFenologia((prev) => prev.map((item) => item.id === f.id ? f : item)))}
-            onDeleteFenologia={guardEdit((id) => setFenologia((prev) => prev.filter((f) => f.id !== id)))}
-            onReplaceFenologia={guardEdit(setFenologia)}
+            onAddFenologia={guardTabEdit('fenologia', (f) => setFenologia((prev) => [f, ...prev]))}
+            onUpdateFenologia={guardTabEdit('fenologia', (f) => setFenologia((prev) => prev.map((item) => item.id === f.id ? f : item)))}
+            onDeleteFenologia={guardTabEdit('fenologia', (id) => setFenologia((prev) => prev.filter((f) => f.id !== id)))}
+            onReplaceFenologia={guardTabEdit('fenologia', setFenologia)}
             polinizacion={polinizacion}
-            onAddPolinizacion={guardEdit((p) => setPolinizacion((prev) => [p, ...prev]))}
-            onUpdatePolinizacion={guardEdit((p) => setPolinizacion((prev) => prev.map((item) => item.id === p.id ? p : item)))}
-            onDeletePolinizacion={guardEdit((id) => setPolinizacion((prev) => prev.filter((p) => p.id !== id)))}
+            onAddPolinizacion={guardTabEdit('fenologia', (p) => setPolinizacion((prev) => [p, ...prev]))}
+            onUpdatePolinizacion={guardTabEdit('fenologia', (p) => setPolinizacion((prev) => prev.map((item) => item.id === p.id ? p : item)))}
+            onDeletePolinizacion={guardTabEdit('fenologia', (id) => setPolinizacion((prev) => prev.filter((p) => p.id !== id)))}
             estadosFenologicosPersonalizados={estadosFenologicosCustom}
             onAddEstadoFenologicoCustom={handleAddEstadoFenologicoCustom}
             onDeleteEstadoFenologicoCustom={handleDeleteEstadoFenologicoCustom}
             activeUserName={activeUser?.nombre}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, 'fenologia')}
           />
         )}
 
@@ -2166,37 +2263,62 @@ export default function App() {
             }
             parcelas={parcelas}
             muestreosBrotacion={muestreosBrotacion}
-            onAddMuestreoBrotacion={guardEdit((m) => setMuestreosBrotacion((prev) => [m, ...prev]))}
-            onUpdateMuestreoBrotacion={guardEdit((m) => setMuestreosBrotacion((prev) => prev.map((item) => (item.id === m.id ? m : item))))}
-            onDeleteMuestreoBrotacion={guardEdit((id) => setMuestreosBrotacion((prev) => prev.filter((m) => m.id !== id)))}
+            onAddMuestreoBrotacion={guardTabEdit('brotacion', (m) => setMuestreosBrotacion((prev) => [m, ...prev]))}
+            onUpdateMuestreoBrotacion={guardTabEdit('brotacion', (m) => setMuestreosBrotacion((prev) => prev.map((item) => (item.id === m.id ? m : item))))}
+            onDeleteMuestreoBrotacion={guardTabEdit('brotacion', (id) => setMuestreosBrotacion((prev) => prev.filter((m) => m.id !== id)))}
             conteosBotones={conteosBotones}
-            onAddConteoBotones={guardEdit((c) => setConteosBotones((prev) => [c, ...prev]))}
-            onUpdateConteoBotones={guardEdit((c) => setConteosBotones((prev) => prev.map((item) => (item.id === c.id ? c : item))))}
-            onDeleteConteoBotones={guardEdit((id) => setConteosBotones((prev) => prev.filter((c) => c.id !== id)))}
+            onAddConteoBotones={guardTabEdit('botones', (c) => setConteosBotones((prev) => [c, ...prev]))}
+            onUpdateConteoBotones={guardTabEdit('botones', (c) => setConteosBotones((prev) => prev.map((item) => (item.id === c.id ? c : item))))}
+            onDeleteConteoBotones={guardTabEdit('botones', (id) => setConteosBotones((prev) => prev.filter((c) => c.id !== id)))}
             sincroniasFlorales={sincroniasFlorales}
-            onAddSincroniaFloral={guardEdit((s) => setSincroniasFlorales((prev) => [s, ...prev]))}
-            onUpdateSincroniaFloral={guardEdit((s) => setSincroniasFlorales((prev) => prev.map((item) => (item.id === s.id ? s : item))))}
-            onDeleteSincroniaFloral={guardEdit((id) => setSincroniasFlorales((prev) => prev.filter((s) => s.id !== id)))}
+            onAddSincroniaFloral={guardTabEdit('polinizacion', (s) => setSincroniasFlorales((prev) => [s, ...prev]))}
+            onUpdateSincroniaFloral={guardTabEdit('polinizacion', (s) => setSincroniasFlorales((prev) => prev.map((item) => (item.id === s.id ? s : item))))}
+            onDeleteSincroniaFloral={guardTabEdit('polinizacion', (id) => setSincroniasFlorales((prev) => prev.filter((s) => s.id !== id)))}
             aplicacionesPolen={aplicacionesPolen}
-            onAddAplicacionPolen={guardEdit((a) => setAplicacionesPolen((prev) => [a, ...prev]))}
-            onUpdateAplicacionPolen={guardEdit((a) => setAplicacionesPolen((prev) => prev.map((item) => (item.id === a.id ? a : item))))}
-            onDeleteAplicacionPolen={guardEdit((id) => setAplicacionesPolen((prev) => prev.filter((a) => a.id !== id)))}
+            onAddAplicacionPolen={guardTabEdit('polinizacion', (a) => setAplicacionesPolen((prev) => [a, ...prev]))}
+            onUpdateAplicacionPolen={guardTabEdit('polinizacion', (a) => setAplicacionesPolen((prev) => prev.map((item) => (item.id === a.id ? a : item))))}
+            onDeleteAplicacionPolen={guardTabEdit('polinizacion', (id) => setAplicacionesPolen((prev) => prev.filter((a) => a.id !== id)))}
             planesCargaRaleo={planesCargaRaleo}
-            onAddPlanCargaRaleo={guardEdit((p) => setPlanesCargaRaleo((prev) => [p, ...prev]))}
-            onUpdatePlanCargaRaleo={guardEdit((p) => setPlanesCargaRaleo((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
-            onDeletePlanCargaRaleo={guardEdit((id) => setPlanesCargaRaleo((prev) => prev.filter((p) => p.id !== id)))}
+            onAddPlanCargaRaleo={guardTabEdit('carga_raleo', (p) => setPlanesCargaRaleo((prev) => [p, ...prev]))}
+            onUpdatePlanCargaRaleo={guardTabEdit('carga_raleo', (p) => setPlanesCargaRaleo((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
+            onDeletePlanCargaRaleo={guardTabEdit('carga_raleo', (id) => setPlanesCargaRaleo((prev) => prev.filter((p) => p.id !== id)))}
             evaluacionesCuajaSemillas={evaluacionesCuajaSemillas}
-            onAddEvaluacionCuajaSemillas={guardEdit((e) => setEvaluacionesCuajaSemillas((prev) => [e, ...prev]))}
-            onUpdateEvaluacionCuajaSemillas={guardEdit((e) => setEvaluacionesCuajaSemillas((prev) => prev.map((item) => (item.id === e.id ? e : item))))}
-            onDeleteEvaluacionCuajaSemillas={guardEdit((id) => setEvaluacionesCuajaSemillas((prev) => prev.filter((e) => e.id !== id)))}
-            onUpdateParcela={guardEdit((p) => setParcelas((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
+            onAddEvaluacionCuajaSemillas={guardTabEdit('cuaja_semillas', (e) => setEvaluacionesCuajaSemillas((prev) => [e, ...prev]))}
+            onUpdateEvaluacionCuajaSemillas={guardTabEdit('cuaja_semillas', (e) => setEvaluacionesCuajaSemillas((prev) => prev.map((item) => (item.id === e.id ? e : item))))}
+            onDeleteEvaluacionCuajaSemillas={guardTabEdit('cuaja_semillas', (id) => setEvaluacionesCuajaSemillas((prev) => prev.filter((e) => e.id !== id)))}
+            onUpdateParcela={(p) => {
+              const targetTab =
+                canEditTab(activeUser, activeTab)
+                  ? activeTab
+                  : canEditTab(activeUser, 'parcelas')
+                  ? 'parcelas'
+                  : activeTab;
+              if (!canEditTab(activeUser, targetTab)) {
+                notifyPermissionDenied('edit', activeTab);
+                return;
+              }
+              setParcelas((prev) => prev.map((item) => (item.id === p.id ? p : item)));
+            }}
             fenologia={fenologia}
-            onAddFenologia={guardEdit((f) => setFenologia((prev) => [f, ...prev]))}
-            onUpdateFenologia={guardEdit((f) => setFenologia((prev) => prev.map((item) => (item.id === f.id ? f : item))))}
+            onAddFenologia={(f) => {
+              if (!canEditTab(activeUser, activeTab) && !canEditTab(activeUser, 'fenologia')) {
+                notifyPermissionDenied('edit', activeTab);
+                return;
+              }
+              setFenologia((prev) => [f, ...prev]);
+            }}
+            onUpdateFenologia={(f) => {
+              if (!canEditTab(activeUser, activeTab) && !canEditTab(activeUser, 'fenologia')) {
+                notifyPermissionDenied('edit', activeTab);
+                return;
+              }
+              setFenologia((prev) => prev.map((item) => (item.id === f.id ? f : item)));
+            }}
             estadosFenologicosPersonalizados={estadosFenologicosCustom}
             onAddEstadoFenologicoCustom={handleAddEstadoFenologicoCustom}
             activeUserName={activeUser?.nombre}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, activeTab)}
+            canEditByTab={(tab) => canEditTab(activeUser, tab)}
           />
         )}
 
@@ -2205,7 +2327,7 @@ export default function App() {
             labores={labores}
             parcelas={parcelas}
             explotacion={explotacion}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, 'labores')}
             onOpenNewLabor={handleOpenNewLabor}
             onOpenNewFertilizacion={() => handleOpenNewLaborWithDefaults(undefined, 'fertilizacion')}
             onEditLabor={handleEditLabor}
@@ -2216,24 +2338,24 @@ export default function App() {
         {activeTab === 'clima' && (
           <ClimaView
             clima={clima}
-            onUpdateClima={guardEdit(setClima)}
+            onUpdateClima={guardTabEdit('clima', setClima)}
             alertaUvConfig={alertaUvConfig}
-            onUpdateAlertaUvConfig={guardEdit(setAlertaUvConfig)}
+            onUpdateAlertaUvConfig={guardTabEdit('clima', setAlertaUvConfig)}
             onActivateMobileUvPush={handleActivateMobileUvPush}
             onTriggerTestUvAlert={handleTriggerTestUvAlert}
             eventualidades={eventualidades}
             parcelas={parcelas}
             explotacion={explotacion}
-            onUpdateExplotacion={guardEdit(setExplotacion)}
+            onUpdateExplotacion={guardTabEdit('clima', setExplotacion)}
             activeUserName={activeUser?.nombre}
-            onAddEventualidad={guardEdit((ev) => setEventualidades((prev) => [ev, ...prev]))}
-            onUpdateEventualidad={guardEdit((ev) =>
+            onAddEventualidad={guardTabEdit('clima', (ev) => setEventualidades((prev) => [ev, ...prev]))}
+            onUpdateEventualidad={guardTabEdit('clima', (ev) =>
               setEventualidades((prev) => prev.map((item) => (item.id === ev.id ? ev : item)))
             )}
-            onDeleteEventualidad={guardEdit((id) =>
+            onDeleteEventualidad={guardTabEdit('clima', (id) =>
               setEventualidades((prev) => prev.filter((item) => item.id !== id))
             )}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, 'clima')}
             onNavigateControlHeladas={() => setActiveTab('heladas')}
           />
         )}
@@ -2241,17 +2363,17 @@ export default function App() {
         {activeTab === 'heladas' && (
           <ControlHeladasView
             controles={controlesHelada}
-            onAddControl={guardEdit((c) => setControlesHelada((prev) => [c, ...prev]))}
-            onUpdateControl={guardEdit((c) =>
+            onAddControl={guardTabEdit('heladas', (c) => setControlesHelada((prev) => [c, ...prev]))}
+            onUpdateControl={guardTabEdit('heladas', (c) =>
               setControlesHelada((prev) => prev.map((item) => (item.id === c.id ? c : item)))
             )}
-            onDeleteControl={guardEdit((id) =>
+            onDeleteControl={guardTabEdit('heladas', (id) =>
               setControlesHelada((prev) => prev.filter((item) => item.id !== id))
             )}
             config={configControlHeladas}
-            onUpdateConfig={guardEdit(setConfigControlHeladas)}
+            onUpdateConfig={guardTabEdit('heladas', setConfigControlHeladas)}
             clima={clima}
-            onUpdateClima={guardEdit(setClima)}
+            onUpdateClima={guardTabEdit('heladas', setClima)}
             parcelas={parcelas}
             explotacion={explotacion}
             eventualidades={eventualidades}
@@ -2260,7 +2382,7 @@ export default function App() {
             usuarios={usuarios}
             activeUser={activeUser}
             activeUserName={activeUser?.nombre}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, 'heladas')}
             onAcknowledgeNotificacion={handleAcknowledgeNotificacionHelada}
             onNavigateTab={setActiveTab}
           />
@@ -2271,7 +2393,7 @@ export default function App() {
             labores={labores}
             parcelas={parcelas}
             explotacion={explotacion}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, 'monitoreo')}
             onOpenNewLaborWithDefaults={handleOpenNewLaborWithDefaults}
             onSaveQuickObservation={handleSaveLabor}
           />
@@ -2290,9 +2412,9 @@ export default function App() {
           <LaboratorioView
             analisis={analisisLaboratorio}
             parcelas={parcelas}
-            onAddAnalisis={guardEdit((a) => setAnalisisLaboratorio((prev) => [a, ...prev]))}
-            onDeleteAnalisis={guardEdit((id) => setAnalisisLaboratorio((prev) => prev.filter((a) => a.id !== id)))}
-            canEdit={canEdit}
+            onAddAnalisis={guardTabEdit('laboratorio', (a) => setAnalisisLaboratorio((prev) => [a, ...prev]))}
+            onDeleteAnalisis={guardTabEdit('laboratorio', (id) => setAnalisisLaboratorio((prev) => prev.filter((a) => a.id !== id)))}
+            canEdit={canEditTab(activeUser, 'laboratorio')}
           />
         )}
 
@@ -2306,20 +2428,20 @@ export default function App() {
             muestreosMadurez={muestreosMadurez}
             parcelas={parcelas}
             registrosEnvases={registrosEnvases}
-            onAddEnvase={guardEdit((r) => setRegistrosEnvases((prev) => [r, ...prev]))}
-            onDeleteEnvase={guardEdit((id) => setRegistrosEnvases((prev) => prev.filter((e) => e.id !== id)))}
+            onAddEnvase={guardTabEdit('auditoria', (r) => setRegistrosEnvases((prev) => [r, ...prev]))}
+            onDeleteEnvase={guardTabEdit('auditoria', (id) => setRegistrosEnvases((prev) => prev.filter((e) => e.id !== id)))}
             calibracionesEquipo={calibracionesEquipo}
-            onAddCalibracion={guardEdit((c) => setCalibracionesEquipo((prev) => [c, ...prev]))}
-            onDeleteCalibracion={guardEdit((id) => setCalibracionesEquipo((prev) => prev.filter((c) => c.id !== id)))}
+            onAddCalibracion={guardTabEdit('auditoria', (c) => setCalibracionesEquipo((prev) => [c, ...prev]))}
+            onDeleteCalibracion={guardTabEdit('auditoria', (id) => setCalibracionesEquipo((prev) => prev.filter((c) => c.id !== id)))}
             auditoriaManual={auditoriaManual}
-            onToggleAuditoriaManual={guardEdit((key) =>
+            onToggleAuditoriaManual={guardTabEdit('auditoria', (key) =>
               setAuditoriaManual((prev) => ({ ...prev, [key]: !prev[key] }))
             )}
             planillaBpa={planillaBpa}
-            onUpdatePlanillaBpa={guardEdit((nextPlanilla) => setPlanillaBpa(nextPlanilla))}
+            onUpdatePlanillaBpa={guardTabEdit('auditoria', (nextPlanilla) => setPlanillaBpa(nextPlanilla))}
             fundoNombre={explotacion.nombreFundo}
             activeUserName={activeUser?.nombre}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, 'auditoria')}
           />
         )}
 
@@ -2334,25 +2456,25 @@ export default function App() {
             liquidacionesPacking={liquidacionesPacking}
             evaluacionesCuaja={evaluacionesCuajaSemillas}
             tareasHuerto={tareasHuerto}
-            onAddTarea={guardEdit((t) => setTareasHuerto((prev) => [t, ...prev]))}
-            onUpdateTarea={guardEdit((t) => setTareasHuerto((prev) => prev.map((item) => (item.id === t.id ? t : item))))}
-            onDeleteTarea={guardEdit((id) => setTareasHuerto((prev) => prev.filter((t) => t.id !== id)))}
+            onAddTarea={guardTabEdit('planificacion', (t) => setTareasHuerto((prev) => [t, ...prev]))}
+            onUpdateTarea={guardTabEdit('planificacion', (t) => setTareasHuerto((prev) => prev.map((item) => (item.id === t.id ? t : item))))}
+            onDeleteTarea={guardTabEdit('planificacion', (id) => setTareasHuerto((prev) => prev.filter((t) => t.id !== id)))}
             resumenesTemporada={resumenesTemporada}
-            onAddResumenTemporada={guardEdit((r) => setResumenesTemporada((prev) => [r, ...prev]))}
-            onDeleteResumenTemporada={guardEdit((id) => setResumenesTemporada((prev) => prev.filter((r) => r.id !== id)))}
+            onAddResumenTemporada={guardTabEdit('planificacion', (r) => setResumenesTemporada((prev) => [r, ...prev]))}
+            onDeleteResumenTemporada={guardTabEdit('planificacion', (id) => setResumenesTemporada((prev) => prev.filter((r) => r.id !== id)))}
             alertasProactivas={alertasProactivas}
             onDismissLowStockAlert={handleDismissLowStockAlert}
             onNavigateTab={setActiveTab}
             fenologia={fenologia}
-            onAddFenologia={guardEdit((f) => setFenologia((prev) => [f, ...prev]))}
-            onUpdateFenologia={guardEdit((f) => setFenologia((prev) => prev.map((item) => (item.id === f.id ? f : item))))}
-            onDeleteFenologia={guardEdit((id) => setFenologia((prev) => prev.filter((f) => f.id !== id)))}
-            onReplaceFenologia={guardEdit(setFenologia)}
-            onUpdateParcela={guardEdit((p) => setParcelas((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
+            onAddFenologia={guardTabEdit('planificacion', (f) => setFenologia((prev) => [f, ...prev]))}
+            onUpdateFenologia={guardTabEdit('planificacion', (f) => setFenologia((prev) => prev.map((item) => (item.id === f.id ? f : item))))}
+            onDeleteFenologia={guardTabEdit('planificacion', (id) => setFenologia((prev) => prev.filter((f) => f.id !== id)))}
+            onReplaceFenologia={guardTabEdit('planificacion', setFenologia)}
+            onUpdateParcela={guardTabEdit('planificacion', (p) => setParcelas((prev) => prev.map((item) => (item.id === p.id ? p : item))))}
             estadosFenologicosPersonalizados={estadosFenologicosCustom}
             onAddEstadoFenologicoCustom={handleAddEstadoFenologicoCustom}
             onDeleteEstadoFenologicoCustom={handleDeleteEstadoFenologicoCustom}
-            canEdit={canEdit}
+            canEdit={canEditTab(activeUser, 'planificacion')}
           />
         )}
 
@@ -2433,7 +2555,7 @@ export default function App() {
       </ErrorBoundary>
 
       {/* Modales Globales */}
-      {canEdit && (
+      {(canEditTab(activeUser, 'labores') || (activeTab === 'monitoreo' && canEditTab(activeUser, 'monitoreo'))) && (
         <ModalLabor
           isOpen={isLaborModalOpen}
           onClose={() => {
@@ -2465,16 +2587,23 @@ export default function App() {
         isOpen={isAlertsModalOpen}
         onClose={() => setIsAlertsModalOpen(false)}
         inventario={inventario}
-        canEdit={canEdit}
+        canEdit={canEditTab(activeUser, 'fitosanitarios') || canEditTab(activeUser, 'materiales')}
+        canEditItem={(item) => canEditTab(activeUser, resolveBodegaTabForInsumo(item))}
         isAdmin={isAdmin}
         onUpdateInsumo={handleUpdateInsumoSafe}
         onDismissAlert={handleDismissLowStockAlert}
         onDismissAllAlerts={handleDismissAllLowStockAlerts}
         onRestoreAlert={handleRestoreLowStockAlert}
         onRestoreAllAlerts={handleRestoreAllLowStockAlerts}
-        onDeleteInsumo={guardEdit((id) => {
+        onDeleteInsumo={(id) => {
+          const target = inventario.find((i) => i.id === id);
+          const tab = resolveBodegaTabForInsumo(target);
+          if (!canEditTab(activeUser, tab)) {
+            notifyPermissionDenied('edit', tab);
+            return;
+          }
           setInventario((prev) => prev.filter((i) => i.id !== id));
-        })}
+        }}
         onClearInventario={guardAdmin(() => {
           setInventario([]);
         })}
@@ -2486,8 +2615,8 @@ export default function App() {
 
       {/* Modal Seguro de Cambio de Cuenta (Exige Contraseña Obligatoria) */}
       {isSwitchUserModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/70 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-md border border-stone-200 dark:border-stone-800 overflow-hidden animate-in fade-in zoom-in-95">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-emerald-400" />
@@ -2509,33 +2638,33 @@ export default function App() {
 
             <form onSubmit={handleConfirmSwitchUser} className="p-5 space-y-3.5 text-xs">
               {switchTargetUser ? (
-                <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 space-y-1">
-                  <div className="text-[10px] font-bold uppercase text-stone-500">Cuenta Seleccionada</div>
-                  <div className="font-bold text-sm text-stone-900">{switchTargetUser.nombre}</div>
-                  <div className="text-[11px] text-stone-600 flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 space-y-1">
+                  <div className="text-[10px] font-bold uppercase text-stone-500 dark:text-stone-400">Cuenta Seleccionada</div>
+                  <div className="font-bold text-sm text-stone-900 dark:text-stone-100">{switchTargetUser.nombre}</div>
+                  <div className="text-[11px] text-stone-600 dark:text-stone-300 flex items-center gap-2 flex-wrap">
                     <span>{getRolLabel(switchTargetUser.rol)}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getNivelAccesoMeta(getNivelAcceso(switchTargetUser)).badgeClass}`}>
-                      {getNivelAccesoMeta(getNivelAcceso(switchTargetUser)).shortLabel}
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getNivelAccesoMeta(getNivelAcceso(switchTargetUser), switchTargetUser).badgeClass}`}>
+                      {getNivelAccesoMeta(getNivelAcceso(switchTargetUser), switchTargetUser).shortLabel}
                     </span>
                   </div>
                 </div>
               ) : (
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">RUT o Correo del Usuario:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-200 mb-1">RUT o Correo del Usuario:</label>
                   <input
                     type="text"
                     value={switchIdentifier}
                     onChange={(e) => setSwitchIdentifier(e.target.value)}
                     placeholder="Ej. 12.845.219-4 o correo@gmail.com"
-                    className="w-full p-2.5 bg-white border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-medium text-stone-900 dark:text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
                     required
                   />
                 </div>
               )}
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1 flex items-center gap-1.5">
-                  <KeyRound className="w-3.5 h-3.5 text-emerald-700" />
+                <label className="block font-bold text-stone-700 dark:text-stone-200 mb-1 flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                   <span>Código o Clave Personal Obligatoria:</span>
                 </label>
                 <input
@@ -2543,20 +2672,20 @@ export default function App() {
                   value={switchPassword}
                   onChange={(e) => setSwitchPassword(e.target.value)}
                   placeholder="Ingresa la contraseña de la cuenta..."
-                  className="w-full p-2.5 bg-white border border-stone-300 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  className="w-full p-2.5 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-mono text-stone-900 dark:text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
                   required
                   autoFocus
                 />
               </div>
 
               {switchError && (
-                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 font-semibold flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
+                <div className="p-2.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-200 font-semibold flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
                   <span>{switchError}</span>
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => {
@@ -2565,7 +2694,7 @@ export default function App() {
                     setSwitchPassword('');
                     setSwitchError(null);
                   }}
-                  className="px-4 py-2 border border-stone-300 rounded-xl text-stone-700 hover:bg-stone-50 cursor-pointer font-semibold"
+                  className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-xl text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer font-semibold"
                 >
                   Cancelar
                 </button>
@@ -2583,9 +2712,9 @@ export default function App() {
 
       {/* Modal de Opciones de Reinicio / Huerto en Blanco (Solo Administrador) */}
       {isAdmin && isResetConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95">
-            <div className="bg-stone-900 text-white p-4 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="bg-stone-900 dark:bg-stone-950 text-white p-4 flex items-center justify-between border-b border-stone-800">
               <div className="flex items-center gap-2">
                 <RotateCcw className="w-4 h-4 text-amber-400" />
                 <h3 className="font-bold text-sm">Gestión de Datos del Huerto</h3>
@@ -2596,21 +2725,21 @@ export default function App() {
             </div>
 
             <div className="p-5 space-y-4 text-xs">
-              <p className="text-stone-600">
+              <p className="text-stone-600 dark:text-stone-300">
                 Selecciona cómo deseas configurar la base de datos de tu huerto:
               </p>
 
               {/* Opción 1: Iniciar Huerto en Blanco (Sin datos ficticios) */}
-              <div className="p-4 rounded-xl border-2 border-emerald-500/40 bg-emerald-50/50 space-y-2">
+              <div className="p-4 rounded-xl border-2 border-emerald-500/40 dark:border-emerald-600/50 bg-emerald-50/50 dark:bg-emerald-950/30 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-emerald-950 text-sm flex items-center gap-1.5">
+                  <span className="font-bold text-emerald-950 dark:text-emerald-200 text-sm flex items-center gap-1.5">
                     🌱 Iniciar Huerto en Blanco (100% Real)
                   </span>
                   <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-700 text-white font-bold">
                     Recomendado
                   </span>
                 </div>
-                <p className="text-emerald-900 text-[11px] leading-relaxed">
+                <p className="text-emerald-900 dark:text-emerald-200/80 text-[11px] leading-relaxed">
                   Elimina todos los cuarteles, labores, cosechas y órdenes de muestra ficticios. Te permite registrar desde cero tus cuarteles reales, variedades, densidades y faenas.
                 </p>
                 <button
@@ -2623,27 +2752,27 @@ export default function App() {
               </div>
 
               {/* Opción 2: Restaurar Valores de Fábrica */}
-              <div className="p-3.5 rounded-xl border border-stone-200 bg-stone-50 space-y-1.5">
-                <span className="font-bold text-stone-800 text-xs">
+              <div className="p-3.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/70 space-y-1.5">
+                <span className="font-bold text-stone-800 dark:text-stone-100 text-xs">
                   🔄 Restaurar Datos de Demostración (Fundo La Cabaña)
                 </span>
-                <p className="text-stone-500 text-[11px] leading-relaxed">
+                <p className="text-stone-500 dark:text-stone-400 text-[11px] leading-relaxed">
                   Recarga los 4 cuarteles de ejemplo, mediciones SAG y recetas demostrativas.
                 </p>
                 <button
                   type="button"
                   onClick={handleExecuteReset}
-                  className="w-full mt-1 py-1.5 px-3 border border-stone-300 hover:bg-stone-100 text-stone-700 font-medium rounded-lg cursor-pointer transition-colors"
+                  className="w-full mt-1 py-1.5 px-3 border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium rounded-lg cursor-pointer transition-colors"
                 >
                   Cargar Datos de Muestra de Fábrica
                 </button>
               </div>
 
-              <div className="flex justify-end pt-2 border-t border-stone-100">
+              <div className="flex justify-end pt-2 border-t border-stone-100 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsResetConfirmOpen(false)}
-                  className="px-4 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer font-medium"
+                  className="px-4 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer font-medium"
                 >
                   Cancelar
                 </button>

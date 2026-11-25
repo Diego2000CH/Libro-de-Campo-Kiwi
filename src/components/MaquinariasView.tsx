@@ -245,16 +245,16 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Encabezado */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold uppercase tracking-wider mb-1">
-            <Tractor className="w-3.5 h-3.5 text-amber-700" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 text-[10px] font-bold uppercase tracking-wider mb-1">
+            <Tractor className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
             Parque de Maquinarias & Equipos de Campo
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Control de Maquinarias, Tractores & Nebulizadores
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Control de horómetros reales, planes de mantención preventiva cada 250 horas, calibraciones de turbo-atomizadores y asignación de operarios.
           </p>
         </div>
@@ -270,9 +270,9 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
               const filtro = tipoFilter !== 'todos' || searchTerm ? `${tipoFilter}${searchTerm ? ` · "${searchTerm}"` : ''}` : undefined;
               exportMaquinariaPDF(filteredMaquinarias, mants, explotacion, filtro);
             }}
-            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+            className="px-3.5 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
           >
-            <Download className="w-4 h-4 text-amber-800" />
+            <Download className="w-4 h-4 text-amber-800 dark:text-amber-300" />
             <span>Exportar PDF ({filteredMaquinarias.length})</span>
           </button>
 
@@ -308,35 +308,35 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
 
       {/* Tarjetas de Métricas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Total Equipos Activos</div>
-          <div className="text-2xl font-black text-stone-900 mt-1">{totalEquipos}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Tractores, nebulizadores y vehículos</div>
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-1">{totalEquipos}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Tractores, nebulizadores y vehículos</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Estado Operativo</div>
-          <div className="text-2xl font-black text-emerald-800 mt-1">{operativos} / {totalEquipos}</div>
-          <div className="text-[11px] text-emerald-700 font-medium mt-0.5">Listos para labores fitosanitarias</div>
+          <div className="text-2xl font-black text-emerald-800 dark:text-emerald-300 mt-1">{operativos} / {totalEquipos}</div>
+          <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium mt-0.5">Listos para labores fitosanitarias</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Mantenciones Pendientes</div>
-          <div className={`text-2xl font-black mt-1 ${enMantencion > 0 ? 'text-amber-800' : 'text-stone-700'}`}>
+          <div className={`text-2xl font-black mt-1 ${enMantencion > 0 ? 'text-amber-800 dark:text-amber-300' : 'text-stone-700 dark:text-stone-300'}`}>
             {enMantencion}
           </div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Próximos a superar umbral horómetro</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Próximos a superar umbral horómetro</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Bitácora de Mantenciones</div>
-          <div className="text-2xl font-black text-blue-950 mt-1 font-mono tabular-nums">{registrosMantencion.length}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Servicios preventivos y correctivos</div>
+          <div className="text-2xl font-black text-blue-950 dark:text-blue-100 mt-1 font-mono tabular-nums">{registrosMantencion.length}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Servicios preventivos y correctivos</div>
         </div>
       </div>
 
       {/* Barra de Filtros y Búsqueda */}
-      <div className="p-3 bg-white rounded-2xl border border-stone-200 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="p-3 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-72">
           <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
           <input
@@ -344,7 +344,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
             placeholder="Buscar por código, modelo, operario..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-emerald-600"
+            className="w-full pl-9 pr-3 py-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-emerald-600 dark:text-stone-100"
           />
         </div>
 
@@ -352,7 +352,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
           <button
             onClick={() => setTipoFilter('todos')}
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-              tipoFilter === 'todos' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              tipoFilter === 'todos' ? 'bg-stone-900 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
             }`}
           >
             Todos ({maquinarias.length})
@@ -360,7 +360,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
           <button
             onClick={() => setTipoFilter('tractor')}
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-              tipoFilter === 'tractor' ? 'bg-amber-800 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              tipoFilter === 'tractor' ? 'bg-amber-800 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
             }`}
           >
             Tractores
@@ -368,7 +368,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
           <button
             onClick={() => setTipoFilter('pulverizador')}
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-              tipoFilter === 'pulverizador' ? 'bg-blue-800 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              tipoFilter === 'pulverizador' ? 'bg-blue-800 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
             }`}
           >
             Pulverizadores / Nebulizadores
@@ -376,7 +376,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
           <button
             onClick={() => setTipoFilter('camioneta')}
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-              tipoFilter === 'camioneta' ? 'bg-purple-800 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              tipoFilter === 'camioneta' ? 'bg-purple-800 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
             }`}
           >
             Camionetas
@@ -384,7 +384,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
           <button
             onClick={() => setTipoFilter('motobomba')}
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-              tipoFilter === 'motobomba' ? 'bg-cyan-800 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              tipoFilter === 'motobomba' ? 'bg-cyan-800 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
             }`}
           >
             Bombas & Motores
@@ -403,8 +403,8 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
           return (
             <div
               key={m.id}
-              className={`bg-white rounded-2xl border p-4.5 shadow-2xs flex flex-col justify-between transition-all hover:border-stone-400 ${
-                necesitaAtencion ? 'border-amber-300 ring-1 ring-amber-200' : 'border-stone-200'
+              className={`bg-white dark:bg-stone-900 rounded-2xl border p-4.5 shadow-2xs flex flex-col justify-between transition-all hover:border-stone-400 dark:hover:border-stone-600 ${
+                necesitaAtencion ? 'border-amber-300 dark:border-amber-700 ring-1 ring-amber-200 dark:ring-amber-800/60' : 'border-stone-200 dark:border-stone-800'
               }`}
             >
               <div>
@@ -412,28 +412,28 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-stone-100 text-stone-800 border border-stone-200">
+                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800">
                         {m.codigoInterno}
                       </span>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
                         m.estado === 'operativo' 
-                          ? 'bg-emerald-100 text-emerald-900 border border-emerald-200' 
+                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800/80' 
                           : m.estado === 'mantencion_proxima'
-                          ? 'bg-amber-100 text-amber-900 border border-amber-200'
-                          : 'bg-rose-100 text-rose-900 border border-rose-200'
+                          ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800/80'
+                          : 'bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 border border-rose-200 dark:border-rose-800/80'
                       }`}>
                         {m.estado === 'operativo' ? 'Operativo' : m.estado === 'mantencion_proxima' ? 'Mantención Próxima' : m.estado}
                       </span>
                     </div>
-                    <h3 className="text-sm font-bold text-stone-900 mt-2">{m.nombre}</h3>
-                    <p className="text-xs text-stone-500">{m.marcaModelo} · {m.anio} · Pat/Serie: <strong className="font-mono text-stone-700">{m.patenteOSerie}</strong></p>
+                    <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 mt-2">{m.nombre}</h3>
+                    <p className="text-xs text-stone-500 dark:text-stone-400">{m.marcaModelo} · {m.anio} · Pat/Serie: <strong className="font-mono text-stone-700 dark:text-stone-300">{m.patenteOSerie}</strong></p>
                   </div>
 
                   {canEdit && (
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleOpenEdit(m)}
-                        className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        className="px-2.5 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                         title="Editar ficha maquinaria"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -441,7 +441,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                       </button>
                       <button
                         onClick={() => setMaquinariaToDelete(m)}
-                        className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        className="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                         title="Eliminar maquinaria"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -452,18 +452,18 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 </div>
 
                 {/* Horómetro Actual */}
-                <div className="mt-4 p-3 bg-stone-50 rounded-xl border border-stone-100">
+                <div className="mt-4 p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-100 dark:border-stone-800">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-stone-500 font-medium flex items-center gap-1">
+                    <span className="text-stone-500 dark:text-stone-400 font-medium flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5 text-stone-400" />
                       Horómetro Actual:
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-base font-black font-mono text-stone-900">{m.horometroActual} hrs</span>
+                      <span className="text-base font-black font-mono text-stone-900 dark:text-stone-100">{m.horometroActual} hrs</span>
                       {canEdit && (
                         <button
                           onClick={() => handleOpenHorometro(m)}
-                          className="px-2 py-0.5 bg-white border border-stone-300 rounded text-[11px] font-bold text-stone-700 hover:bg-stone-100 cursor-pointer"
+                          className="px-2 py-0.5 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded text-[11px] font-bold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
                           title="Actualizar horómetro"
                         >
                           Ajustar
@@ -474,11 +474,11 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
 
                   {/* Barra de progreso de mantención */}
                   <div className="mt-2.5">
-                    <div className="flex justify-between text-[10px] text-stone-500 font-medium mb-1">
+                    <div className="flex justify-between text-[10px] text-stone-500 dark:text-stone-400 font-medium mb-1">
                       <span>Últ. Mantención: {m.horometroUltimaMantencion}h</span>
                       <span>Próxima: {proximaMantencionHoras}h ({horasRestantes > 0 ? `quedan ${horasRestantes}h` : `¡VENCIDA por ${Math.abs(horasRestantes)}h!`})</span>
                     </div>
-                    <div className="w-full bg-stone-200 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-stone-200 dark:bg-stone-700 h-2 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${
                           horasRestantes <= 0 ? 'bg-rose-600' : horasRestantes <= 25 ? 'bg-amber-600' : 'bg-emerald-600'
@@ -490,21 +490,21 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 </div>
 
                 {/* Detalles de Operación */}
-                <div className="mt-3 space-y-1.5 text-xs text-stone-600">
+                <div className="mt-3 space-y-1.5 text-xs text-stone-600 dark:text-stone-400">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1 text-stone-400 text-[11px]">
                       <User className="w-3 h-3" /> Operador habitual:
                     </span>
-                    <span className="font-medium text-stone-900">{m.operadorAsignado}</span>
+                    <span className="font-medium text-stone-900 dark:text-stone-100">{m.operadorAsignado}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1 text-stone-400 text-[11px]">
                       <Calendar className="w-3 h-3" /> Último Servicio:
                     </span>
-                    <span className="font-mono text-[11px] text-stone-700">{m.fechaUltimaMantencion}</span>
+                    <span className="font-mono text-[11px] text-stone-700 dark:text-stone-300">{m.fechaUltimaMantencion}</span>
                   </div>
                   {m.observaciones && (
-                    <p className="text-[11px] text-stone-500 italic mt-1 bg-stone-50/70 p-1.5 rounded-lg border border-stone-100">
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 italic mt-1 bg-stone-50/70 dark:bg-stone-800/70 p-1.5 rounded-lg border border-stone-100 dark:border-stone-800">
                       "{m.observaciones}"
                     </p>
                   )}
@@ -513,7 +513,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
 
               {/* Botón de Mantención */}
               {canEdit && (
-                <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
+                <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between gap-2">
                   <button
                     onClick={() => handleOpenMantencion(m)}
                     className="w-full py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
@@ -529,18 +529,18 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
       </div>
 
       {/* Historial de Mantenciones */}
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
-        <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
-          <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-            <History className="w-4 h-4 text-emerald-800" />
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
+        <div className="px-5 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+          <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+            <History className="w-4 h-4 text-emerald-800 dark:text-emerald-300" />
             Bitácora Oficial de Mantenciones & Reparaciones
           </h2>
-          <span className="text-xs text-stone-500 font-medium">{registrosMantencion.length} registros</span>
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">{registrosMantencion.length} registros</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px]">
+            <thead className="bg-stone-50 dark:bg-stone-800/70 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 font-bold uppercase text-[10px]">
               <tr>
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3">Maquinaria / Equipo</th>
@@ -552,26 +552,26 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 {canEdit && <th className="px-4 py-3 text-right">Acción</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100 text-stone-700">
+            <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-stone-700 dark:text-stone-300">
               {registrosMantencion.map((reg) => (
-                <tr key={reg.id} className="hover:bg-stone-50 transition-colors">
+                <tr key={reg.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/70 transition-colors">
                   <td className="px-4 py-3 font-mono font-medium whitespace-nowrap">{reg.fecha}</td>
-                  <td className="px-4 py-3 font-bold text-stone-900 whitespace-nowrap">{reg.maquinariaNombre}</td>
-                  <td className="px-4 py-3 font-mono font-semibold text-blue-950">{reg.horometro} hrs</td>
+                  <td className="px-4 py-3 font-bold text-stone-900 dark:text-stone-100 whitespace-nowrap">{reg.maquinariaNombre}</td>
+                  <td className="px-4 py-3 font-mono font-semibold text-blue-950 dark:text-blue-100">{reg.horometro} hrs</td>
                   <td className="px-4 py-3">
-                    <span className="font-medium text-stone-900">{reg.tipoMantencion}</span>
+                    <span className="font-medium text-stone-900 dark:text-stone-100">{reg.tipoMantencion}</span>
                     {reg.observaciones && <p className="text-[10px] text-stone-400 mt-0.5">{reg.observaciones}</p>}
                   </td>
-                  <td className="px-4 py-3 text-stone-600">{reg.tallerOMecanico}</td>
-                  <td className="px-4 py-3 text-stone-500 text-[11px] max-w-xs truncate">{reg.repuestosUtilizados}</td>
+                  <td className="px-4 py-3 text-stone-600 dark:text-stone-400">{reg.tallerOMecanico}</td>
+                  <td className="px-4 py-3 text-stone-500 dark:text-stone-400 text-[11px] max-w-xs truncate">{reg.repuestosUtilizados}</td>
                   <td className="px-4 py-3">
                     {reg.fotoEvidenciaDataUrl ? (
                       <button
                         type="button"
                         onClick={() => setPreviewPhoto(reg.fotoEvidenciaDataUrl!)}
-                        className="px-2 py-1 bg-stone-100 hover:bg-stone-200 rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                        className="px-2 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                       >
-                        <Camera className="w-3 h-3 text-amber-800" /> Ver
+                        <Camera className="w-3 h-3 text-amber-800 dark:text-amber-300" /> Ver
                       </button>
                     ) : (
                       <span className="text-stone-300 text-[10px]">—</span>
@@ -581,7 +581,7 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => onDeleteMantencion(reg.id)}
-                        className="p-1 text-stone-400 hover:text-rose-700 rounded hover:bg-rose-50 cursor-pointer"
+                        className="p-1 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 rounded hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer"
                         title="Eliminar registro"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -597,8 +597,8 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
 
       {/* MODAL: Nueva Maquinaria */}
       {isNewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Tractor className="w-4 h-4 text-emerald-400" />
@@ -609,22 +609,22 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
             <form onSubmit={handleSaveNewMaquinaria} className="p-5 space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Código Interno:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Código Interno:</label>
                   <input
                     type="text"
                     value={maquinariaForm.codigoInterno || ''}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, codigoInterno: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                     placeholder="TRAC-02"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Tipo de Equipo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Tipo de Equipo:</label>
                   <select
                     value={maquinariaForm.tipo || 'tractor'}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, tipo: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   >
                     <option value="tractor">Tractor Agrícola</option>
                     <option value="pulverizador">Pulverizador / Turbo-Atomizador</option>
@@ -640,12 +640,12 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Nombre Descriptivo:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre Descriptivo:</label>
                 <input
                   type="text"
                   value={maquinariaForm.nombre || ''}
                   onChange={(e) => setMaquinariaForm({ ...maquinariaForm, nombre: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   placeholder="ej. Tractor John Deere 5075E 4WD Frutero"
                   required
                 />
@@ -653,83 +653,83 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Marca y Modelo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Marca y Modelo:</label>
                   <input
                     type="text"
                     value={maquinariaForm.marcaModelo || ''}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, marcaModelo: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="John Deere 5075E"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Patente / N° Serie:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Patente / N° Serie:</label>
                   <input
                     type="text"
                     value={maquinariaForm.patenteOSerie || ''}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, patenteOSerie: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     placeholder="JD-5075-882"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Año:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Año:</label>
                   <input
                     type="number"
                     value={maquinariaForm.anio ?? 2020}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, anio: parseInt(e.target.value) || 2020 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Horómetro Actual:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Horómetro Actual:</label>
                   <input
                     type="number"
                     value={maquinariaForm.horometroActual ?? 0}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, horometroActual: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Horómetro Últ. Mant.:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Horómetro Últ. Mant.:</label>
                   <input
                     type="number"
                     value={maquinariaForm.horometroUltimaMantencion ?? 0}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, horometroUltimaMantencion: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Frecuencia Mant. (hrs):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Frecuencia Mant. (hrs):</label>
                   <input
                     type="number"
                     value={maquinariaForm.frecuenciaMantencionHoras ?? 250}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, frecuenciaMantencionHoras: parseInt(e.target.value) || 250 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Operador Asignado:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Operador Asignado:</label>
                   <input
                     type="text"
                     value={maquinariaForm.operadorAsignado || ''}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, operadorAsignado: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="Nombre del operario"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Estado Operativo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado Operativo:</label>
                   <select
                     value={maquinariaForm.estado || 'operativo'}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, estado: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   >
                     <option value="operativo">Operativo 100%</option>
                     <option value="mantencion_proxima">Mantención Próxima</option>
@@ -740,21 +740,21 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones / Especificaciones:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones / Especificaciones:</label>
                 <textarea
                   value={maquinariaForm.observaciones || ''}
                   onChange={(e) => setMaquinariaForm({ ...maquinariaForm, observaciones: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   placeholder="Detalles sobre filtros, calibraciones de toberas, etc."
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsNewModalOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -772,8 +772,8 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
 
       {/* MODAL: Editar Maquinaria */}
       {isEditModalOpen && selectedMaquinaria && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-stone-900 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-emerald-400" />
@@ -784,21 +784,21 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
             <form onSubmit={handleSaveEditMaquinaria} className="p-5 space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Código Interno:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Código Interno:</label>
                   <input
                     type="text"
                     value={maquinariaForm.codigoInterno || ''}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, codigoInterno: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Estado Operativo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Estado Operativo:</label>
                   <select
                     value={maquinariaForm.estado || 'operativo'}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, estado: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   >
                     <option value="operativo">Operativo 100%</option>
                     <option value="mantencion_proxima">Mantención Próxima</option>
@@ -809,112 +809,112 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Nombre Descriptivo:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre Descriptivo:</label>
                 <input
                   type="text"
                   value={maquinariaForm.nombre || ''}
                   onChange={(e) => setMaquinariaForm({ ...maquinariaForm, nombre: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Marca y Modelo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Marca y Modelo:</label>
                   <input
                     type="text"
                     value={maquinariaForm.marcaModelo || ''}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, marcaModelo: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Patente / Serie:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Patente / Serie:</label>
                   <input
                     type="text"
                     value={maquinariaForm.patenteOSerie || ''}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, patenteOSerie: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Año:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Año:</label>
                   <input
                     type="number"
                     value={maquinariaForm.anio ?? 2020}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, anio: parseInt(e.target.value) || 2020 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Horómetro Actual:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Horómetro Actual:</label>
                   <input
                     type="number"
                     value={maquinariaForm.horometroActual ?? 0}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, horometroActual: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Horómetro Mantención:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Horómetro Mantención:</label>
                   <input
                     type="number"
                     value={maquinariaForm.horometroUltimaMantencion ?? 0}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, horometroUltimaMantencion: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Frecuencia (hrs):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Frecuencia (hrs):</label>
                   <input
                     type="number"
                     value={maquinariaForm.frecuenciaMantencionHoras ?? 250}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, frecuenciaMantencionHoras: parseInt(e.target.value) || 250 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Operador Asignado:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Operador Asignado:</label>
                   <input
                     type="text"
                     value={maquinariaForm.operadorAsignado || ''}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, operadorAsignado: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha Últ. Mantención:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha Últ. Mantención:</label>
                   <input
                     type="date"
                     value={maquinariaForm.fechaUltimaMantencion || ''}
                     onChange={(e) => setMaquinariaForm({ ...maquinariaForm, fechaUltimaMantencion: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones:</label>
                 <textarea
                   value={maquinariaForm.observaciones || ''}
                   onChange={(e) => setMaquinariaForm({ ...maquinariaForm, observaciones: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -932,8 +932,8 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
 
       {/* MODAL: Ajustar Horómetro */}
       {isHorometroModalOpen && selectedMaquinaria && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-blue-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Clock className="w-4 h-4 text-blue-400" />
@@ -943,18 +943,18 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
             </div>
             <form onSubmit={handleSaveHorometro} className="p-5 space-y-4 text-xs">
               <div>
-                <div className="text-stone-500 font-medium">Equipo:</div>
-                <div className="font-bold text-sm text-stone-900">{selectedMaquinaria.codigoInterno} - {selectedMaquinaria.nombre}</div>
+                <div className="text-stone-500 dark:text-stone-400 font-medium">Equipo:</div>
+                <div className="font-bold text-sm text-stone-900 dark:text-stone-100">{selectedMaquinaria.codigoInterno} - {selectedMaquinaria.nombre}</div>
               </div>
 
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200">
-                <label className="block font-bold text-stone-700 mb-1">Nueva Lectura de Horas:</label>
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800">
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nueva Lectura de Horas:</label>
                 <input
                   type="number"
                   step="0.5"
                   value={nuevoHorometroValor}
                   onChange={(e) => setNuevoHorometroValor(parseFloat(e.target.value) || 0)}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg text-lg font-mono font-bold text-blue-950"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-lg font-mono font-bold text-blue-950 dark:text-blue-100"
                   required
                 />
                 <span className="text-[10px] text-stone-400 mt-1 block">
@@ -962,11 +962,11 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                 </span>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsHorometroModalOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -984,8 +984,8 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
 
       {/* MODAL: Registrar Mantención */}
       {isMantencionModalOpen && selectedMaquinaria && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-amber-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Wrench className="w-4 h-4 text-amber-400" />
@@ -996,76 +996,76 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
             <form onSubmit={handleSaveMantencion} className="p-5 space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fecha de Mantención:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fecha de Mantención:</label>
                   <input
                     type="date"
                     value={mantencionForm.fecha}
                     onChange={(e) => setMantencionForm({ ...mantencionForm, fecha: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-medium dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Horómetro al Servicio:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Horómetro al Servicio:</label>
                   <input
                     type="number"
                     value={mantencionForm.horometro}
                     onChange={(e) => setMantencionForm({ ...mantencionForm, horometro: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-amber-900 dark:text-amber-200"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Labor / Tipo de Mantención:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Labor / Tipo de Mantención:</label>
                 <input
                   type="text"
                   value={mantencionForm.tipoMantencion}
                   onChange={(e) => setMantencionForm({ ...mantencionForm, tipoMantencion: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   placeholder="ej. Cambio de aceite motor 15W40, filtro aceite y petróleo"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Taller o Mecánico Responsable:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Taller o Mecánico Responsable:</label>
                 <input
                   type="text"
                   value={mantencionForm.tallerOMecanico}
                   onChange={(e) => setMantencionForm({ ...mantencionForm, tallerOMecanico: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   placeholder="ej. Mecánico Central / Concesionario"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Repuestos e Insumos Utilizados:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Repuestos e Insumos Utilizados:</label>
                 <textarea
                   value={mantencionForm.repuestosUtilizados}
                   onChange={(e) => setMantencionForm({ ...mantencionForm, repuestosUtilizados: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   placeholder="ej. Filtro primario, filtro secundario, 12L aceite John Deere Plus 50 II, grasa de litio"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones Técnicas:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones Técnicas:</label>
                 <textarea
                   value={mantencionForm.observaciones}
                   onChange={(e) => setMantencionForm({ ...mantencionForm, observaciones: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   placeholder="Estado general de correas, toberas, presión de neumáticos..."
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1 flex items-center gap-1.5">
-                  <Camera className="w-3.5 h-3.5 text-amber-800" />
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1 flex items-center gap-1.5">
+                  <Camera className="w-3.5 h-3.5 text-amber-800 dark:text-amber-300" />
                   <span>Foto Boleta / Repuesto / Evidencia (opcional):</span>
                 </label>
                 <input
@@ -1080,25 +1080,25 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
                       setMantencionForm((prev) => ({ ...prev, fotoEvidenciaDataUrl: url }));
                     } catch {}
                   }}
-                  className="w-full text-[11px] text-stone-600"
+                  className="w-full text-[11px] text-stone-600 dark:text-stone-400 bg-white dark:bg-stone-800"
                 />
                 {mantencionForm.fotoEvidenciaDataUrl && (
-                  <img src={mantencionForm.fotoEvidenciaDataUrl} alt="Evidencia mantención" className="mt-1.5 h-16 rounded-lg border border-stone-200 object-cover" />
+                  <img src={mantencionForm.fotoEvidenciaDataUrl} alt="Evidencia mantención" className="mt-1.5 h-16 rounded-lg border border-stone-200 dark:border-stone-800 object-cover" />
                 )}
               </div>
 
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] text-emerald-900 flex items-center gap-2">
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl text-[11px] text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>
                   Al registrar este servicio, el horómetro de mantención se actualizará automáticamente y el equipo pasará a estado <strong>Operativo</strong>.
                 </span>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsMantencionModalOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1116,25 +1116,25 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
 
       {/* MODAL: Confirmación de Eliminación Maquinaria */}
       {maquinariaToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 overflow-hidden animate-in fade-in zoom-in-95">
             <div className="bg-rose-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Eliminar Maquinaria / Equipo</h3>
               <button onClick={() => setMaquinariaToDelete(null)} className="text-rose-200 hover:text-white cursor-pointer">✕</button>
             </div>
             <div className="p-5 space-y-4 text-xs">
-              <p className="text-stone-700">
+              <p className="text-stone-700 dark:text-stone-300">
                 ¿Estás seguro de que deseas eliminar la maquinaria <strong>{maquinariaToDelete.nombre}</strong> ({maquinariaToDelete.codigoInterno})?
               </p>
-              <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200 text-stone-600 text-[11px] space-y-1">
+              <div className="p-2.5 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 text-[11px] space-y-1">
                 <div><strong>Patente / Serie:</strong> {maquinariaToDelete.patenteOSerie}</div>
                 <div><strong>Horómetro:</strong> {maquinariaToDelete.horometroActual} hrs</div>
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setMaquinariaToDelete(null)}
-                  className="px-3.5 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer font-medium"
+                  className="px-3.5 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer font-medium"
                 >
                   Cancelar
                 </button>
@@ -1156,10 +1156,10 @@ export const MaquinariasView: React.FC<MaquinariasViewProps> = ({
 
       {previewPhoto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreviewPhoto(null)}>
-          <div className="max-w-xl w-full bg-white rounded-2xl p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+          <div className="max-w-xl w-full bg-white dark:bg-stone-900 rounded-2xl p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-stone-700">Foto Evidencia de Mantención</span>
-              <button type="button" onClick={() => setPreviewPhoto(null)} className="text-stone-500 hover:text-stone-900 cursor-pointer">
+              <span className="text-xs font-bold text-stone-700 dark:text-stone-300">Foto Evidencia de Mantención</span>
+              <button type="button" onClick={() => setPreviewPhoto(null)} className="text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>

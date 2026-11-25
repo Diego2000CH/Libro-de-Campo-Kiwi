@@ -351,7 +351,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
   return (
     <div className="space-y-5">
       {/* SIMULADOR INTERACTIVO DE CARGA OBJETIVO & JORNALES DE RALEO */}
-      <div className="bg-white rounded-2xl border border-indigo-200 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-indigo-200 dark:border-indigo-800/80 shadow-xs overflow-hidden">
         <div className="bg-gradient-to-r from-indigo-950 via-stone-900 to-emerald-950 text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-indigo-300 bg-indigo-800/60 px-2 py-0.5 rounded-full mb-1">
@@ -365,15 +365,17 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
               Ajusta tu meta comercial (ton/ha y calibre deseado) para determinar exactamente cuántos frutos dejar por m²/planta y los jornales de raleo necesarios.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleGuardarDesdeSimulador}
-            disabled={parcelas.length === 0}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-black rounded-xl text-xs flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            Guardar Simulación como Plan
-          </button>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={handleGuardarDesdeSimulador}
+              disabled={parcelas.length === 0}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-black rounded-xl text-xs flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              Guardar Simulación como Plan
+            </button>
+          )}
         </div>
 
         <div className="p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5 text-xs">
@@ -381,11 +383,11 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
           <div className="lg:col-span-7 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-1">
-                <label className="font-bold text-stone-700 block mb-1">Cuartel a Simular:</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Cuartel a Simular:</label>
                 <select
                   value={sim.parcelaId}
                   onChange={(e) => handleSelectParcelaSim(e.target.value)}
-                  className="w-full p-2 border border-stone-300 rounded-lg bg-stone-50 font-semibold text-stone-900"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-stone-50 dark:bg-stone-800 font-semibold text-stone-900 dark:text-stone-100"
                 >
                   {parcelas.length === 0 && <option value="">Sin cuarteles creados</option>}
                   {parcelas.map((p) => (
@@ -396,32 +398,32 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                 </select>
               </div>
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Superficie (ha):</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Superficie (ha):</label>
                 <input
                   type="number"
                   step="0.1"
                   min="0.1"
                   value={sim.superficieHa}
                   onChange={(e) => setSim({ ...sim, superficieHa: Number(e.target.value) })}
-                  className="w-full p-2 border border-stone-300 rounded-lg"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                 />
               </div>
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Plantas / ha (total):</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Plantas / ha (total):</label>
                 <input
                   type="number"
                   min="50"
                   value={sim.plantasPorHa}
                   onChange={(e) => setSim({ ...sim, plantasPorHa: Number(e.target.value) })}
-                  className="w-full p-2 border border-stone-300 rounded-lg"
+                  className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                 />
               </div>
             </div>
 
             {/* Meta Productiva y Calibre */}
-            <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
+            <div className="p-3.5 rounded-xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-bold text-stone-800 uppercase text-[11px] tracking-wider">
+                <span className="font-bold text-stone-800 dark:text-stone-200 uppercase text-[11px] tracking-wider">
                   1. Meta Productiva y Calibre Exportable
                 </span>
                 <div className="flex flex-wrap gap-1">
@@ -433,7 +435,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                       className={`px-2 py-0.5 rounded-md text-[10px] font-bold border cursor-pointer transition-colors ${
                         sim.pesoFrutoObjetivoGr === preset.peso
                           ? 'bg-indigo-700 text-white border-indigo-700'
-                          : 'bg-white text-stone-700 border-stone-300 hover:bg-indigo-50'
+                          : 'bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-300 dark:border-stone-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/60'
                       }`}
                     >
                       {preset.label}
@@ -444,48 +446,48 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Meta (Ton/ha):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Meta (Ton/ha):</label>
                   <input
                     type="number"
                     step="0.5"
                     min="5"
                     value={sim.tonHaObjetivo}
                     onChange={(e) => setSim({ ...sim, tonHaObjetivo: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 bg-white rounded-lg font-bold text-emerald-900"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg font-bold text-emerald-900 dark:text-emerald-200"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Peso Fruto (g):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Peso Fruto (g):</label>
                   <input
                     type="number"
                     min="50"
                     max="180"
                     value={sim.pesoFrutoObjetivoGr}
                     onChange={(e) => setSim({ ...sim, pesoFrutoObjetivoGr: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 bg-white rounded-lg font-bold text-indigo-900"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg font-bold text-indigo-900 dark:text-indigo-200"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">% Plantas Hembra:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">% Plantas Hembra:</label>
                   <input
                     type="number"
                     min="50"
                     max="100"
                     value={sim.porcentajePlantasHembra}
                     onChange={(e) => setSim({ ...sim, porcentajePlantasHembra: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 bg-white rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg dark:text-stone-100"
                     title="Descuenta la proporción de plantas macho polinizadoras (ej. 1:8 = 88% hembras)"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Margen Seg. (%):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Margen Seg. (%):</label>
                   <input
                     type="number"
                     min="0"
                     max="25"
                     value={sim.margenSeguridadPct}
                     onChange={(e) => setSim({ ...sim, margenSeguridadPct: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 bg-white rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg dark:text-stone-100"
                     title="Respaldo extra ante caída natural o descarte menor"
                   />
                 </div>
@@ -493,16 +495,16 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
             </div>
 
             {/* Carga Actual y Cuadrilla */}
-            <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200 space-y-3">
+            <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-bold text-amber-950 uppercase text-[11px] tracking-wider">
+                <span className="font-bold text-amber-950 dark:text-amber-100 uppercase text-[11px] tracking-wider">
                   2. Carga Actual en Campo & Cuadrilla de Raleo
                 </span>
                 {(referenciaCuartelSim.tieneCuaja || referenciaCuartelSim.tieneBotones) && (
                   <button
                     type="button"
                     onClick={handleAplicarReferenciaCampoSim}
-                    className="px-2.5 py-1 bg-amber-200/80 hover:bg-amber-300 text-amber-950 rounded-lg font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1 bg-amber-200/80 dark:bg-amber-900/50 hover:bg-amber-300 text-amber-950 dark:text-amber-100 rounded-lg font-bold text-[10px] flex items-center gap-1 cursor-pointer"
                   >
                     <Sparkles className="w-3 h-3" />
                     Usar dato muestreado (
@@ -516,33 +518,33 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Carga Actual / Planta:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Carga Actual / Planta:</label>
                   <input
                     type="number"
                     min="0"
                     value={sim.cargaActualPorPlanta}
                     onChange={(e) => setSim({ ...sim, cargaActualPorPlanta: Number(e.target.value) })}
-                    className="w-full p-2 border border-amber-300 bg-white rounded-lg font-bold text-amber-950"
+                    className="w-full p-2 border border-amber-300 dark:border-amber-700 bg-white dark:bg-stone-800 rounded-lg font-bold text-amber-950 dark:text-amber-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Plantas / Jornal / Día:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Plantas / Jornal / Día:</label>
                   <input
                     type="number"
                     min="5"
                     value={sim.rendimientoJornalPlantasDia}
                     onChange={(e) => setSim({ ...sim, rendimientoJornalPlantasDia: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 bg-white rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Personas Cuadrilla:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Personas Cuadrilla:</label>
                   <input
                     type="number"
                     min="1"
                     value={sim.cuadrillaPersonas}
                     onChange={(e) => setSim({ ...sim, cuadrillaPersonas: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 bg-white rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-lg dark:text-stone-100"
                   />
                 </div>
               </div>
@@ -629,13 +631,13 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
       </div>
 
       {/* BARRA DE ACCIÓN Y FILTRO DE PLANES GUARDADOS */}
-      <div className="bg-white p-3.5 rounded-xl border border-stone-200 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+      <div className="bg-white dark:bg-stone-900 p-3.5 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-2">
           <Filter className="w-3.5 h-3.5 text-stone-400" />
           <select
             value={cuartelFiltro}
             onChange={(e) => setCuartelFiltro(e.target.value)}
-            className="p-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-medium text-stone-800"
+            className="p-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-medium text-stone-800 dark:text-stone-200"
           >
             <option value="todos">Todos los cuarteles</option>
             {parcelas.map((p) => (
@@ -643,11 +645,11 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
             ))}
           </select>
 
-          <span className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-900 border border-indigo-200 font-bold">
+          <span className="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800/80 font-bold">
             Meta prom.: {totalesPlanes.avgObjetivoM2} frutos/m²
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-stone-100 text-stone-800 font-bold flex items-center gap-1">
-            <Users className="w-3.5 h-3.5 text-stone-500" />
+          <span className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 font-bold flex items-center gap-1">
+            <Users className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
             {totalesPlanes.totalJornales} jornales estimados
           </span>
         </div>
@@ -666,34 +668,34 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
 
       {/* LISTA DE PLANES DE CARGA Y RALEO */}
       {filteredPlanes.length === 0 ? (
-        <div className="bg-white rounded-xl p-8 text-center text-stone-500 border border-stone-200">
+        <div className="bg-white dark:bg-stone-900 rounded-xl p-8 text-center text-stone-500 dark:text-stone-400 border border-stone-200 dark:border-stone-800">
           <Scissors className="w-10 h-10 text-stone-300 mx-auto mb-2" />
-          <p className="font-bold text-stone-700 text-sm">Sin planes de carga objetivo y raleo registrados</p>
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="font-bold text-stone-700 dark:text-stone-300 text-sm">Sin planes de carga objetivo y raleo registrados</p>
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
             Usa el simulador superior o presiona "Nuevo Plan de Raleo" para planificar la carga de cada cuartel.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredPlanes.map((plan) => (
-            <div key={plan.id} className="bg-white rounded-xl border border-stone-200 shadow-2xs p-4 sm:p-5 space-y-3.5">
+            <div key={plan.id} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs p-4 sm:p-5 space-y-3.5">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-black text-sm text-stone-900">{plan.parcelaNombre}</h3>
+                    <h3 className="font-black text-sm text-stone-900 dark:text-stone-100">{plan.parcelaNombre}</h3>
                     <span
                       className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         plan.estado === 'Completado'
-                          ? 'bg-emerald-100 text-emerald-900'
+                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200'
                           : plan.estado === 'En ejecución'
-                          ? 'bg-amber-100 text-amber-900'
-                          : 'bg-indigo-100 text-indigo-900'
+                          ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200'
+                          : 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200'
                       }`}
                     >
                       {plan.estado}
                     </span>
                   </div>
-                  <div className="text-[11px] text-stone-500 mt-0.5 flex items-center gap-2 flex-wrap">
+                  <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5 flex items-center gap-2 flex-wrap">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {plan.fechaInicioPlanificada} al {plan.fechaTerminoPlanificada}
@@ -707,13 +709,13 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => handleOpenEdit(plan)}
-                      className="p-1.5 text-stone-500 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg cursor-pointer"
+                      className="p-1.5 text-stone-500 dark:text-stone-400 hover:text-indigo-700 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 rounded-lg cursor-pointer"
                       title="Editar plan de raleo"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
                     {confirmDeleteId === plan.id ? (
-                      <div className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 rounded-lg px-1.5 py-0.5">
+                      <div className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-lg px-1.5 py-0.5">
                         <button
                           onClick={() => {
                             onDeletePlan(plan.id);
@@ -725,7 +727,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                         </button>
                         <button
                           onClick={() => setConfirmDeleteId(null)}
-                          className="px-1.5 py-0.5 text-stone-600 hover:text-stone-900 font-semibold text-[10px] cursor-pointer"
+                          className="px-1.5 py-0.5 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-semibold text-[10px] cursor-pointer"
                         >
                           No
                         </button>
@@ -733,7 +735,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                     ) : (
                       <button
                         onClick={() => setConfirmDeleteId(plan.id)}
-                        className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                        className="p-1.5 text-stone-400 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg cursor-pointer"
                         title="Eliminar plan"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -745,37 +747,37 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
 
               {/* Métricas Carga Objetivo vs Actual */}
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-center">
-                  <div className="text-[10px] text-emerald-800 font-bold">Carga Objetivo</div>
-                  <div className="text-base font-black text-emerald-950 mt-0.5">{plan.frutosObjetivoM2} fr/m²</div>
-                  <div className="text-[9px] text-emerald-700">{plan.frutosObjetivoPlanta} fr/planta</div>
+                <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-lg p-2.5 text-center">
+                  <div className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold">Carga Objetivo</div>
+                  <div className="text-base font-black text-emerald-950 dark:text-emerald-100 mt-0.5">{plan.frutosObjetivoM2} fr/m²</div>
+                  <div className="text-[9px] text-emerald-700 dark:text-emerald-400">{plan.frutosObjetivoPlanta} fr/planta</div>
                 </div>
 
-                <div className="bg-rose-50 border border-rose-200 rounded-lg p-2.5 text-center">
-                  <div className="text-[10px] text-rose-800 font-bold">A Ralear</div>
-                  <div className="text-base font-black text-rose-950 mt-0.5">-{plan.excedentePorPlanta} fr/pl</div>
-                  <div className="text-[9px] text-rose-700">{plan.porcentajeRaleoRequerido}% de carga ({plan.cargaActualPorPlanta} act.)</div>
+                <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-lg p-2.5 text-center">
+                  <div className="text-[10px] text-rose-800 dark:text-rose-300 font-bold">A Ralear</div>
+                  <div className="text-base font-black text-rose-950 dark:text-rose-100 mt-0.5">-{plan.excedentePorPlanta} fr/pl</div>
+                  <div className="text-[9px] text-rose-700 dark:text-rose-400">{plan.porcentajeRaleoRequerido}% de carga ({plan.cargaActualPorPlanta} act.)</div>
                 </div>
 
-                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-2.5 text-center">
-                  <div className="text-[10px] text-indigo-800 font-bold">Cuadrilla &amp; Jornales</div>
-                  <div className="text-base font-black text-indigo-950 mt-0.5 font-mono tabular-nums">{plan.jornalesEstimadosTotales} jorn.</div>
-                  <div className="text-[9px] text-indigo-700">{plan.diasEstimadosFaena} días est. · {plan.cuadrillaPersonas} pers.</div>
+                <div className="bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/80 rounded-lg p-2.5 text-center">
+                  <div className="text-[10px] text-indigo-800 dark:text-indigo-300 font-bold">Cuadrilla &amp; Jornales</div>
+                  <div className="text-base font-black text-indigo-950 dark:text-indigo-100 mt-0.5 font-mono tabular-nums">{plan.jornalesEstimadosTotales} jorn.</div>
+                  <div className="text-[9px] text-indigo-700 dark:text-indigo-400">{plan.diasEstimadosFaena} días est. · {plan.cuadrillaPersonas} pers.</div>
                 </div>
               </div>
 
-              <div className="text-[11px] bg-stone-50 border border-stone-200 rounded-lg p-2.5 flex flex-wrap items-center justify-between gap-2 text-stone-700">
+              <div className="text-[11px] bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-800 rounded-lg p-2.5 flex flex-wrap items-center justify-between gap-2 text-stone-700 dark:text-stone-300">
                 <span><strong>Criterio:</strong> {plan.prioridadRaleo}</span>
                 <span><strong>Cuadrilla:</strong> {plan.cuadrillaPersonas} pers. ({plan.rendimientoJornalPlantasDia} pl/jornal)</span>
               </div>
 
               {/* Barra de avance */}
               <div className="space-y-1">
-                <div className="flex justify-between text-[11px] font-bold text-stone-600">
+                <div className="flex justify-between text-[11px] font-bold text-stone-600 dark:text-stone-400">
                   <span>Avance real de raleo en cuartel:</span>
                   <span>{plan.avanceRealPct}%</span>
                 </div>
-                <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-stone-100 dark:bg-stone-800 rounded-full h-2 overflow-hidden">
                   <div
                     className={`h-2 rounded-full transition-all ${
                       plan.avanceRealPct >= 100 ? 'bg-emerald-600' : 'bg-indigo-600'
@@ -786,7 +788,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
               </div>
 
               {plan.observaciones && (
-                <div className="text-xs text-stone-600 bg-stone-50 p-2 rounded border border-stone-200 italic">
+                <div className="text-xs text-stone-600 dark:text-stone-400 bg-stone-50 dark:bg-stone-800/70 p-2 rounded border border-stone-200 dark:border-stone-800 italic">
                   "{plan.observaciones}"
                 </div>
               )}
@@ -797,8 +799,8 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
 
       {/* MODAL AGREGAR / EDITAR PLAN DE CARGA & RALEO */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-stone-200 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-2xl border border-stone-200 dark:border-stone-800 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
             <div className="bg-indigo-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Scissors className="w-4 h-4 text-amber-400" />
@@ -812,7 +814,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
             <form onSubmit={handleSubmit} className="p-5 space-y-3 overflow-y-auto flex-1 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div className="sm:col-span-2">
-                  <label className="font-bold text-stone-700 block mb-1">Cuartel:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Cuartel:</label>
                   <select
                     value={form.parcelaId}
                     onChange={(e) => {
@@ -825,7 +827,7 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                         tonHaObjetivo: p?.rendimientoEstimadoTonHa || form.tonHaObjetivo
                       });
                     }}
-                    className="w-full p-2 border border-stone-300 rounded-lg font-semibold"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-semibold bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   >
                     {parcelas.map((p) => (
@@ -834,12 +836,12 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Fecha Planificación:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Fecha Planificación:</label>
                   <input
                     type="date"
                     value={form.fechaPlanificacion}
                     onChange={(e) => setForm({ ...form, fechaPlanificacion: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
@@ -847,157 +849,157 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Superficie (ha):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Superficie (ha):</label>
                   <input
                     type="number"
                     step="0.1"
                     min="0.1"
                     value={form.superficieHa}
                     onChange={(e) => setForm({ ...form, superficieHa: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Plantas/ha:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Plantas/ha:</label>
                   <input
                     type="number"
                     min="50"
                     value={form.plantasPorHa}
                     onChange={(e) => setForm({ ...form, plantasPorHa: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">% Hembras:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">% Hembras:</label>
                   <input
                     type="number"
                     min="50"
                     max="100"
                     value={form.porcentajePlantasHembra}
                     onChange={(e) => setForm({ ...form, porcentajePlantasHembra: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Margen Seg. (%):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Margen Seg. (%):</label>
                   <input
                     type="number"
                     min="0"
                     max="25"
                     value={form.margenSeguridadPct}
                     onChange={(e) => setForm({ ...form, margenSeguridadPct: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Meta Ton/ha:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Meta Ton/ha:</label>
                   <input
                     type="number"
                     step="0.5"
                     min="1"
                     value={form.tonHaObjetivo}
                     onChange={(e) => setForm({ ...form, tonHaObjetivo: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg font-bold text-emerald-900"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-emerald-900 dark:text-emerald-200 bg-white dark:bg-stone-800"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Peso Fruto Meta (g):</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Peso Fruto Meta (g):</label>
                   <input
                     type="number"
                     min="40"
                     value={form.pesoFrutoObjetivoGr}
                     onChange={(e) => setForm({ ...form, pesoFrutoObjetivoGr: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg font-bold text-indigo-900"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-indigo-900 dark:text-indigo-200 bg-white dark:bg-stone-800"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Carga Actual / Planta:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Carga Actual / Planta:</label>
                   <input
                     type="number"
                     min="0"
                     value={form.cargaActualPorPlanta}
                     onChange={(e) => setForm({ ...form, cargaActualPorPlanta: Number(e.target.value) })}
-                    className="w-full p-2 border border-amber-300 bg-amber-50/40 rounded-lg font-bold"
+                    className="w-full p-2 border border-amber-300 dark:border-amber-700 bg-amber-50/40 dark:bg-amber-950/40 rounded-lg font-bold dark:text-stone-100"
                     required
                   />
                 </div>
               </div>
 
               {/* Resumen calculado en tiempo real */}
-              <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl grid grid-cols-4 gap-2 text-center">
+              <div className="p-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/80 rounded-xl grid grid-cols-4 gap-2 text-center">
                 <div>
-                  <div className="text-[10px] text-indigo-800 font-bold">Obj. / m²</div>
-                  <div className="text-sm font-black text-indigo-950">{formMetrics.frutosObjetivoM2} fr/m²</div>
+                  <div className="text-[10px] text-indigo-800 dark:text-indigo-300 font-bold">Obj. / m²</div>
+                  <div className="text-sm font-black text-indigo-950 dark:text-indigo-100">{formMetrics.frutosObjetivoM2} fr/m²</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-indigo-800 font-bold">Obj. / Planta</div>
-                  <div className="text-sm font-black text-indigo-950">{formMetrics.frutosObjetivoPlanta} fr</div>
+                  <div className="text-[10px] text-indigo-800 dark:text-indigo-300 font-bold">Obj. / Planta</div>
+                  <div className="text-sm font-black text-indigo-950 dark:text-indigo-100">{formMetrics.frutosObjetivoPlanta} fr</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-rose-800 font-bold">A Ralear</div>
-                  <div className="text-sm font-black text-rose-900">{formMetrics.excedentePorPlanta} ({formMetrics.porcentajeRaleoRequerido}%)</div>
+                  <div className="text-[10px] text-rose-800 dark:text-rose-300 font-bold">A Ralear</div>
+                  <div className="text-sm font-black text-rose-900 dark:text-rose-200">{formMetrics.excedentePorPlanta} ({formMetrics.porcentajeRaleoRequerido}%)</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-emerald-800 font-bold">Jornales / Días</div>
-                  <div className="text-sm font-black text-emerald-950 font-mono tabular-nums">{formMetrics.jornalesEstimadosTotales} j. · {formMetrics.diasEstimadosFaena}d</div>
+                  <div className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold">Jornales / Días</div>
+                  <div className="text-sm font-black text-emerald-950 dark:text-emerald-100 font-mono tabular-nums">{formMetrics.jornalesEstimadosTotales} j. · {formMetrics.diasEstimadosFaena}d</div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Inicio Faena:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Inicio Faena:</label>
                   <input
                     type="date"
                     value={form.fechaInicioPlanificada}
                     onChange={(e) => setForm({ ...form, fechaInicioPlanificada: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Término Est.:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Término Est.:</label>
                   <input
                     type="date"
                     value={form.fechaTerminoPlanificada}
                     onChange={(e) => setForm({ ...form, fechaTerminoPlanificada: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Pl./Jornal/Día:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Pl./Jornal/Día:</label>
                   <input
                     type="number"
                     min="1"
                     value={form.rendimientoJornalPlantasDia}
                     onChange={(e) => setForm({ ...form, rendimientoJornalPlantasDia: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Cuadrilla:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Cuadrilla:</label>
                   <input
                     type="number"
                     min="1"
                     value={form.cuadrillaPersonas}
                     onChange={(e) => setForm({ ...form, cuadrillaPersonas: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Prioridad de Raleo:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Prioridad de Raleo:</label>
                   <select
                     value={form.prioridadRaleo}
                     onChange={(e) => setForm({ ...form, prioridadRaleo: e.target.value as PlanCargaRaleo['prioridadRaleo'] })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   >
                     <option value="1° Flores laterales y mariposas">1° Flores laterales y mariposas</option>
                     <option value="2° Frutos deformes y chicos">2° Frutos deformes y chicos</option>
@@ -1005,11 +1007,11 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Estado:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Estado:</label>
                   <select
                     value={form.estado}
                     onChange={(e) => setForm({ ...form, estado: e.target.value as PlanCargaRaleo['estado'] })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   >
                     <option value="Planificado">Planificado</option>
                     <option value="En ejecución">En ejecución</option>
@@ -1017,45 +1019,45 @@ export const CargaObjetivoRaleoPanel: React.FC<CargaObjetivoRaleoPanelProps> = (
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">% Avance Real:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">% Avance Real:</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={form.avanceRealPct}
                     onChange={(e) => setForm({ ...form, avanceRealPct: Number(e.target.value) })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Responsable / Capataz:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Responsable / Capataz:</label>
                   <input
                     type="text"
                     value={form.responsable}
                     onChange={(e) => setForm({ ...form, responsable: e.target.value })}
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Observaciones:</label>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">Observaciones:</label>
                   <input
                     type="text"
                     value={form.observaciones}
                     onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
                     placeholder="Ej. Sacar laterales en tercio apical..."
-                    className="w-full p-2 border border-stone-300 rounded-lg"
+                    className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 dark:text-stone-100"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-stone-200 flex justify-end gap-2">
+              <div className="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold rounded-xl cursor-pointer"
                 >
                   Cancelar
                 </button>

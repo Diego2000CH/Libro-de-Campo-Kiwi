@@ -115,16 +115,16 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-900 text-[10px] font-bold uppercase tracking-wider mb-1">
-            <Bug className="w-3 h-3 text-rose-700" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 text-[10px] font-bold uppercase tracking-wider mb-1">
+            <Bug className="w-3 h-3 text-rose-700 dark:text-rose-400" />
             Sanidad Vegetal & Evidencia Fotográfica
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Monitoreo de Psa, Botrytis & Plagas
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Detección temprana con respaldo fotográfico de síntomas de bacteriosis Psa, falsa arañita y hongos para cumplimiento SAG.
           </p>
         </div>
@@ -133,9 +133,9 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
           <button
             type="button"
             onClick={() => exportMonitoreosPDF(monitoreos, explotacion)}
-            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+            className="px-3.5 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
           >
-            <Download className="w-4 h-4 text-rose-800" />
+            <Download className="w-4 h-4 text-rose-800 dark:text-rose-300" />
             <span>Exportar PDF ({monitoreos.length})</span>
           </button>
 
@@ -155,28 +155,28 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
       {/* Tarjetas de Plagas Clave de Hayward */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {plagasFrecuentes.map((p) => (
-          <div key={p.id} className="bg-white rounded-2xl border border-stone-200 p-5 shadow-2xs space-y-3 text-xs">
-            <div className="flex items-start justify-between gap-2 border-b border-stone-100 pb-2.5">
+          <div key={p.id} className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-5 shadow-2xs space-y-3 text-xs">
+            <div className="flex items-start justify-between gap-2 border-b border-stone-100 dark:border-stone-800 pb-2.5">
               <div>
                 <span className="text-[10px] font-bold uppercase text-stone-400">{p.tipo}</span>
-                <h3 className="font-bold text-sm text-stone-900 mt-0.5">{p.nombre}</h3>
+                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 mt-0.5">{p.nombre}</h3>
               </div>
-              <span className="px-2.5 py-1 rounded-full font-bold text-[10px] bg-emerald-100 text-emerald-800">
+              <span className="px-2.5 py-1 rounded-full font-bold text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
                 {p.severidadPredio}
               </span>
             </div>
 
-            <div className="space-y-1.5 text-stone-600">
+            <div className="space-y-1.5 text-stone-600 dark:text-stone-400">
               <p><strong>Síntomas en Terreno:</strong> {p.sintomas}</p>
-              <p className="text-emerald-900"><strong>Estrategia Recomendada:</strong> {p.controlSugerido}</p>
+              <p className="text-emerald-900 dark:text-emerald-200"><strong>Estrategia Recomendada:</strong> {p.controlSugerido}</p>
             </div>
 
             {canEdit && (
-              <div className="pt-2 border-t border-stone-100 flex justify-end">
+              <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex justify-end">
                 <button
                   type="button"
                   onClick={() => onOpenNewLaborWithDefaults(undefined, 'fitosanitario')}
-                  className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   Recetar Tratamiento en Cuaderno →
                 </button>
@@ -187,46 +187,46 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
       </div>
 
       {/* Historial de Inspecciones Registradas */}
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
-        <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
-          <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-            <Eye className="w-4 h-4 text-emerald-700" />
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
+        <div className="px-5 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+          <h2 className="font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+            <Eye className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
             Registro de Inspecciones Sanitarias en Cuarteles
           </h2>
           <span className="text-xs text-stone-400">{monitoreos.length} inspecciones</span>
         </div>
 
         {monitoreos.length === 0 ? (
-          <div className="p-8 text-center text-xs text-stone-500">
+          <div className="p-8 text-center text-xs text-stone-500 dark:text-stone-400">
             No hay inspecciones sanitarias registradas aún.
           </div>
         ) : (
-          <div className="divide-y divide-stone-100 text-xs">
+          <div className="divide-y divide-stone-100 dark:divide-stone-800 text-xs">
             {monitoreos.map((m) => (
-              <div key={m.id} className="p-4 hover:bg-stone-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div key={m.id} className="p-4 hover:bg-stone-50 dark:hover:bg-stone-800/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-stone-500 font-bold">{m.fecha}</span>
-                    <span className="font-bold text-stone-900">{m.parcelaNombre}</span>
+                    <span className="font-mono text-stone-500 dark:text-stone-400 font-bold">{m.fecha}</span>
+                    <span className="font-bold text-stone-900 dark:text-stone-100">{m.parcelaNombre}</span>
                     <span className="text-stone-400 text-[11px]">· {m.registradoPor}</span>
                   </div>
-                  <p className="text-stone-700">{m.descripcion}</p>
+                  <p className="text-stone-700 dark:text-stone-300">{m.descripcion}</p>
                 </div>
 
                 {m.fotoEvidenciaDataUrl && (
                   <button
                     type="button"
                     onClick={() => setPreviewPhoto(m.fotoEvidenciaDataUrl!)}
-                    className="p-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-[11px] font-bold flex items-center gap-2 self-start sm:self-center shrink-0 cursor-pointer border border-stone-200"
+                    className="p-1.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-xl text-[11px] font-bold flex items-center gap-2 self-start sm:self-center shrink-0 cursor-pointer border border-stone-200 dark:border-stone-800"
                     title="Ampliar fotografía de terreno"
                   >
                     <img
                       src={m.fotoEvidenciaDataUrl}
                       alt="Miniatura"
-                      className="w-10 h-10 rounded-lg object-cover border border-stone-300"
+                      className="w-10 h-10 rounded-lg object-cover border border-stone-300 dark:border-stone-700"
                     />
                     <span className="pr-1.5 flex items-center gap-1">
-                      <Camera className="w-3.5 h-3.5 text-emerald-700" />
+                      <Camera className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                       Ver Foto
                     </span>
                   </button>
@@ -239,19 +239,19 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
 
       {/* Modal Nueva Observación */}
       {isQuickObsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-md border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-rose-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Registrar Inspección Fitosanitaria de Plagas</h3>
               <button type="button" onClick={() => setIsQuickObsOpen(false)} className="text-rose-200 hover:text-white cursor-pointer">✕</button>
             </div>
             <form onSubmit={handleGuardarObservacion} className="p-5 space-y-3.5 text-xs">
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Cuartel Inspeccionado:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cuartel Inspeccionado:</label>
                 <select
                   value={obsForm.parcelaId}
                   onChange={(e) => setObsForm({ ...obsForm, parcelaId: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   required
                 >
                   <option value="">Selecciona cuartel...</option>
@@ -262,11 +262,11 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Organismo / Plaga Monitoreada:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Organismo / Plaga Monitoreada:</label>
                 <select
                   value={obsForm.plaga}
                   onChange={(e) => setObsForm({ ...obsForm, plaga: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                 >
                   <option value="Psa (Pseudomonas syringae pv. actinidiae)">Psa (Pseudomonas syringae pv. actinidiae)</option>
                   <option value="Botrytis cinerea">Botrytis cinerea (Moho gris)</option>
@@ -278,11 +278,11 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Severidad / Nivel Detectado:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Severidad / Nivel Detectado:</label>
                 <select
                   value={obsForm.severidad}
                   onChange={(e) => setObsForm({ ...obsForm, severidad: e.target.value })}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                 >
                   <option value="Nivel Cero / Sin Síntomas (Limpio)">Nivel Cero / Sin Síntomas (Limpio)</option>
                   <option value="Leve (Bajo Umbral de Daño Económico)">Leve (Bajo Umbral de Daño Económico)</option>
@@ -292,20 +292,20 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Detalle de la Inspección / Órganos Afectados:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Detalle de la Inspección / Órganos Afectados:</label>
                 <textarea
                   value={obsForm.descripcion}
                   onChange={(e) => setObsForm({ ...obsForm, descripcion: e.target.value })}
                   placeholder="Describe plantas muestreadas, síntomas o ubicación en la hilera..."
                   rows={3}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1 flex items-center gap-1.5">
-                  <Camera className="w-3.5 h-3.5 text-emerald-700" />
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1 flex items-center gap-1.5">
+                  <Camera className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                   <span>Evidencia Fotográfica en Terreno (opcional):</span>
                 </label>
                 <input
@@ -313,19 +313,19 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
                   accept="image/*"
                   capture="environment"
                   onChange={handlePhotoUpload}
-                  className="w-full text-[11px] text-stone-600"
+                  className="w-full text-[11px] text-stone-600 dark:text-stone-400 bg-white dark:bg-stone-800"
                 />
                 {photoError && <p className="text-rose-600 text-[10px] mt-1">{photoError}</p>}
                 {obsForm.fotoEvidenciaDataUrl && (
-                  <img src={obsForm.fotoEvidenciaDataUrl} alt="Evidencia campo" className="mt-1.5 h-20 rounded-lg border border-stone-200 object-cover" />
+                  <img src={obsForm.fotoEvidenciaDataUrl} alt="Evidencia campo" className="mt-1.5 h-20 rounded-lg border border-stone-200 dark:border-stone-800 object-cover" />
                 )}
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsQuickObsOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -344,10 +344,10 @@ export const MonitoreoView: React.FC<MonitoreoViewProps> = ({
       {/* Modal Zoom Foto */}
       {previewPhoto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreviewPhoto(null)}>
-          <div className="max-w-xl w-full bg-white rounded-2xl p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+          <div className="max-w-xl w-full bg-white dark:bg-stone-900 rounded-2xl p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-stone-700">Foto de Inspección Fitosanitaria</span>
-              <button type="button" onClick={() => setPreviewPhoto(null)} className="text-stone-500 hover:text-stone-900 cursor-pointer">
+              <span className="text-xs font-bold text-stone-700 dark:text-stone-300">Foto de Inspección Fitosanitaria</span>
+              <button type="button" onClick={() => setPreviewPhoto(null)} className="text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>

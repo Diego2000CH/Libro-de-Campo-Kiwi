@@ -260,16 +260,16 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider mb-1">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-1">
             <Package className="w-3 h-3" />
             Bodega General & Materiales Fundo La Cabaña
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             Inventario Integral de Insumos & Materiales
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Control de agroquímicos SAG, insumos de riego por goteo, alambres, polines impregnados, mallas sombreadoras y herramientas podadoras.
           </p>
         </div>
@@ -285,17 +285,17 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
       {/* Alerta de Stock Crítico */}
       {lowStockCount > 0 && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-950 text-xs flex items-center justify-between gap-3">
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-2xl text-rose-950 dark:text-rose-100 text-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
             <div>
               <strong className="font-bold">Alerta de Bodega: {lowStockCount} artículos se encuentran bajo el umbral mínimo.</strong>
-              <div className="text-[11px] text-rose-800 mt-0.5">
+              <div className="text-[11px] text-rose-800 dark:text-rose-300 mt-0.5">
                 Revise el inventario de materiales críticos antes de cuadrillas de poda, amarraje o floración.
               </div>
             </div>
           </div>
-          <span className="px-2.5 py-1 rounded-full bg-rose-200 text-rose-900 font-bold text-[10px] uppercase">
+          <span className="px-2.5 py-1 rounded-full bg-rose-200 dark:bg-rose-900/50 text-rose-900 dark:text-rose-200 font-bold text-[10px] uppercase">
             Reposición Necesaria
           </span>
         </div>
@@ -303,35 +303,35 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
       {/* Tarjetas de Métricas de Bodega */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Total Artículos Registrados</div>
-          <div className="text-2xl font-black text-stone-900 mt-1">{inventario.length}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">En todas las categorías del huerto</div>
+          <div className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-1">{inventario.length}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">En todas las categorías del huerto</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Stock en Nivel Óptimo</div>
-          <div className="text-2xl font-black text-emerald-950 mt-1 font-mono tabular-nums">{stockOptimoCount}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Productos sobre stock mínimo</div>
+          <div className="text-2xl font-black text-emerald-950 dark:text-emerald-100 mt-1 font-mono tabular-nums">{stockOptimoCount}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Productos sobre stock mínimo</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Bajo Stock Mínimo</div>
-          <div className={`text-2xl font-black mt-1 ${lowStockCount > 0 ? 'text-rose-700' : 'text-emerald-800'}`}>
+          <div className={`text-2xl font-black mt-1 ${lowStockCount > 0 ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-800 dark:text-emerald-300'}`}>
             {lowStockCount}
           </div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Alertas automáticas activas</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Alertas automáticas activas</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="p-4 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
           <div className="text-[10px] text-stone-400 font-bold uppercase">Categoría Seleccionada</div>
-          <div className="text-2xl font-black text-blue-950 mt-1">{insumosFiltrados.length}</div>
-          <div className="text-[11px] text-stone-500 mt-0.5">Productos visibles actualmente</div>
+          <div className="text-2xl font-black text-blue-950 dark:text-blue-100 mt-1">{insumosFiltrados.length}</div>
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Productos visibles actualmente</div>
         </div>
       </div>
 
       {/* Pestañas de Categorías */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-2 shadow-2xs overflow-x-auto">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-2 shadow-2xs overflow-x-auto">
         <div className="flex items-center gap-1.5 min-w-max">
           {CATEGORIAS_CONFIG.map((cat) => {
             const isSelected = selectedCategoria === cat.id;
@@ -358,13 +358,13 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                 className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
                   isSelected
                     ? 'bg-emerald-900 text-white shadow-xs'
-                    : 'bg-stone-50 text-stone-700 hover:bg-stone-100 hover:text-stone-900'
+                    : 'bg-stone-50 dark:bg-stone-800/70 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100'
                 }`}
               >
                 <span>{cat.icon}</span>
                 <span>{cat.label}</span>
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                  isSelected ? 'bg-emerald-800 text-emerald-100' : 'bg-stone-200 text-stone-600'
+                  isSelected ? 'bg-emerald-800 text-emerald-100' : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-400'
                 }`}>
                   {count}
                 </span>
@@ -375,7 +375,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
       </div>
 
       {/* Buscador */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
         <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
           <input
@@ -383,10 +383,10 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nombre comercial, especificación técnica, medida, lote o ubicación..."
-            className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-700"
+            className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:text-stone-100"
           />
         </div>
-        <div className="text-xs text-stone-500 font-medium">
+        <div className="text-xs text-stone-500 dark:text-stone-400 font-medium">
           Mostrando <strong>{insumosFiltrados.length}</strong> de {inventario.length} productos
         </div>
       </div>
@@ -402,26 +402,26 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
           return (
             <div
               key={item.id}
-              className={`bg-white rounded-2xl border p-5 shadow-2xs flex flex-col justify-between transition-all ${
-                isLow ? 'border-rose-300 ring-1 ring-rose-200' : 'border-stone-200 hover:border-emerald-300'
+              className={`bg-white dark:bg-stone-900 rounded-2xl border p-5 shadow-2xs flex flex-col justify-between transition-all ${
+                isLow ? 'border-rose-300 dark:border-rose-700 ring-1 ring-rose-200 dark:ring-rose-800/60' : 'border-stone-200 dark:border-stone-800 hover:border-emerald-300 dark:hover:border-emerald-700'
               }`}
             >
               <div>
                 {/* Header producto */}
-                <div className="flex items-start justify-between gap-2 border-b border-stone-100 pb-2.5">
+                <div className="flex items-start justify-between gap-2 border-b border-stone-100 dark:border-stone-800 pb-2.5">
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span className="font-mono text-[10px] text-stone-400 font-bold uppercase">
                         {item.numeroRegistroSAG && item.numeroRegistroSAG !== 'N/A' ? item.numeroRegistroSAG : item.fabricante}
                       </span>
                       {item.ubicacionBodega && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 font-medium">
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 font-medium">
                           {item.ubicacionBodega}
                         </span>
                       )}
                     </div>
-                    <h3 className="font-black text-stone-900 text-sm mt-0.5">{item.nombreComercial}</h3>
-                    <div className="text-[11px] text-stone-500 line-clamp-2">
+                    <h3 className="font-black text-stone-900 dark:text-stone-100 text-sm mt-0.5">{item.nombreComercial}</h3>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400 line-clamp-2">
                       {item.especificacionTecnica || item.ingredienteActivo || item.fabricante}
                     </div>
                   </div>
@@ -429,10 +429,10 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                   <div className="flex items-center gap-1 shrink-0">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                       isLow
-                        ? 'bg-rose-100 text-rose-800'
+                        ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300'
                         : isStockBajo
-                        ? 'bg-stone-100 text-stone-600'
-                        : 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400'
+                        : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                     }`}>
                       {isLow ? 'STOCK BAJO' : isStockBajo ? 'AVISO OCULTO' : 'OK'}
                     </span>
@@ -440,7 +440,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                       <button
                         type="button"
                         onClick={() => onUpdateInsumo({ ...item, alertaStockOculta: true })}
-                        className="p-1 rounded-lg text-stone-400 hover:text-stone-800 hover:bg-stone-100 cursor-pointer"
+                        className="p-1 rounded-lg text-stone-400 hover:text-stone-800 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
                         title="Eliminar notificación de stock bajo"
                       >
                         <BellOff className="w-3.5 h-3.5" />
@@ -450,7 +450,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                       <button
                         type="button"
                         onClick={() => onUpdateInsumo({ ...item, alertaStockOculta: false })}
-                        className="p-1 rounded-lg text-stone-400 hover:text-emerald-800 hover:bg-emerald-50 cursor-pointer"
+                        className="p-1 rounded-lg text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
                         title="Reactivar notificación de stock bajo"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
@@ -460,63 +460,63 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                 </div>
 
                 {/* Stock Actual y Mínimo */}
-                <div className="flex items-baseline justify-between p-3 bg-stone-50 rounded-xl border border-stone-200 mt-3">
+                <div className="flex items-baseline justify-between p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 mt-3">
                   <div>
                     <span className="text-[10px] text-stone-400 uppercase font-bold block">Stock Disponible</span>
-                    <div className={`text-2xl font-black ${isLow ? 'text-rose-700' : 'text-emerald-950'}`}>
-                      {item.stockActual} <span className="text-xs font-semibold text-stone-500">{item.unidad}</span>
+                    <div className={`text-2xl font-black ${isLow ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-950 dark:text-emerald-100'}`}>
+                      {item.stockActual} <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">{item.unidad}</span>
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] text-stone-400 uppercase font-bold block">Stock Mínimo</span>
-                    <span className="font-mono text-xs font-bold text-stone-600">{item.stockMinimo} {item.unidad}</span>
+                    <span className="font-mono text-xs font-bold text-stone-600 dark:text-stone-400">{item.stockMinimo} {item.unidad}</span>
                   </div>
                 </div>
 
                 {/* Ficha técnica o de aplicación */}
-                <div className="grid grid-cols-2 gap-1.5 text-[11px] text-stone-600 mt-3">
+                <div className="grid grid-cols-2 gap-1.5 text-[11px] text-stone-600 dark:text-stone-400 mt-3">
                   {isQuimico ? (
                     <>
-                      <div className="p-1.5 bg-stone-50 rounded-lg">
+                      <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                         <span className="text-stone-400 block text-[10px]">Carencia LMR:</span>
-                        <strong className="text-amber-900">{item.periodoCarenciaDias || 0} días</strong>
+                        <strong className="text-amber-900 dark:text-amber-200">{item.periodoCarenciaDias || 0} días</strong>
                       </div>
-                      <div className="p-1.5 bg-stone-50 rounded-lg">
+                      <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                         <span className="text-stone-400 block text-[10px]">Reingreso REI:</span>
-                        <strong className="text-stone-800">{item.tiempoReingresoHoras || 0} horas</strong>
+                        <strong className="text-stone-800 dark:text-stone-200">{item.tiempoReingresoHoras || 0} horas</strong>
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className="p-1.5 bg-stone-50 rounded-lg">
+                      <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                         <span className="text-stone-400 block text-[10px]">Categoría:</span>
-                        <strong className="text-stone-800 capitalize">{(item.categoria || item.tipo).replace('_', ' ')}</strong>
+                        <strong className="text-stone-800 dark:text-stone-200 capitalize">{(item.categoria || item.tipo).replace('_', ' ')}</strong>
                       </div>
-                      <div className="p-1.5 bg-stone-50 rounded-lg">
+                      <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                         <span className="text-stone-400 block text-[10px]">Ubicación:</span>
-                        <strong className="text-stone-900 truncate block">{item.ubicacionBodega || 'Bodega General'}</strong>
+                        <strong className="text-stone-900 dark:text-stone-100 truncate block">{item.ubicacionBodega || 'Bodega General'}</strong>
                       </div>
                     </>
                   )}
-                  <div className="p-1.5 bg-stone-50 rounded-lg">
+                  <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                     <span className="text-stone-400 block text-[10px]">Fabricación:</span>
-                    <span className="font-mono text-stone-700 truncate block">
+                    <span className="font-mono text-stone-700 dark:text-stone-300 truncate block">
                       {formatProductDateLabel(item.fechaElaboracion, 'No registrada')}
                     </span>
                   </div>
-                  <div className="p-1.5 bg-stone-50 rounded-lg">
+                  <div className="p-1.5 bg-stone-50 dark:bg-stone-800/70 rounded-lg">
                     <span className="text-stone-400 block text-[10px]">Vencimiento:</span>
                     {(() => {
                       if (isProductoSinVencimiento(item)) {
-                        return <span className="font-mono text-stone-600">Sin vencimiento</span>;
+                        return <span className="font-mono text-stone-600 dark:text-stone-400">Sin vencimiento</span>;
                       }
                       const dVenc = diasHastaVencimientoProducto(item);
                       const cls =
                         dVenc !== null && dVenc < 0
-                          ? 'text-rose-700 font-bold'
+                          ? 'text-rose-700 dark:text-rose-400 font-bold'
                           : dVenc !== null && dVenc <= 30
-                          ? 'text-amber-800 font-bold'
-                          : 'text-stone-700';
+                          ? 'text-amber-800 dark:text-amber-300 font-bold'
+                          : 'text-stone-700 dark:text-stone-300';
                       return (
                         <span className={`font-mono ${cls}`}>
                           {formatProductDateLabel(item.fechaVencimiento, 'Sin vencimiento')}
@@ -527,20 +527,20 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                 </div>
 
                 {item.observaciones && (
-                  <p className="text-[11px] text-stone-500 italic mt-2 bg-stone-50 p-1.5 rounded-lg border border-stone-100">
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400 italic mt-2 bg-stone-50 dark:bg-stone-800/70 p-1.5 rounded-lg border border-stone-100 dark:border-stone-800">
                     "{item.observaciones}"
                   </p>
                 )}
               </div>
 
               {/* Botones de Acción */}
-              <div className="flex items-center justify-between gap-2 pt-3 border-t border-stone-100 mt-3">
+              <div className="flex items-center justify-between gap-2 pt-3 border-t border-stone-100 dark:border-stone-800 mt-3">
                 <button
                   onClick={() => {
                     setReponiendoId(item.id);
                     setCantidadReponer(item.stockMinimo * 2 || 10);
                   }}
-                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 font-bold rounded-xl text-xs flex items-center gap-1 transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Reponer
@@ -549,7 +549,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => handleOpenEdit(item)}
-                    className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    className="px-2.5 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                     title="Editar producto"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
@@ -557,7 +557,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                   </button>
                   <button
                     onClick={() => setInsumoToDelete(item)}
-                    className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    className="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                     title="Eliminar insumo"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -572,26 +572,26 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
       {/* MODAL: Reposición Rápida */}
       {reponiendoId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 p-5 space-y-4 text-xs">
-            <h3 className="font-bold text-sm text-stone-900">Ingreso de Guía / Factura a Bodega</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 p-5 space-y-4 text-xs">
+            <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">Ingreso de Guía / Factura a Bodega</h3>
             <div>
-              <label className="block font-bold text-stone-700 mb-1">Cantidad a Ingresar en Stock:</label>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Cantidad a Ingresar en Stock:</label>
               <input
                 type="number"
                 step="0.5"
                 value={cantidadReponer}
                 onChange={(e) => setCantidadReponer(parseFloat(e.target.value) || 0)}
-                className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-base text-emerald-900"
+                className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-base text-emerald-900 dark:text-emerald-200"
                 min="0.1"
                 required
               />
             </div>
-            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
               <button
                 type="button"
                 onClick={() => setReponiendoId(null)}
-                className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
               >
                 Cancelar
               </button>
@@ -609,8 +609,8 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
       {/* MODAL: Crear Nuevo Producto */}
       {isNewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-emerald-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Plus className="w-4 h-4 text-emerald-400" />
@@ -621,7 +621,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
             <form onSubmit={handleCrearInsumo} className="p-5 space-y-3.5 text-xs max-h-[85vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Categoría del Producto:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Categoría del Producto:</label>
                   <select
                     value={formData.categoria}
                     onChange={(e) => {
@@ -635,7 +635,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                           : formData.fechaVencimiento,
                       });
                     }}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   >
                     <option value="fitosanitario">Fitosanitarios & Químicos (SAG)</option>
                     <option value="fertilizante">Fertilizantes de Suelo / Foliares</option>
@@ -649,12 +649,12 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Nombre Comercial / Descripción:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre Comercial / Descripción:</label>
                   <input
                     type="text"
                     value={formData.nombreComercial}
                     onChange={(e) => setFormData({ ...formData, nombreComercial: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                     placeholder="ej. Gotero Autocompensante Netafim 2.0 L/h"
                     required
                   />
@@ -663,22 +663,22 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Especificación Técnica o Ingrediente:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Especificación Técnica o Ingrediente:</label>
                   <input
                     type="text"
                     value={formData.especificacionTecnica || formData.ingredienteActivo}
                     onChange={(e) => setFormData({ ...formData, especificacionTecnica: e.target.value, ingredienteActivo: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="ej. Autocompensante antisucción, paso laberinto"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fabricante o Proveedor:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fabricante o Proveedor:</label>
                   <input
                     type="text"
                     value={formData.fabricante}
                     onChange={(e) => setFormData({ ...formData, fabricante: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="ej. Netafim, Inchalam, Syngenta, Felco"
                   />
                 </div>
@@ -686,11 +686,11 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Unidad de Medida:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Unidad de Medida:</label>
                   <select
                     value={formData.unidad}
                     onChange={(e) => setFormData({ ...formData, unidad: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   >
                     <option value="unidades">Unidades (c/u)</option>
                     <option value="kg">Kilos (kg)</option>
@@ -701,24 +701,24 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Inicial:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Inicial:</label>
                   <input
                     type="number"
                     step="0.1"
                     value={formData.stockActual}
                     onChange={(e) => setFormData({ ...formData, stockActual: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Mínimo (Alerta):</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Mínimo (Alerta):</label>
                   <input
                     type="number"
                     step="0.1"
                     value={formData.stockMinimo}
                     onChange={(e) => setFormData({ ...formData, stockMinimo: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     required
                   />
                 </div>
@@ -726,31 +726,31 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Ubicación Bodega:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Ubicación Bodega:</label>
                   <input
                     type="text"
                     value={formData.ubicacionBodega}
                     onChange={(e) => setFormData({ ...formData, ubicacionBodega: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     placeholder="ej. Pasillo Riego, Estante 3"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">N° Registro SAG / Serie:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">N° Registro SAG / Serie:</label>
                   <input
                     type="text"
                     value={formData.numeroRegistroSAG}
                     onChange={(e) => setFormData({ ...formData, numeroRegistroSAG: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     placeholder="SAG 1234 o N/A"
                   />
                 </div>
               </div>
 
               {/* Fechas de Fabricación y Vencimiento (Mes/Año por defecto + opción Sin vencimiento) */}
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 dark:text-stone-200 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={Boolean(formData.sinVencimiento)}
@@ -761,12 +761,12 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                           fechaVencimiento: e.target.checked ? '' : formData.fechaVencimiento,
                         })
                       }
-                      className="rounded border-stone-300 text-emerald-800"
+                      className="rounded border-stone-300 dark:border-stone-700 text-emerald-800 dark:text-emerald-300 bg-white dark:bg-stone-800"
                     />
                     <span>Sin fecha de vencimiento (ej. martillos, herramientas, materiales)</span>
                   </label>
 
-                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={usarDiaExacto}
@@ -783,7 +783,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                             : toMonthValue(prev.fechaVencimiento),
                         }));
                       }}
-                      className="rounded border-stone-300 text-emerald-800"
+                      className="rounded border-stone-300 dark:border-stone-700 text-emerald-800 dark:text-emerald-300 bg-white dark:bg-stone-800"
                     />
                     <span>Incluir día exacto</span>
                   </label>
@@ -791,22 +791,22 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha Fabricación {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     <input
                       type={usarDiaExacto ? 'date' : 'month'}
                       value={formData.fechaElaboracion || ''}
                       onChange={(e) => setFormData({ ...formData, fechaElaboracion: e.target.value })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     {formData.sinVencimiento ? (
-                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                      <div className="w-full p-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg font-mono text-stone-500 dark:text-stone-400">
                         Sin vencimiento (No aplica)
                       </div>
                     ) : (
@@ -814,7 +814,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                         type={usarDiaExacto ? 'date' : 'month'}
                         value={formData.fechaVencimiento || ''}
                         onChange={(e) => setFormData({ ...formData, fechaVencimiento: e.target.value })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-amber-900 dark:text-amber-200"
                       />
                     )}
                   </div>
@@ -823,44 +823,44 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
               {/* Si es fitosanitario / fertilizante */}
               {(formData.categoria === 'fitosanitario' || formData.categoria === 'fertilizante') && (
-                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 grid grid-cols-2 gap-3">
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800/80 grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Carencia DGA/SAG (Días LMR):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Carencia DGA/SAG (Días LMR):</label>
                     <input
                       type="number"
                       value={formData.periodoCarenciaDias}
                       onChange={(e) => setFormData({ ...formData, periodoCarenciaDias: parseInt(e.target.value) || 0 })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-amber-900"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-amber-900 dark:text-amber-200"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Reingreso (Horas REI):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Reingreso (Horas REI):</label>
                     <input
                       type="number"
                       value={formData.tiempoReingresoHoras}
                       onChange={(e) => setFormData({ ...formData, tiempoReingresoHoras: parseInt(e.target.value) || 0 })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones / Especificaciones:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones / Especificaciones:</label>
                 <textarea
                   value={formData.observaciones}
                   onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   placeholder="Detalles sobre uso, garantías, compatibilidades, etc."
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsNewModalOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -878,8 +878,8 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
       {/* MODAL: Editar Producto (100% Editable) */}
       {isEditModalOpen && editingInsumo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
             <div className="bg-stone-900 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-emerald-400" />
@@ -890,11 +890,11 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
             <form onSubmit={handleGuardarEdicion} className="p-5 space-y-3.5 text-xs max-h-[85vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Categoría:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Categoría:</label>
                   <select
                     value={formData.categoria}
                     onChange={(e) => setFormData({ ...formData, categoria: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   >
                     <option value="fitosanitario">Fitosanitarios & Químicos (SAG)</option>
                     <option value="fertilizante">Fertilizantes de Suelo / Foliares</option>
@@ -908,12 +908,12 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Nombre Comercial:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nombre Comercial:</label>
                   <input
                     type="text"
                     value={formData.nombreComercial}
                     onChange={(e) => setFormData({ ...formData, nombreComercial: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold dark:text-stone-100"
                     required
                   />
                 </div>
@@ -921,32 +921,32 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Especificación / Ingrediente:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Especificación / Ingrediente:</label>
                   <input
                     type="text"
                     value={formData.especificacionTecnica || formData.ingredienteActivo}
                     onChange={(e) => setFormData({ ...formData, especificacionTecnica: e.target.value, ingredienteActivo: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Fabricante o Proveedor:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Fabricante o Proveedor:</label>
                   <input
                     type="text"
                     value={formData.fabricante}
                     onChange={(e) => setFormData({ ...formData, fabricante: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Unidad:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Unidad:</label>
                   <select
                     value={formData.unidad}
                     onChange={(e) => setFormData({ ...formData, unidad: e.target.value as any })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-medium"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-medium dark:text-stone-100"
                   >
                     <option value="unidades">Unidades (c/u)</option>
                     <option value="kg">Kilos (kg)</option>
@@ -957,24 +957,24 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Actual:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Actual:</label>
                   <input
                     type="number"
                     step="0.1"
                     value={formData.stockActual}
                     onChange={(e) => setFormData({ ...formData, stockActual: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-emerald-950"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-emerald-950 dark:text-emerald-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Mínimo:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Stock Mínimo:</label>
                   <input
                     type="number"
                     step="0.1"
                     value={formData.stockMinimo}
                     onChange={(e) => setFormData({ ...formData, stockMinimo: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold dark:text-stone-100"
                     required
                   />
                 </div>
@@ -982,29 +982,29 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Ubicación Bodega:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Ubicación Bodega:</label>
                   <input
                     type="text"
                     value={formData.ubicacionBodega}
                     onChange={(e) => setFormData({ ...formData, ubicacionBodega: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Lote / Registro SAG:</label>
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Lote / Registro SAG:</label>
                   <input
                     type="text"
                     value={formData.numeroRegistroSAG}
                     onChange={(e) => setFormData({ ...formData, numeroRegistroSAG: e.target.value })}
-                    className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                    className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                   />
                 </div>
               </div>
 
               {/* Fechas de Fabricación y Vencimiento (Mes/Año por defecto + opción Sin vencimiento) */}
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-bold text-stone-800 dark:text-stone-200 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={Boolean(formData.sinVencimiento)}
@@ -1015,12 +1015,12 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                           fechaVencimiento: e.target.checked ? '' : formData.fechaVencimiento,
                         })
                       }
-                      className="rounded border-stone-300 text-emerald-800"
+                      className="rounded border-stone-300 dark:border-stone-700 text-emerald-800 dark:text-emerald-300 bg-white dark:bg-stone-800"
                     />
                     <span>Sin fecha de vencimiento (solo fabricación)</span>
                   </label>
 
-                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-600 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={usarDiaExacto}
@@ -1037,7 +1037,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                             : toMonthValue(prev.fechaVencimiento),
                         }));
                       }}
-                      className="rounded border-stone-300 text-emerald-800"
+                      className="rounded border-stone-300 dark:border-stone-700 text-emerald-800 dark:text-emerald-300 bg-white dark:bg-stone-800"
                     />
                     <span>Incluir día exacto</span>
                   </label>
@@ -1045,22 +1045,22 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha Fabricación {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     <input
                       type={usarDiaExacto ? 'date' : 'month'}
                       value={formData.fechaElaboracion || ''}
                       onChange={(e) => setFormData({ ...formData, fechaElaboracion: e.target.value })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono dark:text-stone-100"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Fecha Vencimiento {usarDiaExacto ? '(Día/Mes/Año)' : '(Mes/Año)'}:
                     </label>
                     {formData.sinVencimiento ? (
-                      <div className="w-full p-2 bg-stone-100 border border-stone-200 rounded-lg font-mono text-stone-500">
+                      <div className="w-full p-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-lg font-mono text-stone-500 dark:text-stone-400">
                         Sin vencimiento (No aplica)
                       </div>
                     ) : (
@@ -1068,7 +1068,7 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
                         type={usarDiaExacto ? 'date' : 'month'}
                         value={formData.fechaVencimiento || ''}
                         onChange={(e) => setFormData({ ...formData, fechaVencimiento: e.target.value })}
-                        className="w-full p-2 bg-white border border-stone-300 rounded-lg font-mono font-bold text-amber-900"
+                        className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-mono font-bold text-amber-900 dark:text-amber-200"
                       />
                     )}
                   </div>
@@ -1077,43 +1077,43 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
               {/* Si es agroquímico */}
               {(formData.categoria === 'fitosanitario' || formData.categoria === 'fertilizante') && (
-                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 grid grid-cols-2 gap-3">
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800/80 grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Carencia (Días LMR):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Carencia (Días LMR):</label>
                     <input
                       type="number"
                       value={formData.periodoCarenciaDias}
                       onChange={(e) => setFormData({ ...formData, periodoCarenciaDias: parseInt(e.target.value) || 0 })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg font-bold text-amber-900"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg font-bold text-amber-900 dark:text-amber-200"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Reingreso (Horas REI):</label>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Reingreso (Horas REI):</label>
                     <input
                       type="number"
                       value={formData.tiempoReingresoHoras}
                       onChange={(e) => setFormData({ ...formData, tiempoReingresoHoras: parseInt(e.target.value) || 0 })}
-                      className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                      className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Observaciones:</label>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Observaciones:</label>
                 <textarea
                   value={formData.observaciones}
                   onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
                   rows={2}
-                  className="w-full p-2 bg-white border border-stone-300 rounded-lg"
+                  className="w-full p-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg dark:text-stone-100"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-3 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer"
+                  className="px-3 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -1131,25 +1131,25 @@ export const InventarioView: React.FC<InventarioViewProps> = ({
 
       {/* MODAL: Confirmación Eliminación Insumo */}
       {insumoToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl w-full max-w-sm border border-stone-200 dark:border-stone-800 overflow-hidden animate-in fade-in zoom-in-95">
             <div className="bg-rose-950 text-white p-4 flex items-center justify-between">
               <h3 className="font-bold text-sm">Eliminar del Inventario</h3>
               <button onClick={() => setInsumoToDelete(null)} className="text-rose-200 hover:text-white cursor-pointer">✕</button>
             </div>
             <div className="p-5 space-y-4 text-xs">
-              <p className="text-stone-700">
+              <p className="text-stone-700 dark:text-stone-300">
                 ¿Estás seguro de que deseas eliminar permanentemente <strong>{insumoToDelete.nombreComercial}</strong>?
               </p>
-              <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200 text-stone-600 text-[11px] space-y-1">
+              <div className="p-2.5 bg-stone-50 dark:bg-stone-800/70 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 text-[11px] space-y-1">
                 <div><strong>Stock actual:</strong> {insumoToDelete.stockActual} {insumoToDelete.unidad}</div>
                 <div><strong>Ubicación:</strong> {insumoToDelete.ubicacionBodega}</div>
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setInsumoToDelete(null)}
-                  className="px-3.5 py-1.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 cursor-pointer font-medium"
+                  className="px-3.5 py-1.5 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70 cursor-pointer font-medium"
                 >
                   Cancelar
                 </button>
