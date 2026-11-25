@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
+import { PWAUpdatePrompt } from './components/PWAUpdatePrompt.tsx';
 import './index.css';
 
 // Tier 1 Google Maps Platform quota & auth failure listener
@@ -16,4 +17,9 @@ console.error = (...args: unknown[]) => {
   }
 };
 
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById('root')!).render(
+  <>
+    <PWAUpdatePrompt />
+    <App />
+  </>
+);

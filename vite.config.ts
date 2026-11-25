@@ -10,7 +10,7 @@ export default defineConfig(() => {
       react(),
       tailwindcss(),
       VitePWA({
-        registerType: 'autoUpdate',
+        registerType: 'prompt',
         includeAssets: ['apple-touch-icon.png', 'icon.svg', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-512x512.png', 'sw-push.js'],
         manifest: {
           id: '/',
@@ -45,6 +45,7 @@ export default defineConfig(() => {
         },
         workbox: {
           importScripts: ['/sw-push.js'],
+          cleanupOutdatedCaches: true,
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
           maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
           navigateFallbackDenylist: [/^\/api\//],

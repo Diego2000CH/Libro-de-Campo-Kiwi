@@ -35,7 +35,8 @@ import {
   ThermometerSnowflake,
   Sun,
   Moon,
-  Pencil
+  Pencil,
+  RefreshCw
 } from 'lucide-react';
 import { ModuloPestanaId, UsuarioPredio } from '../types/campo';
 import { SyncStatusBadge } from './SyncStatusBadge';
@@ -290,6 +291,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </button>
 
                     <PWAInstallButton variant="menu" onAction={() => setUserDropdownOpen(false)} />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        window.dispatchEvent(new CustomEvent('pwa-check-update'));
+                      }}
+                      className="w-full text-left flex items-center gap-2 text-stone-700 dark:text-stone-300 font-medium text-[11px] hover:text-emerald-800 dark:hover:text-emerald-300 p-2 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-800/80 cursor-pointer transition-colors"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                      <span>Buscar actualización de la app</span>
+                    </button>
 
                     {isAdmin && onOpenResetModal && (
                       <button
