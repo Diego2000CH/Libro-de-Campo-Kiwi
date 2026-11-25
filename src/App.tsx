@@ -1818,7 +1818,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col font-sans text-stone-900 selection:bg-emerald-200 selection:text-emerald-950">
+    <div className="min-h-[100dvh] bg-stone-50 flex flex-col font-sans text-stone-900 selection:bg-emerald-200 selection:text-emerald-950">
       {quotaBanner}
       <Navbar
         activeTab={activeTab}
@@ -1959,7 +1959,7 @@ export default function App() {
       )}
 
       <ErrorBoundary fallbackTab={() => setActiveTab('dashboard')}>
-        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-safe sm:px-6 lg:px-8 pt-5 pb-safe-main sm:py-6">
         {activeTab === 'dashboard' && (
           <DashboardView
             explotacion={explotacion}

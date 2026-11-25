@@ -151,25 +151,27 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="no-print bg-white border-b border-stone-200 sticky top-0 z-40 shadow-xs">
-      {/* Barra superior de identificación y sincronización */}
-      <div className="bg-gradient-to-r from-emerald-950 via-stone-900 to-emerald-950 text-white px-3 sm:px-6 py-2">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs">
+      {/* Barra superior de identificación y sincronización (adaptada a Dynamic Island / Notch) */}
+      <div className="bg-gradient-to-r from-emerald-950 via-stone-900 to-emerald-950 text-white px-safe pt-safe-bar pb-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-3 text-xs">
           {/* Logo y título */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center font-black text-white text-xs shadow-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center font-black text-white text-xs shadow-xs shrink-0">
               🥝
             </div>
-            <div>
-              <span className="font-extrabold tracking-wide text-sm text-emerald-100">{fundoNombre}</span>
-              <span className="hidden sm:inline text-emerald-400/80 ml-2 text-[11px]">
+            <div className="min-w-0">
+              <span className="font-extrabold tracking-wide text-xs sm:text-sm text-emerald-100 truncate block sm:inline">
+                {fundoNombre}
+              </span>
+              <span className="hidden md:inline text-emerald-400/80 ml-2 text-[11px]">
                 · Cuaderno Oficial SAG Kiwis Hayward
               </span>
             </div>
           </div>
 
           {/* Estado de sincronización en vivo, PWA Install y sesión de usuario */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <PWAInstallButton />
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            <PWAInstallButton variant="header" />
             <SyncStatusBadge
               syncState={syncState}
               lastSyncTime={lastSyncTime}
@@ -246,6 +248,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <span>{isAdmin ? 'Equipo, Permisos & Códigos' : 'Mi Cuenta y Cambiar Mi Clave'}</span>
                     </button>
 
+                    <PWAInstallButton variant="menu" onAction={() => setUserDropdownOpen(false)} />
+
                     {isAdmin && onOpenResetModal && (
                       <button
                         type="button"
@@ -282,7 +286,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Barra principal de navegación */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6">
+      <div className="max-w-7xl mx-auto px-safe">
         <div className="flex items-center justify-between h-14 gap-2">
           {/* Navegación Desktop */}
           <nav className="hidden lg:flex items-center gap-1 overflow-x-auto py-2 scrollbar-none text-xs">
@@ -388,7 +392,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Menú desplegable móvil */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-stone-200 bg-white px-3 py-3 shadow-lg max-h-[75vh] overflow-y-auto">
+        <div className="lg:hidden border-t border-stone-200 bg-white px-safe py-3 pb-safe shadow-lg max-h-[75dvh] overflow-y-auto space-y-2.5">
           <div className="grid grid-cols-2 gap-1.5">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -413,6 +417,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               );
             })}
+          </div>
+          <div className="pt-2 border-t border-stone-100">
+            <PWAInstallButton variant="menu" onAction={() => setMobileMenuOpen(false)} />
           </div>
         </div>
       )}

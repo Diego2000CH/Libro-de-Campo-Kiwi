@@ -17,7 +17,7 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
 
   if (!isOnline) {
     return (
-      <div className="no-print fixed bottom-4 left-4 z-50 flex items-center gap-2 rounded-xl bg-amber-600 px-3.5 py-2 text-xs font-bold text-white shadow-lg border border-amber-400/50">
+      <div className="no-print fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] right-[max(0.75rem,env(safe-area-inset-right))] sm:right-auto z-50 flex items-center gap-2 rounded-xl bg-amber-600 px-3.5 py-2 text-xs font-bold text-white shadow-lg border border-amber-400/50">
         <WifiOff className="w-4 h-4 shrink-0 animate-pulse" />
         <span>
           Modo Terreno Offline — Tus registros se guardan en el equipo y se sincronizarán al volver la señal.
@@ -27,7 +27,7 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
   }
 
   return (
-    <div className="no-print fixed bottom-4 left-4 z-50 flex items-center gap-2 rounded-xl bg-emerald-800 px-3.5 py-2 text-xs font-bold text-white shadow-lg border border-emerald-500/40">
+    <div className="no-print fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] right-[max(0.75rem,env(safe-area-inset-right))] sm:right-auto z-50 flex items-center gap-2 rounded-xl bg-emerald-800 px-3.5 py-2 text-xs font-bold text-white shadow-lg border border-emerald-500/40">
       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
       <span>Conexión recuperada: sincronizando registros pendientes...</span>
       {onRetrySync && (

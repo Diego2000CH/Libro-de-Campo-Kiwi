@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   AlertCircle,
 } from 'lucide-react';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface LoginViewProps {
   usuarios: UsuarioPredio[];
@@ -61,7 +62,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-stone-900 flex flex-col justify-center items-center p-4 relative overflow-hidden select-none">
+    <div className="min-h-[100dvh] bg-stone-900 flex flex-col justify-center items-center px-safe pt-safe-screen pb-safe-main relative overflow-hidden select-none">
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-stone-950 to-teal-950 opacity-90 pointer-events-none" />
       <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-teal-600/10 rounded-full blur-3xl pointer-events-none" />
@@ -158,7 +159,9 @@ export const LoginView: React.FC<LoginViewProps> = ({
           </div>
         </div>
 
-        <div className="text-center text-xs text-stone-400 space-y-1">
+        <PWAInstallButton variant="card" />
+
+        <div className="text-center text-xs text-stone-400 space-y-1 pb-2">
           <p>© 2026 {fundoNombre}</p>
           <p className="text-[10px] text-emerald-400/70">Control de Roles: Administrador · Encargado de Campo · Solo Lectura</p>
         </div>
